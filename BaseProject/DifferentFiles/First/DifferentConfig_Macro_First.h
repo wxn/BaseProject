@@ -14,7 +14,7 @@
 #define BundleName  @"DifferentImage_First.bundle"
 
 //用户判断是否显示引导页
-#define AppWelcomeVersion @"104"
+#define AppWelcomeVersion @"105"
 
 
 #endif /* DifferentConfig_Macro_First_h */
