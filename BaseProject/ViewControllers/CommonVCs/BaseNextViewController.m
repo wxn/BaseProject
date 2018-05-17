@@ -1,0 +1,75 @@
+//
+//  BaseNextViewController.m
+//  BaseProject
+//
+//  Created by Cinna on 2017/9/13.
+//  Copyright © 2017年 XTWL. All rights reserved.
+//
+
+#import "BaseNextViewController.h"
+
+@interface BaseNextViewController ()
+
+@end
+
+@implementation BaseNextViewController
+
+- (id)init {
+    self = [super init];
+    if (self) {
+        // Custom initialization
+        self.hidesBottomBarWhenPushed = YES;
+        
+    }
+    return self;
+}
+
+//二级显示tabbar
+- (id)initShowTabBar {
+    self = [super init];
+    
+    if (self) {
+        self.hidesBottomBarWhenPushed = NO;
+    }
+    
+    return self;
+}
+
+- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil {
+    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
+    if (self) {
+        // Custom initialization
+        self.hidesBottomBarWhenPushed = YES;
+    }
+    
+    return self;
+}
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    // Do any additional setup after loading the view.
+    
+}
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+- (void)popViewControllerAfterDelay {
+    [self performSelector:@selector(popViewController) withObject:nil afterDelay:0.5];
+}
+
+- (void)popViewController {
+    [self.navigationController popViewControllerAnimated:YES];
+}
+
+- (void)pushViewControllerAfterDelay:(UIViewController *)vc {
+    [self performSelector:@selector(popViewController) withObject:vc afterDelay:0.5];
+}
+
+- (void)pushViewController:(UIViewController *)vc {
+    [self.navigationController pushViewController:vc animated:YES];
+}
+
+@end
