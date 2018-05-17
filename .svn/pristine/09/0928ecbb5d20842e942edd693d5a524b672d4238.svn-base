@@ -1,0 +1,24 @@
+//
+//Created by ESJsonFormatForMac on 17/10/25.
+//
+
+#import <Foundation/Foundation.h>
+
+@interface GoodsPropertyModel : NSObject
+
+@property (nonatomic, copy) NSString *proId;
+
+@property (nonatomic, copy) NSString *shopId;
+
+@property (nonatomic, assign) NSInteger type;
+
+@property (nonatomic, copy) NSString *name;
+
+@property (nonatomic, copy) NSString *price;
+
+@property (nonatomic, copy) NSString *qty;
+
+@property (nonatomic, assign) BOOL isSelect;
+
+@end
+

@@ -1,0 +1,269 @@
+//
+//  RequestManager.m
+//  XTWL_IOS_USER
+//
+//  Created by Cinna on 2017/9/14.
+//  Copyright © 2017年 XTWL. All rights reserved.
+//
+
+#import "RequestManager.h"
+#import "AFNetworking.h"
+
+#import<CommonCrypto/CommonDigest.h>
+
+@implementation RequestManager
+
++ (instancetype)manager {
+    return [[self alloc] init];
+}
+
+/**
+ 发送Get请求
+ 
+ @param urlStr 接口地址
+ @param modular 接口板块
+ @param requestName 接口名称
+ @param parameters 接口所传参数，一般是Dictionary
+ @param completeBlock 请求成功后的回调
+ @param failedBlock 请求失败后的回调
+ */
++ (void)sendGetRequestWithURLString:(NSString *)urlStr
+                            modular:(NSString *)modular
+                        requestName:(NSString*)requestName
+                         parameters:(NSDictionary *)parameters
+                      completeBlock:(void (^)(NSString *resultCode, NSString *resultDesc, NSDictionary *dataDic))completeBlock
+                        failedBlock:(void (^)(NSError *error))failedBlock {
+    
+    AFHTTPSessionManager *manager = [AFHTTPSessionManager manager];
+    [manager GET:@"" parameters:@"" progress:^(NSProgress * _Nonnull downloadProgress) {
+        
+        
+    } success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
+        
+        NSDictionary *resultDic = [NSJSONSerialization JSONObjectWithData:responseObject options:NSJSONReadingMutableContainers error:nil];
+        if (completeBlock) {
+            completeBlock(resultDic[@"resultcode"],resultDic[@"resultdesc"],resultDic[@"result"]);
+        }
+        
+    } failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) {
+        
+        if (failedBlock) {
+            failedBlock(error);
+        }
+    }];
+}
+
+
+/**
+ 发送Post请求
+ 
+ @param urlStr 接口地址
+ @param modular 接口板块
+ @param requestName 接口名称
+ @param parameters 接口所传参数，一般是Dictionary
+ @param completeBlock 请求成功后的回调
+ @param failedBlock 请求失败后的回调
+ */
++ (void)sendPostRequestWithURLString:(NSString *)urlStr
+                             modular:(NSString *)modular
+                         requestName:(NSString*)requestName
+                          parameters:(NSDictionary *)parameters
+                       completeBlock:(void (^)(NSString *resultCode, NSString *resultDesc, NSDictionary *dataDic))completeBlock
+                         failedBlock:(void (^)(NSError *error))failedBlock {
+    NSMutableDictionary *param = [NSMutableDictionary dictionaryWithDictionary:parameters];
+    //固定参数
+    [param setValue:[RequestManager timeStamp] forKey:@"timeStamp"];
+    [param setValue:[RequestManager uuidString] forKey:@"uuid"];
+    [param setValue:[RequestManager sortMD5StringWithDic:[NSMutableDictionary dictionaryWithDictionary:param]] forKey:@"secretKey"];
+    [param setValue:@"0" forKey:@"authKey"];
+    [param setValue:[UserInfo shareInstance].userKey.length>0?[UserInfo shareInstance].userKey:@"0" forKey:@"userKey"];
+    [param setValue:@"4" forKey:@"dtype"];
+    NSMutableDictionary *dic = [NSMutableDictionary dictionary];
+    [dic setValue:param forKey:@"param"];
+    [dic setValue:@"1.0" forKey:@"version"];
+    [dic setValue:modular forKey:@"modular"];
+    [dic setValue:requestName forKey:@"requestname"];
+    
+    AFHTTPSessionManager *manager = [AFHTTPSessionManager manager];
+    
+    manager.requestSerializer = [AFJSONRequestSerializer serializer];
+    [manager.requestSerializer setValue:@"application/json; charset=utf-8" forHTTPHeaderField:@"Content-Type"];
+    manager.requestSerializer.timeoutInterval = 60.0f;
+    manager.responseSerializer = [AFHTTPResponseSerializer serializer];
+    manager.responseSerializer.acceptableContentTypes = [NSSet setWithObjects:@"application/json", @"text/plain", @"text/javascript", @"text/json", @"text/html", nil];
+    
+    [manager POST:urlStr parameters:dic progress:nil success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
+        NSDictionary *responseDic = [NSJSONSerialization JSONObjectWithData:responseObject options:NSJSONReadingMutableContainers error:nil];
+        if (completeBlock) {
+            if ([responseDic[@"result"] isKindOfClass:[NSDictionary class]]) {
+                NSData *jsonData = [NSJSONSerialization dataWithJSONObject:responseDic[@"result"] options:NSJSONWritingPrettyPrinted error:nil];
+                NSString *jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+                MYLog(@"jsonstring%@",jsonString);//用于MJExtension建model
+            }
+            completeBlock(responseDic[@"resultcode"],responseDic[@"resultdesc"],responseDic[@"result"]);
+        }
+    } failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) {
+        if (failedBlock) {
+            
+            failedBlock(error);
+        }
+    }];
+    //👇方法也可以
+    //    NSData *postData = [NSJSONSerialization dataWithJSONObject:dic
+    //                                                       options:NSJSONWritingPrettyPrinted
+    //                                                         error:nil];
+    //    AFURLSessionManager *manager = [[AFURLSessionManager alloc] initWithSessionConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration]];
+    //    NSMutableURLRequest *request = [[AFJSONRequestSerializer serializer] requestWithMethod:@"POST" URLString:urlStr parameters:nil error:nil];
+    //    request.timeoutInterval= 60.0f;
+    //    [request setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
+    //    [request setValue:@"application/json" forHTTPHeaderField:@"Accept"];
+    //    [request setHTTPBody:postData];
+    //
+    //    [[manager dataTaskWithRequest:request completionHandler:^(NSURLResponse * _Nonnull response, id  _Nullable responseObject, NSError * _Nullable error) {
+    //        if (!error) {
+    //            NSLog(@"responseObject: %@", responseObject);
+    //        } else {
+    //            NSLog(@"error: %@, %@, %@", error, response, responseObject);
+    //        }
+    //    }] resume];
+    
+}
+
+
+
+
+
++ (NSString *)jsonStrWithDic:(NSMutableDictionary *)dic {
+    NSString *jsonString = nil;
+    NSError *error;
+    if(!dic)
+        return @"";
+    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:dic
+                                                       options:NSJSONWritingPrettyPrinted
+                                                         error:&error];
+    if (! jsonData) {
+        NSLog(@"Got an error: %@", error);
+    } else {
+        jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+    }
+    return jsonString;
+}
+
+    
++ (void)sendRequestToUploadImageWithURLString:(NSString *)urlStr
+                                        image:(UIImage *)image
+                                completeBlock:(void (^)(NSString *resultCode, NSString *resultDesc, NSDictionary *dataDic))completeBlock
+                                  failedBlock:(void (^)(NSError *error))failedBlock {
+    AFHTTPSessionManager *manager = [AFHTTPSessionManager manager];
+
+    
+    manager.requestSerializer = [AFJSONRequestSerializer serializer];
+    [manager.requestSerializer setValue:@"application/json; charset=utf-8" forHTTPHeaderField:@"Content-Type"];
+    manager.requestSerializer.timeoutInterval = 60.0f;
+    manager.responseSerializer = [AFHTTPResponseSerializer serializer];
+    manager.responseSerializer.acceptableContentTypes = [NSSet setWithObjects:@"application/json", @"text/plain", @"text/javascript", @"text/json", @"text/html", nil];
+    
+    [manager POST:urlStr parameters:nil constructingBodyWithBlock:^(id<AFMultipartFormData>  _Nonnull formData) {
+        NSData *imageData = UIImagePNGRepresentation(image);
+        NSString *uuidStr = [RequestManager uuidString];
+        NSString *timeStampStr = [RequestManager timeStamp];
+        
+        [formData appendPartWithFileData:imageData name:@"img" fileName:@"file" mimeType:@"image/png"];
+        [formData appendPartWithFormData:[uuidStr dataUsingEncoding:NSUTF8StringEncoding] name:@"uuid"];
+        [formData appendPartWithFormData:[timeStampStr dataUsingEncoding:NSUTF8StringEncoding] name:@"timeStamp"];
+        [formData appendPartWithFormData:[[RequestManager uploadMD5String:[NSString stringWithFormat:@"%@%@",uuidStr,timeStampStr]]  dataUsingEncoding:NSUTF8StringEncoding] name:@"secretKey"];
+        
+    } progress:^(NSProgress * _Nonnull uploadProgress) {
+        
+        
+        
+    }  success:^(NSURLSessionDataTask *task, id responseObject) {
+        NSString *result = [[NSString alloc] initWithData:responseObject encoding:NSUTF8StringEncoding];
+        if (completeBlock) {
+            if (result.length > 0) {
+                completeBlock(@"0",result,nil);
+            }else {
+                completeBlock(@"1",@"图片上传失败！",nil);
+            }
+        }
+        
+    } failure:^(NSURLSessionDataTask *task, NSError *error) {
+        if (failedBlock) {
+            failedBlock(error);
+        }
+    }];
+}
+
+    
++ (NSString *)sortMD5StringWithDic:(NSMutableDictionary *)dic {
+    
+    [dic setValue:Request_Secret forKey:@"secret"];
+    NSMutableArray *array = [NSMutableArray arrayWithArray:dic.allKeys];
+    [array sortUsingComparator: ^NSComparisonResult (NSString *str1, NSString *str2) {
+        return [str1 compare:str2];
+    }];
+    NSMutableString *new = [NSMutableString string];
+    for (NSString *key in array) {
+        [new appendFormat:@"&%@=%@",key,dic[key]];
+    }
+    return [RequestManager md5:[new uppercaseString]];
+}
+
++ (NSString *)md5:(NSString *)input {
+    const char *cStr = [input UTF8String];
+    
+    unsigned char digest[CC_MD5_DIGEST_LENGTH];
+    CC_MD5( cStr, strlen(cStr), digest ); // This is the md5 call
+    
+    NSMutableString *output = [NSMutableString stringWithCapacity:CC_MD5_DIGEST_LENGTH * 2];
+    
+    for (int i = 0; i < CC_MD5_DIGEST_LENGTH; i++)
+        [output appendFormat:@"%02x", digest[i]];
+    
+    return [output uppercaseString];
+}
+
++ (NSString *)uuidString {
+    CFUUIDRef uuid_ref = CFUUIDCreate(NULL);
+    CFStringRef uuid_string_ref= CFUUIDCreateString(NULL, uuid_ref);
+    NSString *uuid = [NSString stringWithString:(__bridge NSString *)uuid_string_ref];
+    CFRelease(uuid_ref);
+    CFRelease(uuid_string_ref);
+    return [uuid lowercaseString];
+}
+
+
++ (NSString *)timeStamp {
+    
+    NSTimeInterval nowtime = [[NSDate date] timeIntervalSince1970]*1000;
+    
+    long long theTime = [[NSNumber numberWithDouble:nowtime] longLongValue];
+    
+    NSString *curTime = [NSString stringWithFormat:@"%llu",theTime];
+    return curTime;
+}
+
+//排序
++ (NSString *)uploadMD5String:(NSString *)str{
+    str = [str stringByAppendingString:Request_Secret];
+    NSMutableArray *array = [NSMutableArray array];
+    for (int i =0; i < [str length]; i++) {
+        [array addObject:[str substringWithRange:NSMakeRange(i,1)]];
+    }
+    NSArray *arr1 = [array sortedArrayUsingComparator:^NSComparisonResult(id  obj1, id  obj2) {
+        if (obj1>obj2) {
+            return NSOrderedDescending;
+        }
+        return NSOrderedAscending;
+    }];
+    NSString *newStr = arr1[0];
+    for (int i =0; i<arr1.count-1; i++) {
+        newStr = [newStr stringByAppendingString:arr1[i+1]];
+    }
+    NSString *md5Str = [RequestManager md5:[newStr uppercaseString]];
+    return md5Str;
+}
+
+
+@end
+

@@ -1,0 +1,200 @@
+//
+//  BankInfoViewController.m
+//  XTWL_IOS_SHOP
+//
+//  Created by Zhaoyang on 2017/10/17.
+//  Copyright © 2017年 XTWL. All rights reserved.
+//
+
+#import "BankInfoViewController.h"
+#import "OpenShopInfo.h"
+#import "DecideString.h"
+@interface BankInfoViewController ()<UITableViewDelegate,UITableViewDataSource>{
+    NSArray *titlearr;
+}
+
+@end
+
+@implementation BankInfoViewController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    self.navigationItem.title = @"收款信息";
+    titlearr = @[@"开户人",@"银行卡号",@"开户行",@"支行"];
+    [self initBankTableView];
+}
+
+- (void)initBankTableView {
+    
+    UIButton *saveBtn = [[UIButton alloc]initWithFrame:CGRectMake(0, 0, 18, 18)];
+    [saveBtn setTitle:Save forState:UIControlStateNormal];
+    [saveBtn setTitleColor:ColorWithHexString(ColorText_333333) forState:UIControlStateNormal];
+    [saveBtn addTarget:self action:@selector(save) forControlEvents:UIControlEventTouchUpInside];
+    UIBarButtonItem *rightItem = [[UIBarButtonItem alloc] initWithCustomView:saveBtn];
+    self.navigationItem.rightBarButtonItem = rightItem;
+    
+    
+    UITableView *bankTableView = [[UITableView alloc]initWithFrame:CGRectMake(0, Start_Height, Screen_Width, 180) style:UITableViewStylePlain];
+    bankTableView.delegate = self;
+    bankTableView.dataSource = self;
+    bankTableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+    [self.view addSubview:bankTableView];
+    
+    
+    UIButton *sureBtn = [[UIButton alloc]initWithFrame:CGRectMake(SpaceLeftRight, CGRectGetMaxY(bankTableView.frame)+10, (Screen_Width-2*SpaceLeftRight), 50)];
+    SetViewCorner(sureBtn, 5);
+    
+    [sureBtn setBackgroundColor:ColorWithHexString(Color_MainFFDA44)];
+    sureBtn.titleLabel.font = Font16;
+    [sureBtn setTitle:Save forState:UIControlStateNormal];
+    [sureBtn setTitleColor:ColorWithHexString(ColorText_333333) forState:UIControlStateNormal];
+    [sureBtn addTarget:self action:@selector(submitbankinfo) forControlEvents:UIControlEventTouchUpInside];
+    [self.view addSubview:sureBtn];
+    
+}
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+    return titlearr.count;
+}
+
+
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"cell"];
+    if (!cell) {
+        cell = [[UITableViewCell alloc]initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@"cell"];
+        cell.selectionStyle = UITableViewCellSelectionStyleNone;
+        UITextField *text = [[UITextField alloc]initWithFrame:CGRectMake(90, 0, Screen_Width-90-10, 44)];
+        [text addTarget:self action:@selector(textFieldChanged:) forControlEvents:UIControlEventEditingChanged];
+        text.textAlignment = NSTextAlignmentRight;
+        text.tag = 100+indexPath.row;
+        [cell.contentView addSubview:text];
+        
+        UIView *linewview = [[UIView alloc]initWithFrame:CGRectMake(SpaceLeftRight, 39.5, Screen_Width-SpaceLeftRight, 0.5)];
+        linewview.tag = 200;
+        linewview.backgroundColor = ColorWithHexString(ColorLine_ededed);
+        [cell.contentView addSubview:linewview];
+        
+    }
+    UITextField *infotext = (UITextField *)[cell.contentView viewWithTag:100+indexPath.row];
+    UIView *linewview = (UIView *)[cell.contentView viewWithTag:200];
+    cell.textLabel.text = titlearr[indexPath.row];
+    cell.textLabel.font = Font14;
+    cell.textLabel.textColor = ColorWithHexString(ColorText_333333);
+    if (indexPath.row == 0) {
+        infotext.placeholder = @"填写开户人姓名";
+    }else if (indexPath.row == 1) {
+        infotext.placeholder = @"0000 0000 0000 0000";
+        infotext.keyboardType = UIKeyboardTypeNumberPad;
+    }else if (indexPath.row == 2) {
+        infotext.hidden = YES;
+        cell.detailTextLabel.text = @"请选择开户行";
+        cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+    }else {
+        infotext.hidden = YES;
+        linewview.hidden = YES;
+        cell.detailTextLabel.text = @"请选择开户支行";
+        cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+    }
+    return cell;
+}
+
+
+#pragma mark - UITextFieldDelegate
+- (void)textFieldDidEndEditing:(UITextField *)textField {
+    switch (textField.tag) {
+        case 100:
+            [OpenShopInfo shareInstance].bankUser = textField.text;
+            break;
+        case 101:
+            [OpenShopInfo shareInstance].bankCardNum = textField.text;
+            break;
+        
+            
+        default:
+            break;
+    }
+}
+- (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string
+{
+    //判断 限制长度
+    NSString *allText = StringFromIdToId(textField.text, string);
+    
+    switch (textField.tag) {
+            
+        case 101:
+        {//卡号
+            if ([allText length]>16) {
+                return NO;
+            }
+        }
+            break;
+            
+        default:
+            break;
+    }
+    
+    return YES;
+}
+
+
+
+//检测联系人和店铺地址，店铺名称的输入情况
+- (void)textFieldChanged:(UITextField *)textField
+{
+    
+    NSString *temp = textField.text;
+    
+    if (textField.tag == 100)
+    {
+        if (textField.markedTextRange == nil)
+        {
+            while(1)
+            {
+                if ([temp lengthOfBytesUsingEncoding:NSUTF8StringEncoding] <= MAX_ShopUser_LENGTH*3)
+                {
+                    if (temp.length>MAX_ShopUser_LENGTH) {
+                        temp = [temp substringToIndex:MAX_ShopUser_LENGTH];
+                    }
+                    else
+                    {
+                        break;
+                    }
+                    
+                    //                break;
+                }else {
+                    
+                    BOOL match = [DecideString availableChineseStr:temp];
+                    
+                    if (!match)
+                    {
+                        temp = [temp substringToIndex:MAX_ShopUser_LENGTH];
+                    }else
+                    {
+                        temp = [temp substringToIndex:temp.length-1];
+                    }
+                }
+            }
+            textField.text = temp;
+        }
+    }
+    
+}
+
+
+
+- (BOOL)textFieldShouldReturn:(UITextField *)theTextField {
+    [theTextField resignFirstResponder];
+    return YES;
+}
+
+- (void)save {
+    //保存填写的信息
+}
+
+- (void)submitbankinfo {
+    //提交银行信息
+}
+
+
+@end

@@ -1,0 +1,26 @@
+//
+//  CategoryModel.h
+//  XTWL_IOS_SHOP
+//
+//  Created by Cinna on 2017/10/26.
+//  Copyright © 2017年 XTWL. All rights reserved.
+//
+
+#import <Foundation/Foundation.h>
+#import "GoodsPropertyModel.h"
+
+@interface CategoryModel : NSObject
+
+@property (nonatomic, copy) NSString *proId;
+
+@property (nonatomic, copy) NSString *shopId;
+
+@property (nonatomic, assign) NSInteger type;
+
+@property (nonatomic, copy) NSString *name;
+
+@property (nonatomic, assign) NSInteger sort;
+
+@property (nonatomic, strong) NSArray<GoodsPropertyModel *> *dataArray;
+
+@end

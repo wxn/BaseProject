@@ -1,0 +1,41 @@
+//
+//  SecondString_Const.h
+//  XTWL_IOS_SHOP
+//
+//  Created by Cinna on 2017/9/18.
+//  Copyright © 2017年 XTWL. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+
+#pragma mark - 导航条文案
+UIKIT_EXTERN NSString *const NaviTitle_OperateState;
+UIKIT_EXTERN NSString *const NaviTitle_HistoryOrders;
+UIKIT_EXTERN NSString *const NaviTitle_Setting;
+UIKIT_EXTERN NSString *const NaviTitle_SetCategory;
+UIKIT_EXTERN NSString *const NaviTitle_GoodsProperty;
+
+#pragma mark - 文本文案
+UIKIT_EXTERN NSString *const StopBusiness;
+UIKIT_EXTERN NSString *const InBusiness;
+UIKIT_EXTERN NSString *const NotInBusinessTime;
+UIKIT_EXTERN NSString *const BusinessTime;
+UIKIT_EXTERN NSString *const ChangeBusinessTime;
+UIKIT_EXTERN NSString *const ShopIsNotInBusinessTime;
+UIKIT_EXTERN NSString *const ChangeTimeToStartBusiness;
+UIKIT_EXTERN NSString *const SetTimeToBusiness;
+UIKIT_EXTERN NSString *const ClickBtnToBusiness;
+UIKIT_EXTERN NSString *const ShopCannotAcceptOrder;
+UIKIT_EXTERN NSString *const StartBusinessToAcceptOrder;
+UIKIT_EXTERN NSString *const ContinueBusiness;
+UIKIT_EXTERN NSString *const ShopCanAcceptOrder;
+
+UIKIT_EXTERN NSString *const ShopLOGO;
+UIKIT_EXTERN NSString *const Account;
+UIKIT_EXTERN NSString *const Password;
+UIKIT_EXTERN NSString *const ShopReviewInfo;
+UIKIT_EXTERN NSString *const Printer;
+UIKIT_EXTERN NSString *const CurrentVersion;
+UIKIT_EXTERN NSString *const Logout;
+
+

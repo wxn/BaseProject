@@ -1,0 +1,38 @@
+//
+//  SegmentView.h
+//  XTWL_IOS_SHOP
+//
+//  Created by Cinna on 2017/9/18.
+//  Copyright © 2017年 XTWL. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+
+typedef NS_ENUM(NSUInteger, SegmentViewMode) {
+    SegmentViewModeNone,//无选中模式
+    SegmentViewModeHighlighted,//改变字体颜色的选中模式
+    SegmentViewModeLineAndHighlighted,//带线+改变字体颜色的选中模式
+    
+    
+};
+
+@protocol SegmentViewDelegate;
+
+@interface SegmentView : UIView
+
+PropertyAssign id<SegmentViewDelegate>delegate;
+
+- (instancetype)initWithFrame:(CGRect)frame
+                   titleArray:(NSArray *)titleArr
+              segmentViewMode:(SegmentViewMode)mode;
+
+-(void)setCurrentIndex:(NSInteger)index;
+
+@end
+
+@protocol SegmentViewDelegate <NSObject>
+
+@optional
+- (void)segmentView:(SegmentView *)view selectIndex:(NSInteger)index;
+
+@end

@@ -1,0 +1,24 @@
+//
+//  ShopSegmentView.h
+//  XTWL_IOS_SHOP
+//
+//  Created by 开发003 on 2017/10/24.
+//  Copyright © 2017年 XTWL. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+
+@protocol ShopSegmentViewDelegate;
+@interface ShopSegmentView : UIView
+
+PropertyWeak id<ShopSegmentViewDelegate> delegate;
+
+- (instancetype)initWithFrame:(CGRect)frame titleArray:(NSArray *)array;
+- (void)changeSelectStateWithIndex:(NSInteger)index;
+@end
+
+@protocol ShopSegmentViewDelegate <NSObject>
+
+- (void)shopSegmentView:(ShopSegmentView *)view selectIndex:(NSInteger)index;
+
+@end

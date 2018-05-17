@@ -1,0 +1,261 @@
+//
+//  HomeViewController.m
+//  XTWL_IOS_SHOP
+//
+//  Created by Cinna on 2017/9/15.
+//  Copyright © 2017年 XTWL. All rights reserved.
+//
+
+#import "HomeViewController.h"
+#import "TitleImageBtn.h"
+#import "SetBusinessStateViewController.h"
+#import "GoodsManageViewController.h"
+#import "HistoryOrdersViewController.h"
+#import "IdeaBackViewController.h"
+#import "SettingViewController.h"
+#import "SelectCategoryViewController.h"
+#import "ShopActivityViewController.h"
+
+
+
+@interface HomeViewController () {
+    UIScrollView *scrollView;
+    UIView *shopInfoView;
+    UIView *orderView;
+    UIView *itemView;
+    
+    UIImageView *shopLogoImageView;
+    UILabel *shopNameLabel;
+    UILabel *shopBusinessHoursLabel;
+    UIButton *shopStateBtn;
+    UILabel *payOrderNumLabel;
+    UILabel *completeOrderMoneyLabel;
+    UILabel *peisongMoneyLabel;
+    UIImageView *activitySignImageView;
+    UIImageView *consultSignImageView;
+    NSString *serviceStr;
+}
+
+@end
+
+@implementation HomeViewController
+
+-(void)viewWillAppear:(BOOL)animated
+{
+    [super viewWillAppear:animated];
+    self.navigationController.navigationBar.hidden = YES;
+    [self sendRequestToGetShopHomeInfo];
+    [self setHomeInfo];
+    
+}
+
+-(void)viewWillDisappear:(BOOL)animated
+{
+    [super viewWillDisappear:animated];
+    self.navigationController.navigationBar.hidden = NO;
+}
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    
+    // Do any additional setup after loading the view.
+    [self initSubviews];
+}
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+#pragma mark - 界面初始化
+-(void)initSubviews
+{
+    scrollView = [[UIScrollView alloc] initWithFrame:CGRectMake(0, 0, Screen_Width, Screen_Height - 48)];
+    scrollView.showsVerticalScrollIndicator = NO;
+    [self.view addSubview:scrollView];
+    //商家信息View
+    shopInfoView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, Screen_Width, 145)];
+    [CreateView createImageViewWithFrame:CGRectMake(0, 0, Screen_Width, 145) image:ImageNamed(@"dw") superView:shopInfoView];
+    [CreateView createImageViewWithFrame:CGRectMake(10, 50, 80, 80) image:ImageNamed(@"") superView:shopInfoView];
+    shopLogoImageView = [CreateView createImageViewWithFrame:CGRectMake(25, 45, 72, 72) image:ImageNamed(@"") superView:shopInfoView];
+    shopLogoImageView.userInteractionEnabled = YES;
+    [shopLogoImageView sd_setImageWithURLStr:nil placeholderImage:DefaultImage1];
+    SetViewCorner(shopLogoImageView, 36);
+    UITapGestureRecognizer *settingTap = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(imgTapGes:)];
+    [shopLogoImageView addGestureRecognizer:settingTap];
+    
+    shopNameLabel = [CreateView createLabelWithFrame:CGRectMake(shopLogoImageView.frame.origin.x + shopLogoImageView.frame.size.width + 15, 50, Screen_Width - shopLogoImageView.frame.origin.x - shopLogoImageView.frame.size.width - 15 - 100 - SpaceLeftRight, 15) text:@"肯德基肯德基肯德基肯德基" fontSize:FontSize_14 textColorStr:ColorText_333333 superView:shopInfoView];
+    
+    shopBusinessHoursLabel = [CreateView createLabelWithFrame:CGRectMake(shopNameLabel.frame.origin.x, shopNameLabel.frame.origin.y + shopNameLabel.frame.size.height + 35, Screen_Width - 70, 15) text:@"营业时间啦啦啦啦啦" fontSize:FontSize_14 textColorStr:ColorText_606060 superView:shopInfoView];
+    
+    shopStateBtn = [CreateView createCustomBtnWithFrame:CGRectMake(Screen_Width - 100 - SpaceLeftRight, 47, 100, 22) title:@"暂停营业(外卖)" image:ImageNamed(@"open") titleColorStr:ColorText_333333 fontSize:FontSize_11 superView:shopInfoView];
+    [shopStateBtn addTarget:self action:@selector(operatingBtnAction) forControlEvents:UIControlEventTouchUpInside];
+    
+    [scrollView addSubview:shopInfoView];
+    //商家订单View
+    orderView = [[UIView alloc] initWithFrame:CGRectMake(0, shopInfoView.frame.size.height, Screen_Width, 70)];
+    orderView.backgroundColor = WHITE_COLOR;
+    [scrollView addSubview:orderView];
+    
+    [CreateView createLineViewWithFrame:CGRectMake(Screen_Width/3.0, 15, 0.5, 40) colorStr:ColorLine_ededed superView:orderView];
+    [CreateView createLineViewWithFrame:CGRectMake(Screen_Width/3.0 * 2, 15, 0.5, 40) colorStr:ColorLine_ededed superView:orderView];
+    
+    payOrderNumLabel = [CreateView createLabelWithFrame:CGRectMake(0, 20, Screen_Width/3.0, 15) text:@"0单" fontSize:FontSize_16 textColorStr:ColorText_333333 superView:orderView];
+    payOrderNumLabel.font = [UIFont boldSystemFontOfSize:FontSize_16];
+    payOrderNumLabel.textAlignment = NSTextAlignmentCenter;
+    UILabel *numKeyLabel = [CreateView createLabelWithFrame:CGRectMake(0, payOrderNumLabel.frame.origin.y + payOrderNumLabel.frame.size.height + 8, Screen_Width/3.0, 15) text:@"当日已支付订单数" fontSize:FontSize_11 textColorStr:ColorText_999999 superView:orderView];
+    numKeyLabel.textAlignment = NSTextAlignmentCenter;
+    
+    completeOrderMoneyLabel = [CreateView createLabelWithFrame:CGRectMake(Screen_Width/3.0, 20, Screen_Width/3.0, 15) text:@"￥182.56" fontSize:FontSize_16 textColorStr:ColorText_333333 superView:orderView];
+    completeOrderMoneyLabel.textAlignment = NSTextAlignmentCenter;
+    completeOrderMoneyLabel.font = [UIFont boldSystemFontOfSize:FontSize_16];
+    UILabel *moneyKeyLabel = [CreateView createLabelWithFrame:CGRectMake(Screen_Width/3.0, numKeyLabel.frame.origin.y, Screen_Width/3.0, 15) text:@"当日已支付订单金额" fontSize:FontSize_11 textColorStr:ColorText_999999 superView:orderView];
+    moneyKeyLabel.textAlignment = NSTextAlignmentCenter;
+    
+    peisongMoneyLabel = [CreateView createLabelWithFrame:CGRectMake(Screen_Width/3.0 * 2, 20, Screen_Width/3.0, 15) text:@"￥182.56" fontSize:FontSize_16 textColorStr:ColorText_333333 superView:orderView];
+    peisongMoneyLabel.textAlignment = NSTextAlignmentCenter;
+    peisongMoneyLabel.font = [UIFont boldSystemFontOfSize:FontSize_16];
+    UILabel *peisongMoneyKeyLabel = [CreateView createLabelWithFrame:CGRectMake(Screen_Width/3.0 * 2, numKeyLabel.frame.origin.y, Screen_Width/3.0, 15) text:@"配送（自行配送）" fontSize:FontSize_11 textColorStr:ColorText_999999 superView:orderView];
+    peisongMoneyKeyLabel.textAlignment = NSTextAlignmentCenter;
+    
+    
+    //配送金额问号
+    UIButton *moneyBtn = [UIButton buttonWithType:UIButtonTypeCustom];
+    moneyBtn.frame = CGRectMake(Screen_Width - 20 - 2.5, 2.5, 20, 20);
+    [moneyBtn setImage:ImageNamed(@"yw") forState:UIControlStateNormal];
+    [moneyBtn addTarget:self action:@selector(orderNumAndMoneyDetailBtnClicked:) forControlEvents:UIControlEventTouchUpInside];
+    moneyBtn.tag = 102;
+    [orderView addSubview:moneyBtn];
+    
+    
+    //ItemView
+    float btnWidth = Screen_Width/3.0;
+    float btnHeight = 19.0/25.0*btnWidth;
+    itemView = [[UIView alloc] initWithFrame:CGRectMake(0, orderView.frame.origin.y + orderView.frame.size.height + 10, Screen_Width, btnHeight * 4)];
+    itemView.backgroundColor = WHITE_COLOR;
+    NSArray *titles = [NSArray arrayWithObjects:@"店铺活动",@"订单管理",@"商品管理",@"结算管理",@"店铺信息",@"历史订单", @"用户评价", @"消息通知", @"售后反馈", @"幸福学院", nil];
+    NSArray *images = [NSArray arrayWithObjects:@"dp_hd",@"dd_gl",@"sp_gl",@"js_gl",@"dp_xx",@"ls_dd",@"yh_pj", @"xx_tz", @"sh_fk", @"xf_xy", nil];
+    for(NSInteger i=0;i<titles.count;i++)
+    {
+        NSInteger x = i/3;
+        NSInteger y = i%3;
+        
+        TitleImageBtn *btn = [[TitleImageBtn alloc] initWithFrame:CGRectMake(y*btnWidth, x*btnHeight, btnWidth, btnHeight) title:titles[i] titleColor:ColorWithHexString(ColorText_333333) imageUrlStr:nil imageName:images[i] imageWidth:41 topHeight:17.0 titleHeight:18 titleTop:10];
+        btn.tag = i;
+        [btn addTarget:self action:@selector(itemSelected:) forControlEvents:UIControlEventTouchUpInside];
+        [itemView addSubview:btn];
+    }
+    [CreateView createLineViewWithFrame:CGRectMake(0, 0, Screen_Width, 0.5) colorStr:ColorLine_ededed superView:itemView];
+    [CreateView createLineViewWithFrame:CGRectMake(0, btnHeight, Screen_Width, 0.5) colorStr:ColorLine_ededed superView:itemView];
+    [CreateView createLineViewWithFrame:CGRectMake(0, btnHeight * 2, Screen_Width, 0.5) colorStr:ColorLine_ededed superView:itemView];
+    [CreateView createLineViewWithFrame:CGRectMake(0, btnHeight * 3, Screen_Width, 0.5) colorStr:ColorLine_ededed superView:itemView];
+    [CreateView createLineViewWithFrame:CGRectMake(0, btnHeight * 4, Screen_Width, 0.5) colorStr:ColorLine_ededed superView:itemView];
+    
+    [CreateView createLineViewWithFrame:CGRectMake(btnWidth, 0, 0.5, itemView.frame.size.height) colorStr:ColorLine_ededed superView:itemView];
+    [CreateView createLineViewWithFrame:CGRectMake(btnWidth * 2, 0, 0.5, itemView.frame.size.height) colorStr:ColorLine_ededed superView:itemView];
+    [scrollView addSubview:itemView];
+    
+    scrollView.contentSize = CGSizeMake(Screen_Width, itemView.frame.origin.y+itemView.frame.size.height);
+}
+
+#pragma mark -
+-(void)setShopViewData
+{
+    
+}
+
+//设置首页信息
+-(void)setHomeInfo
+{
+    
+}
+
+#pragma mark - 按钮点击事件
+-(void)operatingBtnAction {
+    PushVC(SetBusinessStateViewController);
+}
+
+-(void)orderNumAndMoneyDetailBtnClicked:(UIButton *)btn {
+    PushVC(SetBusinessStateViewController);
+    return;
+    NSString *str = nil;
+    if(btn.tag == 101) {
+        str = @"今日订单是指当天用户支付的有效订单总数，不包含退款订单。如果当天订单在第二天退款，退款订单数将在第二天订单数内扣除，今日订单数可为负。";
+    }
+    UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"" message:str preferredStyle:UIAlertControllerStyleAlert];
+    UIView *subView1 = alertController.view.subviews[0];
+    UIView *subView2 = subView1.subviews[0];
+    UIView *subView3 = subView2.subviews[0];
+    UIView *subView4 = subView3.subviews[0];
+    UIView *subView5 = subView4.subviews[0];
+    UILabel *message = subView5.subviews[1];
+    message.textAlignment = NSTextAlignmentLeft;
+    UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:@"知道了" style:UIAlertActionStyleDefault handler:nil];
+    [alertController addAction:cancelAction];
+    [self presentViewController:alertController animated:YES completion:nil];
+}
+-(void)itemSelected:(TitleImageBtn *)btn {
+    
+    switch (btn.tag) {
+        case 0:{//商品活动
+            ShopActivityViewController *ready = [[ShopActivityViewController alloc]init];
+            [self.navigationController pushViewController:ready animated:YES];
+            break;}
+        case 1:{//交易明细
+            
+            break;}
+        case 2:{//商品管理
+            PushVC(GoodsManageViewController);
+            break;}
+        case 3:{//结算管理
+            
+            break;}
+        case 4:{//店铺信息
+            
+            break;}
+        case 5:{//历史订单
+//            PushVC(HistoryOrdersViewController);
+            break;}
+        case 6:{//用户评价
+            
+            break;}
+        case 7:{//消息通知
+            
+            break;}
+        case 8:{//售后反馈
+//            PushVC(IdeaBackViewController);
+            break;}
+        case 9:{//幸福学院
+            
+            break;}
+        default:
+            break;
+    }
+}
+//点击头像进入到设置页面
+- (void)imgTapGes:(UITapGestureRecognizer *)tap {
+//    PushVC(SettingViewController);
+}
+#pragma mark - 服务器请求相关
+//获取商家信息
+-(void)sendRequestToGetShopHomeInfo {
+    ShowProcessHud;
+    WeakSelf;
+    NSMutableDictionary *dic = [NSMutableDictionary dictionary];
+    [dic setValue:ShopID forKey:@"shopId"];
+    //商家类型：1外卖，2团购，3商城
+    [dic setValue:@"1" forKey:@"type"];
+    [RequestManager sendPostRequestWithURLString:ServerUrl_Read modular:Modular_readShop requestName:RequestName_queryShopHomePage parameters:dic completeBlock:^(NSString *resultCode, NSString *resultDesc, NSDictionary *dataDic) {
+        HideProcessHud;
+        if ([resultCode isEqualToString:@"0"]) {
+            
+        }else {
+            [weakSelf showToast:resultDesc];
+        }
+    } failedBlock:^(NSError *error) {
+        HideProcessHud;
+        [weakSelf showToast:ToastMsg_NetworkFailed];
+    }];
+}
+
+@end

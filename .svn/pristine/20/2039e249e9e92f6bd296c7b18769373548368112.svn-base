@@ -1,0 +1,221 @@
+//
+//  ShopAllInfoViewController.m
+//  XTWL_IOS_SHOP
+//
+//  Created by Zhaoyang on 2017/10/20.
+//  Copyright © 2017年 XTWL. All rights reserved.
+//
+
+#import "ShopAllInfoViewController.h"
+#import "OpenShopInfo.h"
+#import "ShopInfoViewController.h"
+#import "ShopQualityViewController.h"
+#import "BankInfoViewController.h"
+#import "ShopTypeViewController.h"
+@interface ShopAllInfoViewController ()<UITableViewDataSource,UITableViewDelegate>{
+    NSArray *titleArr;
+}
+PropertyStrong UIButton *SubmitBtn;
+PropertyStrong UITableView *infoTableView;
+@end
+
+@implementation ShopAllInfoViewController
+
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    [self.infoTableView reloadData ];
+    [self changeBtnStatus];
+    
+}
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    self.navigationItem.title = @"店铺资质";
+    titleArr = @[@"商家类型",@"店铺信息",@"资质信息",@"收款信息"];
+    [self initInfoTableView];
+    [self initSubmitBtn];
+}
+
+- (void)initSubmitBtn {
+    self.SubmitBtn = [[UIButton alloc]initWithFrame:CGRectMake(SpaceLeftRight, Start_Height+235, Screen_Width-2*SpaceLeftRight, 43)];
+    SetViewCorner(self.SubmitBtn, 5);
+    
+    
+    self.SubmitBtn.titleLabel.font = Font16;
+    [self.SubmitBtn setTitle:SubmitRequest forState:UIControlStateNormal];
+    [self.SubmitBtn addTarget:self action:@selector(submit) forControlEvents:UIControlEventTouchUpInside];
+    [self.view addSubview:self.SubmitBtn];
+    [self changeBtnStatus];
+}
+
+
+
+
+- (void)initInfoTableView {
+    self.infoTableView = [[UITableView alloc]initWithFrame:CGRectMake(0, Start_Height, Screen_Width, 216) style:UITableViewStylePlain];
+    self.infoTableView.delegate = self;
+    self.infoTableView.dataSource = self;
+    [self.view addSubview:self.infoTableView];
+    self.infoTableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+    
+    
+}
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+    return 4;
+}
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
+    return 44;
+}
+- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section {
+    return 40;
+}
+- (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section {
+
+    UIView *view = [[UIView alloc]initWithFrame:CGRectMake(0, 0,Screen_Width, 40)];
+    view.backgroundColor = WHITE_COLOR;
+
+    // Create label with section title
+    UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(0, 0,Screen_Width, 39)] ;
+    label.backgroundColor = [UIColor clearColor];
+    label.textColor = ColorWithHexString(ColorText_999999);
+    label.font = Font16;
+    label.text = @"补全以下信息即可营业";
+    label.textAlignment = NSTextAlignmentCenter;
+    [view addSubview:label];
+    
+    UIView *lineView = [[UIView alloc]initWithFrame:CGRectMake(SpaceLeftRight, 39.5, Screen_Width, 0.5)];
+    lineView.backgroundColor = ColorWithHexString(ColorLine_e0e0e0);
+    [view addSubview:lineView];
+    
+    
+    return view;
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"cell"];
+    if (!cell) {
+        cell = [[UITableViewCell alloc]initWithStyle:UITableViewCellStyleValue1 reuseIdentifier:@"cell"];
+        cell.selectionStyle = UITableViewCellSelectionStyleNone;
+        
+        UIView *lineView = [[UIView alloc]initWithFrame:CGRectMake(SpaceLeftRight, 43.5, Screen_Width, 0.5)];
+        lineView.backgroundColor = ColorWithHexString(ColorLine_e0e0e0);
+        lineView.tag = 100;
+        [cell.contentView addSubview:lineView];
+    }
+    UIView *lineview = (UIView *)[cell.contentView viewWithTag:100];
+    cell.textLabel.text = titleArr[indexPath.row];
+    cell.textLabel.font = Font14;
+    cell.textLabel.textColor = ColorWithHexString(ColorText_333333);
+    cell.detailTextLabel.font = Font14;
+    cell.detailTextLabel.textColor = ColorWithHexString(ColorText_999999);
+    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+    
+    if (indexPath.row == 0) {
+        if ([AvailableString([OpenShopInfo shareInstance].shopType) isEqualToString:@""]) {
+            cell.detailTextLabel.text = @"未录入";
+        }else {
+            cell.detailTextLabel.text = @"已补全";
+            cell.detailTextLabel.textColor = ColorWithHexString(ColorText_Blue34aeff);
+        }
+    }else if (indexPath.row == 1) {
+        
+        
+        if ([OpenShopInfo shareInstance].shopInfoProgress  == 0) {
+            cell.detailTextLabel.text = @"未录入";
+        }else if ([OpenShopInfo shareInstance].shopInfoProgress  == 1) {
+            cell.detailTextLabel.text = @"未补全";
+            cell.detailTextLabel.textColor = ColorWithHexString(ColorText_Blue34aeff);
+        }else {
+            cell.detailTextLabel.text = @"已补全";
+            cell.detailTextLabel.textColor = ColorWithHexString(ColorText_Blue34aeff);
+        }
+    }else if (indexPath.row == 2) {
+        //店铺信息没填写完 资质跟银行信息完成度置为未录入 并且置灰不可点击
+        NSLog(@"progress %ld",[OpenShopInfo shareInstance].shopInfoProgress);
+        
+        
+        if ([OpenShopInfo shareInstance].shopInfoProgress == 2 ) {
+            if ([OpenShopInfo shareInstance].shopQuatProgress  == 0) {
+                cell.detailTextLabel.text = @"未录入";
+            }else if ([OpenShopInfo shareInstance].shopQuatProgress  == 1) {
+                cell.detailTextLabel.text = @"未补全";
+                cell.detailTextLabel.textColor = ColorWithHexString(ColorText_Blue34aeff);
+            }else {
+                cell.detailTextLabel.text = @"已补全";
+                cell.detailTextLabel.textColor = ColorWithHexString(ColorText_Blue34aeff);
+            }
+        }else {
+            cell.detailTextLabel.text = @"未录入";
+        }
+        
+    }else {
+        lineview.hidden = YES;
+        //店铺信息没填写完 资质跟银行信息完成度置为未录入 并且置灰不可点击
+        if ([OpenShopInfo shareInstance].shopInfoProgress == 2 ) {
+            if ([OpenShopInfo shareInstance].bankinfoProgress  == 0) {
+                cell.detailTextLabel.text = @"未录入";
+            }else if ([OpenShopInfo shareInstance].bankinfoProgress  == 1) {
+                cell.detailTextLabel.text = @"未补全";
+                cell.detailTextLabel.textColor = ColorWithHexString(ColorText_Blue34aeff);
+            }else {
+                cell.detailTextLabel.text = @"已补全";
+                cell.detailTextLabel.textColor = ColorWithHexString(ColorText_Blue34aeff);
+            }
+        }else {
+            cell.detailTextLabel.text = @"未录入";
+        }
+        
+    }
+    
+    return cell;
+}
+
+
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    if (indexPath.row == 0) {
+        //选择商家类型
+        
+        ShopTypeViewController *shopinfo = [[ShopTypeViewController alloc]init];
+        [self.navigationController pushViewController:shopinfo animated:YES];
+        
+    }else if (indexPath.row == 1) {
+        
+        ShopInfoViewController *shopinfo = [[ShopInfoViewController alloc]initWithShopType:[OpenShopInfo shareInstance].shopType];
+        [self.navigationController pushViewController:shopinfo animated:YES];
+    }else if (indexPath.row == 2) {
+        if ([OpenShopInfo shareInstance].shopInfoProgress == 2) {
+            ShopQualityViewController *shopinfo = [[ShopQualityViewController alloc]init];
+            [self.navigationController pushViewController:shopinfo animated:YES];
+        }else {
+            [self showToast:@"请补全商家信息"];
+        }
+    }else {
+        if ([OpenShopInfo shareInstance].shopInfoProgress == 2) {
+            BankInfoViewController *shopinfo = [[BankInfoViewController alloc]init];
+            [self.navigationController pushViewController:shopinfo animated:YES];
+        }else {
+            [self showToast:@"请补全商家信息"];
+        }
+    }
+}
+
+- (void)changeBtnStatus {
+    if ([OpenShopInfo shareInstance].shopInfoProgress == 2&&![[OpenShopInfo shareInstance].shopType isEqualToString:@""]) {
+        [self.SubmitBtn setBackgroundColor:ColorWithHexString(Color_MainFFDA44)];
+        [self.SubmitBtn setTitleColor:ColorWithHexString(ColorText_606060) forState:UIControlStateNormal];
+        self.SubmitBtn.userInteractionEnabled = YES;
+    }else {
+        [self.SubmitBtn setBackgroundColor:ColorWithHexString(Color_LoginF9E69B)];
+        [self.SubmitBtn setTitleColor:ColorWithHexString(ColorText_999999) forState:UIControlStateNormal];
+        self.SubmitBtn.userInteractionEnabled = NO;
+    }
+}
+
+
+
+- (void)submit {
+    
+}
+
+
+@end

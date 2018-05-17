@@ -1,0 +1,240 @@
+//
+//  ChooseSecBankInfoViewController.m
+//  XTWL_IOS_SHOP
+//
+//  Created by Zhaoyang on 2017/10/20.
+//  Copyright © 2017年 XTWL. All rights reserved.
+//
+
+#import "ChooseSecBankInfoViewController.h"
+
+@interface ChooseSecBankInfoViewController ()<UITableViewDelegate,UITableViewDataSource,UITextFieldDelegate>{
+    NSString *searchStr;
+    NSString *provinceStr;
+    NSString *cityStr;
+    NSString *areaStr;
+    NSString *BankStr;
+}
+PropertyStrong UITableView *bankTableView;
+PropertyStrong NSMutableArray *bankInfoArr;
+PropertyStrong NSMutableArray *searchArr;
+
+@end
+
+@implementation ChooseSecBankInfoViewController
+-(instancetype)initWithCity:(NSString *)city Province:(NSString *)province Area:(NSString *)area BankName:(NSString *)bankname {
+    self = [super init];
+    if (self) {
+        provinceStr = province;
+        cityStr = city;
+        areaStr = area;
+        BankStr = bankname;
+
+    }
+    return self;
+}
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    self.navigationItem.title = BankSecInfo;
+    self.bankInfoArr = [[NSMutableArray alloc]initWithCapacity:0];
+    self.searchArr = [[NSMutableArray alloc]initWithCapacity:0];
+    self.bankTableView = [[UITableView alloc]initWithFrame:CGRectMake(0, Start_Height, Screen_Width, Show_Height_Next) style:UITableViewStylePlain];
+    self.bankTableView.delegate = self;
+    self.bankTableView.dataSource = self;
+        self.bankTableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+    [self.view addSubview:self.bankTableView];
+    
+    [self sendRequestToGetBankInfo];
+}
+
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
+    return 2;
+}
+
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+    if (section == 0) {
+        return 2;
+        
+    }
+
+    return self.bankInfoArr.count;
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath{
+    return 50;
+}
+
+-(CGFloat)tableView:(UITableView *)tableView heightForFooterInSection:(NSInteger)section {
+    if (section == 0) {
+        return 10;
+        
+    }
+    return 0.1;
+}
+-(CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section {
+    return 0.1;
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    if (indexPath.section == 0) {
+        UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"cell"];
+        if (!cell) {
+            cell = [[UITableViewCell alloc]initWithStyle:UITableViewCellStyleValue1 reuseIdentifier:@"cell"];
+            
+            UITextField *infotext = [[UITextField alloc]initWithFrame:CGRectMake(SpaceLeftRight, 0, Screen_Width-SpaceLeftRight, 49)];
+            infotext.delegate = self;
+            infotext.textAlignment = NSTextAlignmentLeft;
+            infotext.tag = 100;
+            infotext.borderStyle =   UITextBorderStyleNone;
+            infotext.textColor = ColorWithHexString(ColorText_333333);
+            infotext.font = Font(FontSize_14);
+            [infotext setValue:Font(FontSize_14) forKeyPath:@"_placeholderLabel.font"];
+            [infotext setValue:ColorWithHexString(ColorText_dadada) forKeyPath:@"_placeholderLabel.textColor"];
+            UIImageView *imgView = [[UIImageView alloc] initWithImage:ImageNamed(@"search")];
+            infotext.leftView =imgView;
+            infotext.leftViewMode = UITextFieldViewModeAlways;
+            [cell.contentView addSubview:infotext];
+            
+            UIView *linewview = [[UIView alloc]initWithFrame:CGRectMake(SpaceLeftRight, 49.5, Screen_Width-SpaceLeftRight, 0.5)];
+            linewview.tag = 200;
+            linewview.backgroundColor = ColorWithHexString(ColorLine_ededed);
+            [cell.contentView addSubview:linewview];
+        }
+        UITextField *infotext = (UITextField *)[cell.contentView viewWithTag:100];
+        UIView *linewview = (UIView *)[cell.contentView viewWithTag:200];
+        cell.textLabel.font = Font14;
+        cell.textLabel.textColor = ColorWithHexString(ColorText_333333);
+        if (indexPath.row == 0) {
+            infotext.hidden = YES;
+            cell.textLabel.text = [NSString stringWithFormat:@"%@,%@,%@",AvailableString(provinceStr),AvailableString(cityStr),AvailableString(areaStr)];
+        }else {
+            infotext.hidden = NO;
+            linewview.hidden = YES;
+        }
+        
+        return cell;
+    }
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"cellid"];
+    if (!cell) {
+        cell = [[UITableViewCell alloc]initWithStyle:UITableViewCellStyleValue1 reuseIdentifier:@"cellid"];
+        UIView *linewview = [[UIView alloc]initWithFrame:CGRectMake(SpaceLeftRight, 49.5, Screen_Width-SpaceLeftRight, 0.5)];
+        linewview.tag = 200;
+        linewview.backgroundColor = ColorWithHexString(ColorLine_ededed);
+        [cell.contentView addSubview:linewview];
+    }
+    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+    cell.textLabel.font = Font14;
+    cell.textLabel.textColor = ColorWithHexString(ColorText_333333);
+
+    cell.textLabel.text = self.bankInfoArr[indexPath.row];
+    
+    return cell;
+}
+
+#pragma mark - UISearchBarDelegate
+
+#pragma mark - UITextFieldDelegate
+- (void)textFieldDidEndEditing:(UITextField *)textField {
+    switch (textField.tag) {
+        case 100:
+            searchStr = textField.text;
+            break;
+        default:
+            break;
+    }
+    
+    if ([searchStr isEqualToString:@""]) {
+        [self sendRequestToGetBankInfo];
+    }else {
+        
+        NSMutableArray *seararr = [[NSMutableArray alloc]initWithCapacity:0];
+        for (int i = 0; i<self.searchArr.count; i++) {
+            NSString *bankStr = self.searchArr[i];
+            NSRange rang = [bankStr rangeOfString:searchStr];
+            if (rang.location != NSNotFound) {
+                
+                [seararr addObject:bankStr];
+            }
+            
+        }
+        self.bankInfoArr = seararr;
+        [self.bankTableView reloadData];
+    }
+    
+}
+
+
+
+
+
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    
+    if (indexPath.section == 1) {
+        NSString *headBank = self.bankInfoArr[indexPath.row];
+        if (self.selectsecBank) {
+            self.selectsecBank(headBank);
+        }
+        [self.navigationController popViewControllerAnimated:YES];
+    }
+    
+}
+
+
+
+
+
+- (BOOL)textFieldShouldReturn:(UITextField *)theTextField {
+    [theTextField resignFirstResponder];
+    return YES;
+    
+}
+
+- (void)finish{
+    
+    [self.bankTableView reloadData];
+}
+
+
+- (void)sendRequestToGetBankInfo {
+    
+    WeakSelf;
+    NSMutableDictionary *dic = [[NSMutableDictionary alloc]init];
+    [dic setValue:@"5"  forKey:@"flag"];
+     [dic setValue:AvailableString(provinceStr)  forKey:@"province"];
+    [dic setValue:AvailableString(cityStr)  forKey:@"city"];
+    [dic setValue:AvailableString(areaStr)  forKey:@"area"];
+    [dic setValue:AvailableString(BankStr)  forKey:@"headBank"];
+
+
+    
+    [RequestManager sendPostRequestWithURLString:ServerUrl_Read modular:Modular_readShop requestName:RequestName_queryBanklist parameters:dic completeBlock:^(NSString *resultCode, NSString *resultDesc, NSDictionary *dataDic)
+     {
+         
+         if ([resultCode isEqualToString:@"0"])
+         {
+             
+             
+
+             [self.bankInfoArr removeAllObjects];
+             
+             for (int i =0; i<[dataDic[@"list"] count]; i++) {
+                 NSMutableDictionary *dic = dataDic[@"list"][i];
+                 [self.bankInfoArr addObject:dic[@"branchBank"]];
+             }
+             self.searchArr = self.bankInfoArr;
+ 
+             
+         }else {
+             [weakSelf showToast:resultDesc];
+         }
+         [self.bankTableView reloadData];
+     } failedBlock:^(NSError *error) {
+         [weakSelf showToast:ToastMsg_NetworkFailed];
+     }];
+    
+}
+
+@end

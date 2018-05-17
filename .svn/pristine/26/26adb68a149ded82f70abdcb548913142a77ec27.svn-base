@@ -1,0 +1,407 @@
+//
+//  ShopRegistViewController.m
+//  XTWL_IOS_SHOP
+//
+//  Created by Zhaoyang on 2017/10/13.
+//  Copyright © 2017年 XTWL. All rights reserved.
+//
+
+#import "ShopRegistViewController.h"
+#import "DecideString.h"
+@interface ShopRegistViewController ()<UITextFieldDelegate,UITableViewDelegate,UITableViewDataSource> {
+    BOOL ismiyu;
+    NSString *accountStr;
+    NSString *pswStr;
+    NSString *codeStr;
+}
+PropertyStrong UIButton *sendCodeBtn;
+PropertyStrong UIButton *seePswBtn;
+PropertyStrong UIView *phoneView;
+PropertyStrong UIView *codeView;
+PropertyStrong UIView *pswView;
+PropertyStrong UIButton *registBtn;
+@end
+
+@implementation ShopRegistViewController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    self.navigationItem.title = NaviTitle_ShopRegist;
+    ismiyu = NO;
+    
+    self.phoneView = [self createTextfieldWithFrame:CGRectMake(0, Start_Height+15, Screen_Width, 50) placeholder:RegistPhonePlaceholder tag:100 textcolor:ColorText_333333 font:FontSize_14 placeholderColor:ColorText_dadada superView:self.view];
+    
+    self.codeView = [self createTextfieldWithFrame:CGRectMake(0, CGRectGetMaxY(self.phoneView.frame)+10, Screen_Width, 50) placeholder:RegistCodePlaceholder tag:101 textcolor:ColorText_333333 font:FontSize_14 placeholderColor:ColorText_dadada superView:self.view];
+    
+    
+    self.pswView = [self createTextfieldWithFrame:CGRectMake(0,  CGRectGetMaxY(self.codeView.frame)+10, Screen_Width, 50) placeholder:InputNewPsw tag:102 textcolor:ColorText_333333 font:FontSize_14 placeholderColor:ColorText_dadada superView:self.view];
+    
+    
+    self.registBtn = [[UIButton alloc]initWithFrame:CGRectMake(SpaceLeftRight, CGRectGetMaxY(self.pswView.frame)+15, Screen_Width-30, 40)];
+    SetViewCorner(self.registBtn, 5);
+    self.registBtn.userInteractionEnabled = NO;
+    [self.registBtn setBackgroundColor:ColorWithHexString(Color_LoginF9E69B)];
+    self.registBtn.titleLabel.font = Font16;
+    [self.registBtn setTitle:RegistNow forState:UIControlStateNormal];
+    [self.registBtn setTitleColor:ColorWithHexString(ColorText_999999) forState:UIControlStateNormal];
+    [self.registBtn addTarget:self action:@selector(registnow) forControlEvents:UIControlEventTouchUpInside];
+    [self.view addSubview:self.registBtn];
+    
+    UILabel *xieyiLabel = [[UILabel alloc]initWithFrame:CGRectMake(0, CGRectGetMaxY(self.registBtn.frame), Screen_Width, 30)];
+    xieyiLabel.font = Font11;
+    xieyiLabel.textAlignment = NSTextAlignmentCenter;
+    
+    [self.view addSubview:xieyiLabel];
+    
+    NSMutableAttributedString *attributedStr= [[NSMutableAttributedString alloc] initWithString:RegistXieyi];
+    [attributedStr addAttribute:NSForegroundColorAttributeName value:BLUE_COLOR range:NSMakeRange(RegistXieyi.length-4, 4)];
+    xieyiLabel.attributedText = attributedStr;
+    
+}
+
+
+
+
+
+
+
+//清除内容
+- (void)cleantext:(UIButton *)sender {
+    UITextField *text;
+    switch (sender.tag) {
+        case 101:
+            text = (UITextField *)[self.codeView viewWithTag:101];
+            break;
+        case 102:
+            text = (UITextField *)[self.pswView viewWithTag:102];
+            break;
+        default:
+            break;
+    }
+    
+    text.text = nil;
+    text.rightView.hidden = YES;
+    
+}
+//查看密码
+- (void)seePswords:(UIButton *)sender {
+    sender.selected = !sender.selected;
+    UITextField *text = (UITextField *)[self.pswView viewWithTag:102];
+    if (sender.selected == YES) {
+        ismiyu = YES;
+         text.secureTextEntry = YES;
+        [self.seePswBtn setBackgroundImage:ImageNamed(@"mingwen") forState:UIControlStateNormal];
+
+
+    }else {
+        ismiyu = NO;
+        text.secureTextEntry = NO;
+        [self.seePswBtn setBackgroundImage:ImageNamed(@"miyu") forState:UIControlStateNormal];
+
+    }
+}
+
+
+//检测账号密码是否为空 同时改变按钮可点击的状态
+- (void)textFieldChanged:(UITextField *)textField {
+    
+    NSString *temp = textField.text;
+
+    if (textField.tag == 102) {
+        if (ismiyu) {
+            textField.text = temp;
+            
+        }else {
+            if (textField.markedTextRange == nil) {
+                while(1) {
+                    if ([temp lengthOfBytesUsingEncoding:NSUTF8StringEncoding] <= MAX_LoginAndRegistUSERNAME_LENGTH*3) {
+                        if (temp.length>MAX_LoginAndRegistUSERNAME_LENGTH) {
+                            temp = [temp substringToIndex:MAX_LoginAndRegistUSERNAME_LENGTH];
+                        }else {
+                            break;
+                        }
+                        
+                    }else {
+                        
+                        BOOL match = [DecideString availableChineseStr:temp];
+                        
+                        if (!match) {
+                            temp = [temp substringToIndex:MAX_LoginAndRegistUSERNAME_LENGTH];
+                        }else {
+                            temp = [temp substringToIndex:temp.length-1];
+                        }
+                    }
+                }
+                textField.text = temp;
+            }
+        }
+        if (textField.text.length >0)
+            textField.rightView.hidden = NO;
+        else
+            textField.rightView.hidden = YES;
+    }else if(textField.tag == 101) {
+        if (textField.text.length >0)
+            textField.rightView.hidden = NO;
+        else
+            textField.rightView.hidden = YES;
+    }
+    //填写完信息的同时 确定按钮根据信息的完成的情况判断是否置灰或是可以点击
+    [self changeBtnImage];
+}
+
+//当满足条件时 按钮可以点击
+- (void)changeBtnImage {
+    UITextField *pswtext = (UITextField *)[self.pswView viewWithTag:102];
+    UITextField *codetext = (UITextField *)[self.codeView viewWithTag:101];
+    UITextField *accounttext = (UITextField *)[self.phoneView viewWithTag:100];
+    
+    
+    if (![AvailableString(accounttext.text) isEqualToString:@""]&&![AvailableString(codetext.text) isEqualToString:@"" ]&&![AvailableString(pswtext.text) isEqualToString:@"" ]) {
+        self.registBtn.userInteractionEnabled = YES;
+        [self.registBtn setBackgroundColor:ColorWithHexString(Color_MainFFDA44)];
+        [self.registBtn setTitleColor:ColorWithHexString(ColorText_333333) forState:UIControlStateNormal];
+    }else {
+        self.registBtn.userInteractionEnabled = NO;
+        [self.registBtn setBackgroundColor:ColorWithHexString(Color_LoginF9E69B)];
+        [self.registBtn setTitleColor:ColorWithHexString(ColorText_999999) forState:UIControlStateNormal];
+    }
+    
+}
+
+
+- (BOOL)textFieldShouldBeginEditing:(UITextField *)textField
+{
+    if (textField.tag != 100 ) {
+        if (textField.text.length >0)
+            textField.rightView.hidden = NO;
+        else
+            textField.rightView.hidden = YES;
+    }
+    
+    return YES;
+}
+
+- (void)textFieldDidEndEditing:(UITextField *)textField {
+    if (textField.tag == 100) {
+        accountStr = textField.text;
+    }else if(textField.tag == 101){
+        codeStr = textField.text;
+    }else {
+        pswStr = textField.text;
+    }
+}
+
+- (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string {
+    //判断 限制长度
+    NSString *allText = StringFromIdToId(textField.text, string);
+    
+    switch (textField.tag) {
+            //账号
+        case 100:
+            if ([allText length]>11) {
+                return NO;
+            }
+            break;
+        case 101:
+            if ([allText length]>4) {
+                return NO;
+            }
+            break;
+            
+        default:
+            break;
+    }
+    
+    return YES;
+}
+
+- (BOOL)textFieldShouldReturn:(UITextField *)theTextField {
+    [theTextField resignFirstResponder];
+    return YES;
+}
+
+- (void)sendCodeBtnClick {
+    [self timerStart];
+}
+
+//判断是否满足保存条件
+- (BOOL)canSave {
+    if ([AvailableString(accountStr) length] != 11) {
+        [self showToast:PhoneErrorToast];
+        return NO;
+    }
+    if ([AvailableString(codeStr) length] != 4) {
+        [self showToast:CodeLengthError];
+        return NO;
+    }
+    
+    if ([AvailableString(pswStr) length] <6) {
+        [self showToast:PswLengthError];
+        return NO;
+    }
+    return YES;
+}
+
+
+- (void)registnow {
+    HideKeyBoard;
+    if ([self canSave]) {
+        [self sendRequestToRegist];
+    }
+    
+}
+
+
+#pragma mark - 注册
+- (void)sendRequestToRegist {
+    WeakSelf;
+    NSString *md5Psw = [CommonUtil MD5ForLower32Bate:AvailableString(pswStr)];
+    NSMutableDictionary *dic = [[NSMutableDictionary alloc]init];
+    [dic setValue:accountStr  forKey:@"account"];
+    [dic setValue:md5Psw  forKey:@"password"];
+    [dic setValue:codeStr  forKey:@"code"];
+    
+    [RequestManager sendPostRequestWithURLString:ServerUrl_Write modular:Modular_register requestName:RequestName_updateUserPassword parameters:dic completeBlock:^(NSString *resultCode, NSString *resultDesc, NSDictionary *dataDic) {
+
+        if ([resultCode isEqualToString:@"0"]) {
+            [weakSelf showToast:AlertMsg_RegistSuccess];
+        }else if ([resultCode isEqualToString:@"0002"]) {
+            [weakSelf showToast:AlertMsg_AccountAlreadyExists];
+        }else {
+            [weakSelf showToast:resultDesc];
+        }
+    } failedBlock:^(NSError *error) {
+        [weakSelf showToast:ToastMsg_NetworkFailed];
+    }];
+}
+
+
+
+//开始倒计时
+-(void)timerStart {
+    __block int timeout = 59; //倒计时时间
+    dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
+    dispatch_source_t _timer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0,queue);
+    dispatch_source_set_timer(_timer,dispatch_walltime(NULL, 0),1.0*NSEC_PER_SEC, 0); //每秒执行
+    dispatch_source_set_event_handler(_timer, ^{
+        if(timeout<=0) {
+            //倒计时结束，关闭
+            dispatch_source_cancel(_timer);
+            dispatch_async(dispatch_get_main_queue(), ^{
+                //验证码按钮正常状态
+                [self.sendCodeBtn setBackgroundColor:ColorWithHexString(Color_MainFFDA44)];
+                [self.sendCodeBtn setTitle:ResendCode forState:UIControlStateNormal];
+                [self.sendCodeBtn setTitleColor:ColorWithHexString(ColorText_333333) forState:UIControlStateNormal];
+                self.sendCodeBtn.userInteractionEnabled = YES;
+            });
+        }else {
+            //            int minutes = timeout / 60;
+            int seconds = timeout % 60;
+            NSString *strTime = [NSString stringWithFormat:@"%.2d", seconds];
+            dispatch_async(dispatch_get_main_queue(), ^{
+                //验证码按钮置灰状态
+                [self.sendCodeBtn setBackgroundColor:ColorWithHexString(Color_CodeBtnFFFFFF)];
+                [self.sendCodeBtn setTitleColor:ColorWithHexString(ColorText_dadada) forState:UIControlStateNormal];
+                [self.sendCodeBtn setTitle:[NSString stringWithFormat:@"%@(%@s)",SendAgainAfterSecond,strTime] forState:UIControlStateNormal];
+                self.sendCodeBtn.userInteractionEnabled = NO;
+            });
+            timeout--;
+        }
+    });
+    dispatch_resume(_timer);
+}
+
+
+- (UIView *)createTextfieldWithFrame: (CGRect)frame
+                              placeholder: (NSString *)str
+                                      tag: (int)tag
+                                textcolor: (NSString *)colorstr
+                                     font: (CGFloat)font
+                         placeholderColor: (NSString *)placeholdercolor
+                                superView: (UIView *)superview
+{
+    
+    UIView *backview = [[UIView alloc]initWithFrame:frame];
+    backview.backgroundColor = WHITE_COLOR;
+    [superview addSubview:backview];
+    
+    UITextField *temp = [[UITextField alloc]initWithFrame:CGRectMake(10, 0, backview.frame.size.width-10, backview.frame.size.height)];
+    temp.delegate = self;
+    temp.borderStyle =   UITextBorderStyleNone;
+    temp.placeholder = str;
+    temp.tag = tag;
+    temp.textAlignment = NSTextAlignmentLeft;
+    switch (tag) {
+        case 100:
+            temp.keyboardType = UIKeyboardTypePhonePad;
+            break;
+        case 101:
+            temp.keyboardType = UIKeyboardTypeNumberPad;
+            break;
+        
+        default:
+            break;
+    }
+    
+    [temp addTarget:self action:@selector(textFieldChanged:) forControlEvents:UIControlEventEditingChanged];
+    temp.textColor = ColorWithHexString(colorstr);
+    temp.font = Font(font);
+    
+    [temp setValue:Font(font) forKeyPath:@"_placeholderLabel.font"];
+    [temp setValue:ColorWithHexString(placeholdercolor) forKeyPath:@"_placeholderLabel.textColor"];
+    [backview addSubview:temp];
+    
+    
+    if (tag == 100) {
+        UIView *rightView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, 80, 50)];
+        temp.secureTextEntry = NO;
+        self.sendCodeBtn = [[UIButton alloc] init];
+        SetViewCorner(self.sendCodeBtn, 5);
+        self.sendCodeBtn.layer.borderWidth = 0.5;
+        self.sendCodeBtn.layer.borderColor = ColorWithHexString(ColorLine_e0e0e0).CGColor;
+        [self.sendCodeBtn setTitle:GetCodeStr forState:UIControlStateNormal];
+        [self.sendCodeBtn setTitleColor:ColorWithHexString(ColorText_333333) forState:UIControlStateNormal];
+        self.sendCodeBtn.backgroundColor = ColorWithHexString(ColorLine_ededed);
+        self.sendCodeBtn.frame = CGRectMake(0, 7, 70, 36);
+        self.sendCodeBtn.titleLabel.font = Font11;
+        [self.sendCodeBtn addTarget:self action:@selector(sendCodeBtnClick) forControlEvents:UIControlEventTouchUpInside];
+        [rightView addSubview:self.sendCodeBtn];
+        
+        
+        temp.rightView = rightView;
+        temp.rightViewMode = UITextFieldViewModeAlways;
+    }else{
+        UIView *rightView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, 70, 50)];
+        temp.secureTextEntry = NO;
+
+        
+        UIButton *cleanbtn = [[UIButton alloc]initWithFrame:CGRectMake(6, 14, 19, 19)];
+        [cleanbtn setImage:ImageNamed(@"cleanbtn") forState:UIControlStateNormal];
+        [cleanbtn addTarget:self action:@selector(cleantext:) forControlEvents:UIControlEventTouchUpInside];
+        cleanbtn.tag = tag;
+        [rightView addSubview:cleanbtn];
+        
+        if (tag == 102) {
+            temp.secureTextEntry = YES;
+            self.seePswBtn = [[UIButton alloc]initWithFrame:CGRectMake(35, 14, 24, 22)];
+            [self.seePswBtn setBackgroundImage:ImageNamed(@"mingwen") forState:UIControlStateNormal];
+            [self.seePswBtn addTarget:self action:@selector(seePswords:) forControlEvents:UIControlEventTouchUpInside];
+            self.seePswBtn.selected = NO;
+            [rightView addSubview:self.seePswBtn];
+        }
+        temp.rightView = rightView;
+        temp.rightViewMode = UITextFieldViewModeWhileEditing;
+    }
+    
+    
+    
+    
+    
+    return backview;
+}
+
+
+
+
+
+@end

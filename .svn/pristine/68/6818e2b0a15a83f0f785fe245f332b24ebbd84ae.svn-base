@@ -1,0 +1,91 @@
+//
+//  OtherString_Const.m
+//  XTWL_IOS_USER
+//
+//  Created by Cinna on 2017/10/23.
+//  Copyright © 2017年 XTWL. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+
+#pragma mark - 其他页面文本文案
+NSString *const Skip = @"跳过";
+NSString *const ReadyOpen = @"准备开店";
+NSString *const PreInfo = @"请准备好以下";
+NSString *const ThreeImageInfo = @"3种图片资料";
+NSString *const StoreInfo = @"店铺信息";
+
+NSString *const ShopGoodsTypeStr = @"请选择经营品类";
+NSString *const ShopNameStr = @"店铺名称";
+NSString *const ShopLaatStr = @"店铺坐标";
+NSString *const ShopAddressStr = @"店铺地址";
+NSString *const ShopUserStr = @"联系人";
+NSString *const ShopUserTelStr = @"联系人电话";
+NSString *const ShopDevtypeStr = @"配送方式";
+NSString *const AddShopLatStr = @"添加地图坐标";
+
+NSString *const InputShopName = @"请输入店铺名称";
+NSString *const InputShopAddress = @"请输入店铺地址";
+NSString *const InputShopUser = @"请输入联系人";
+NSString *const InputShopUserTel = @"请输入联系人电话";
+NSString *const DevtypeStr = @"平台配送";
+NSString *const OwnDevtypeStr = @"自行配送";
+NSString *const ChooseDevtypeStr = @"请选择配送方式";
+NSString *const SaveSuccess = @"保存成功";
+NSString *const MoneyInfo = @"收款信息";
+NSString *const BankUser = @"开户人";
+NSString *const BankCardNum = @"银行卡号";
+NSString *const BankInfo = @"开户行";
+NSString *const BankSecInfo = @"支行";
+NSString *const InputBankUserName = @"填写开户人姓名";
+NSString *const ChooseBankInfo = @"请选择开户行";
+NSString *const ChooseSecBankInfo = @"请选择开户支行";
+NSString *const FarenSFZ = @"法人手持身份证照";
+NSString *const Salezhizhao = @"营业执照";
+NSString *const Foodzhizhao = @"食品流通许可证";
+
+NSString *const AdviceOne = @"1、五官清晰，无遮挡\n2、不可自拍，不可只拍身份证\n3、身份证信息清晰";
+NSString *const AdviceTwo = @"1、文字清晰,执照完整,真实有效\n2、执照复印件需要加盖公司红章\n";
+NSString *const AdviceThree = @"1、文字清晰,执照完整,真实有效\n";
+
+NSString *const ChooseShopType = @"选择商家类型";
+NSString *const TakeAwayShopType = @"外卖商家";
+NSString *const GroupShopType = @"团购商家";
+NSString *const MallShopType = @"商城商家";
+NSString *const TakeAwayShopService = @"网络外卖餐厅的管理服务";
+NSString *const GroupShopService = @"网络团购优惠的管理服务";
+NSString *const MallShopService = @"网络商城店面的管理服务";
+
+NSString *const JoinTakeAwayShop = @"成为外卖商家 >>";
+NSString *const JoinGroupShop = @"成为团购商家 >>";
+NSString *const JoinMallShop = @"成为商城商家 >>";
+NSString *const HadJoinTakeAwayShop = @"已成为外卖商家 >>";
+NSString *const HadJoinGroupShop = @"已成为团购商家 >>";
+NSString *const HadJoinMallShop = @"已成为商城商家 >>";
+NSString *const TakeAwayNoOpen = @"外卖商家未开放";
+NSString *const GroupNoOpen = @"团购商家未开放";
+NSString *const MallNoOpen = @"商城商家未开放";
+NSString *const ShopGoodsTypeSt = @"选择经营品类";
+NSString *const ShopQuality = @"资质信息";
+NSString *const FarenCard = @"法人代表手持身份证";
+NSString *const SaleCard = @"营业类证件";
+NSString *const FarenAdviceOne = @"需上传法人代表，或特许证件申请人手持身份证件，可用其他有效证件代替";
+NSString *const FarenAdviceTwo = @"无营业类证件，可上传特许证件";
+NSString *const SendNo = @"未上传 >";
+NSString *const SendYes = @"已上传 >";
+NSString *const Farensfz = @"法人身份证照";
+NSString *const FarenName = @"法人姓名";
+NSString *const Farensfzz = @"法人身份证";
+NSString *const InpuName = @"填写姓名";
+NSString *const InpuSfz = @"填写身份证号";
+NSString *const FoodNum = @"餐饮许可证注册号";
+NSString *const FoodArea = @"餐饮许可证所在地";
+NSString *const SaleCardNum = @"营业执照注册号";
+NSString *const SaleArea = @"营业执照所在地";
+NSString *const InputSaleNum = @"填写执照号";
+NSString *const InputArea = @"填写所在地(市县)";
+
+
+
+
+

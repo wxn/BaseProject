@@ -1,0 +1,111 @@
+//
+//  GoodsManageCell.m
+//  XTWL_IOS_SHOP
+//
+//  Created by 开发003 on 2017/10/24.
+//  Copyright © 2017年 XTWL. All rights reserved.
+//
+
+#import "GoodsManageCell.h"
+
+@implementation GoodsManageCell
+
+
+
+- (instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier {
+    
+    if ([super initWithStyle:style reuseIdentifier:reuseIdentifier]) {
+        [self createSubViews];
+    }
+    
+    return self;
+}
+
+- (void)createSubViews {
+    
+    self.contentView.backgroundColor = WHITE_COLOR;
+    
+    CGFloat width = Screen_Width/4*3;
+    // 图片
+    self.picView = [CreateView createImageViewWithFrame:CGRectMake(10, 10, 70, 70) image:nil superView:self.contentView];
+    _picView.layer.cornerRadius = CornerRadius_3;
+    _picView.layer.masksToBounds = YES;
+    _picView.backgroundColor = [UIColor lightGrayColor];
+    
+    // 黑色背景
+    self.blackBackView = [[UIView alloc] initWithFrame:CGRectMake(0, 50, 70, 20)];
+    UIColor *blackColor = [UIColor blackColor];
+    _blackBackView.backgroundColor = [blackColor colorWithAlphaComponent:0.6];
+    [_picView addSubview:_blackBackView];
+    
+    // 推荐
+    self.recommandLabel = [CreateView createLabelWithFrame:_blackBackView.bounds text:RecommandGoods fontSize:FontSize_11 textColorStr:@"" superView:self.blackBackView];
+    _recommandLabel.textColor = WHITE_COLOR;
+    _recommandLabel.adjustsFontSizeToFitWidth = YES;
+    _recommandLabel.textAlignment = NSTextAlignmentCenter;
+    
+    // 商品名称
+    self.goodsnameLabel = [CreateView createLabelWithFrame:CGRectMake(CGRectGetMaxX(_picView.frame) + 10, _picView.frame.origin.y + 2, width - 120, 16) text:nil fontSize:FontSize_16 textColorStr:ColorText_333333 superView:self.contentView];
+    
+    // 库存
+    self.stockLabel = [CreateView createLabelWithFrame:CGRectMake(_goodsnameLabel.frame.origin.x, CGRectGetMaxY(_goodsnameLabel.frame) + 10, 60, 11) text:nil fontSize:FontSize_11 textColorStr:Color_PriceFF2622 superView:self.contentView];
+    
+    // 销量
+    self.saleNumLabel = [CreateView createLabelWithFrame:CGRectMake(CGRectGetMaxX(_stockLabel.frame) + 5, _stockLabel.frame.origin.y, 60, 11) text:nil fontSize:FontSize_11 textColorStr:ColorText_999999 superView:self.contentView];
+    
+    // 价格
+    self.priceLabel = [CreateView createLabelWithFrame:CGRectMake(_goodsnameLabel.frame.origin.x, CGRectGetMaxY(_stockLabel.frame) + 10, _goodsnameLabel.frame.size.width, 11) text:nil fontSize:FontSize_11 textColorStr:Color_PriceFF2622 superView:self.contentView];
+    
+    // 推荐按钮
+    self.recommandBtn = [[UIButton alloc] initWithFrame:CGRectMake(_goodsnameLabel.frame.origin.x, CGRectGetMaxY(_picView.frame), 80, 23)];
+    _recommandBtn.layer.cornerRadius = 2;
+    _recommandBtn.layer.masksToBounds = YES;
+    _recommandBtn.layer.borderWidth = 0.5;
+    _recommandBtn.layer.borderColor = ColorWithHexString(ColorLine_ededed).CGColor;
+    _recommandBtn.titleLabel.font = Font11;
+    [_recommandBtn setTitleColor:ColorWithHexString(ColorText_606060) forState:(UIControlStateNormal)];
+    [self.contentView addSubview:_recommandBtn];
+    
+    // 下架商品
+    self.offSaleBtn = [[UIButton alloc] initWithFrame:CGRectMake(CGRectGetMaxX(_recommandBtn.frame)+10, _recommandBtn.frame.origin.y, _recommandBtn.frame.size.width, _recommandBtn.frame.size.height)];
+    _offSaleBtn.layer.cornerRadius = 2;
+    _offSaleBtn.layer.masksToBounds = YES;
+    _offSaleBtn.layer.borderWidth = 0.5;
+    _offSaleBtn.layer.borderColor = ColorWithHexString(ColorLine_ededed).CGColor;
+    _offSaleBtn.titleLabel.font = Font11;
+    [_offSaleBtn setTitleColor:ColorWithHexString(ColorText_606060) forState:(UIControlStateNormal)];
+    [_offSaleBtn setTitle:TakeGoodsOffSale forState:(UIControlStateNormal)];
+    [self.contentView addSubview:_offSaleBtn];
+    
+    // 上架商品
+    self.onSaleBtn = [[UIButton alloc] initWithFrame:_recommandBtn.frame];
+    _onSaleBtn.layer.cornerRadius = 2;
+    _onSaleBtn.layer.masksToBounds = YES;
+    _onSaleBtn.layer.borderWidth = 0.5;
+    _onSaleBtn.layer.borderColor = ColorWithHexString(ColorLine_ededed).CGColor;
+    _onSaleBtn.titleLabel.font = Font11;
+    [_onSaleBtn setTitleColor:ColorWithHexString(ColorText_606060) forState:(UIControlStateNormal)];
+    [_onSaleBtn setTitle:PutGoodsOnSale forState:(UIControlStateNormal)];
+    [self.contentView addSubview:_onSaleBtn];
+    _onSaleBtn.hidden = YES;
+    
+    // 底部灰色横线
+    UIView *lineView = [[UIView alloc] initWithFrame:CGRectMake(10, 112.5, Screen_Width - 10, 0.5)];
+    lineView.backgroundColor = ColorWithHexString(ColorLine_ededed);
+    [self.contentView addSubview:lineView];
+    
+    
+}
+
+- (void)awakeFromNib {
+    [super awakeFromNib];
+    // Initialization code
+}
+
+- (void)setSelected:(BOOL)selected animated:(BOOL)animated {
+    [super setSelected:selected animated:animated];
+
+    // Configure the view for the selected state
+}
+
+@end

@@ -1,0 +1,44 @@
+//
+//  SecondString_Const.m
+//  XTWL_IOS_USER
+//
+//  Created by Cinna on 2017/10/23.
+//  Copyright © 2017年 XTWL. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+
+#pragma mark - 导航条文案
+NSString *const NaviTitle_OperateState = @"营业状态";
+NSString *const NaviTitle_HistoryOrders = @"历史订单";
+NSString *const NaviTitle_Setting = @"设置";
+NSString *const NaviTitle_SetCategory = @"设置分类";
+NSString *const NaviTitle_GoodsProperty = @"商品属性";
+#pragma mark - 文本文案
+NSString *const StopBusiness = @"暂停营业";
+NSString *const InBusiness = @"营业中";
+NSString *const NotInBusinessTime = @"非营业时间";
+NSString *const BusinessTime = @"营业时间";
+NSString *const ChangeBusinessTime = @"修改营业时间";
+NSString *const ShopIsNotInBusinessTime = @"当前餐厅不在营业时间内";
+NSString *const ChangeTimeToStartBusiness = @"如需正常营业请修改营业时间";
+NSString *const SetTimeToBusiness = @"友情提醒：设置营业时间后才能营业";
+NSString *const ClickBtnToBusiness = @"友情提醒：可点击上方按钮暂停营业";
+NSString *const ShopCannotAcceptOrder = @"当前餐厅已停止提供服务，无法接受订单";
+NSString *const StartBusinessToAcceptOrder = @"需恢复营业后才能接单";
+NSString *const ContinueBusiness = @"继续营业";
+NSString *const ShopCanAcceptOrder = @"当前餐厅正在营业中，可正常接受新订单";
+
+NSString *const ShopLOGO = @"店铺LOGO";
+NSString *const Account = @"账号";
+NSString *const Password = @"密码";
+NSString *const ShopReviewInfo = @"店铺审核信息";
+NSString *const Printer = @"打印机";
+NSString *const CurrentVersion = @"当前版本号";
+NSString *const Logout = @"退出登录";
+NSString *const Submit = @"提交";
+NSString *const AddCategory = @"添加分类";
+
+NSString *const ShopTypeWaiMai = @"外卖商家";
+NSString *const ShopTypeTuanGou = @"团购商家";
+NSString *const ShopType = @"商城商家";

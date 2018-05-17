@@ -1,0 +1,13 @@
+//
+//  SelectPictureCategoryViewController.h
+//  XTWL_IOS_SHOP
+//
+//  Created by Cinna on 2017/10/30.
+//  Copyright © 2017年 XTWL. All rights reserved.
+//
+
+#import "BaseNextViewController.h"
+
+@interface SelectPictureCategoryViewController : BaseNextViewController
+
+@end

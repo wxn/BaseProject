@@ -1,0 +1,35 @@
+//
+//  Request_Const.h
+//  XTWL_IOS_SHOP
+//
+//  Created by Cinna on 2017/9/26.
+//  Copyright © 2017年 XTWL. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+
+//加密拼接的字符串
+UIKIT_EXTERN NSString *const Request_Secret;
+
+#pragma mark - 接口Modular
+//前缀不变，后面内容即是Modular
+UIKIT_EXTERN NSString *const Modular_register;
+UIKIT_EXTERN NSString *const Modular_login;
+UIKIT_EXTERN NSString *const Modular_version;
+UIKIT_EXTERN NSString *const Modular_readShop;
+UIKIT_EXTERN NSString *const Modular_sms;
+UIKIT_EXTERN NSString *const Modular_writeShop;
+
+#pragma mark - 接口名称
+//前缀不变，后面内容即是接口名称
+UIKIT_EXTERN NSString *const RequestName_sendSms;
+UIKIT_EXTERN NSString *const RequestName_userAppLogin;
+UIKIT_EXTERN NSString *const RequestName_checkVersionUpdate;
+UIKIT_EXTERN NSString *const RequestName_updateUserPassword;
+UIKIT_EXTERN NSString *const RequestName_queryCodeByAccount;
+UIKIT_EXTERN NSString *const RequestName_queryShopTypeList;
+UIKIT_EXTERN NSString *const RequestName_queryByCustId;
+UIKIT_EXTERN NSString *const RequestName_queryShopTypeInfo;
+UIKIT_EXTERN NSString *const RequestName_queryBanklist;
+UIKIT_EXTERN NSString *const RequestName_queryShopHomePage;
+UIKIT_EXTERN NSString *const RequestName_updateShopBusinessStatus;

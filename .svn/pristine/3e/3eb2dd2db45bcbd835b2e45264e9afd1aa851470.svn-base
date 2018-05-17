@@ -1,0 +1,23 @@
+//
+//  SecondString_Const.h
+//  XTWL_IOS_SHOP
+//
+//  Created by Cinna on 2017/9/18.
+//  Copyright © 2017年 XTWL. All rights reserved.
+//
+
+#ifndef SecondString_Const_h
+#define SecondString_Const_h
+
+#pragma mark - 导航条文案
+static NSString *const NaviTitle_Square = @"广场";
+
+#pragma mark - 文本文案
+
+
+
+
+
+
+
+#endif /* SecondString_Const_h */

@@ -1,0 +1,61 @@
+//
+//  CommonUtil.h
+//  XTWL_XFJY
+//
+//  Created by Cinna on 14/10/28.
+//  Copyright (c) 2014年 xuntiangwangluo. All rights reserved.
+//
+
+#define CHECK_PHONE @"^((145|147)|(15[^4])|(17[0-8])|((13|18)[0-9]))\\d{8}$"
+
+#define DATE_FOEMATTER @"MM月dd号" //日期格式
+
+#import <Foundation/Foundation.h>
+#include <sys/types.h>
+#include <sys/sysctl.h>
+
+@interface CommonUtil : NSObject
+
+#pragma mark - 日期相关
+//获取当前日期字符串
++ (NSString *)currentDateWithString:(NSString *)string;
+//获取当前星期字符串
++ (NSString *)currentWeekWithString:(NSString *)string;
+//获取当前农历,只有月、日
++ (NSString*)currentLunarCalendarWithString:(NSString *)string;
+
+//返回当前时间（字符串格式）
++ (NSString *)currentDateString;
+
+
+//根据字符串获取字符串高度
++ (int)heightForString:(NSString *)string stringWidth:(CGFloat)width fontSize:(CGFloat)fontSize;
+
+//根据字符串获取字符串宽带
++ (int)widthForString:(NSString *)string fontSize:(CGFloat)fontSize;
+
+//获取手机型号
++ (NSString *)getPhoneDevicName;
+
+//使用正则表达式判断手机号码
++ (BOOL)checkPhoneNumber:(NSString *)string;
+
+
+//判断是否存在emoji
++ (NSString *)isContainsEmoji:(NSString *)string;
+
+//判断时间 ( 当前时间是head的时间戳 end)
++ (BOOL)decideTimeStatusWithCurrentTime:(NSString *)currentTime endTime:(NSString *)endTime;
+
+//solr转义
++ (NSString *)solrStingWithString:(NSString *)string;
+
+//根据“,”分割图片地址
++ (NSArray *)imageStrArrayWithStr:(NSString *)str;
+
++ (BOOL)isStartLocation;
+
+//MD5加密 密码
++(NSString *)MD5ForLower32Bate:(NSString *)str;
+@end
+

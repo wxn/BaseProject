@@ -1,0 +1,562 @@
+//
+//  ActivityFullFeduceViewController.m
+//  XTWL_IOS_SHOP
+//
+//  Created by Zhaoyang on 2017/10/26.
+//  Copyright © 2017年 XTWL. All rights reserved.
+//
+
+#import "ActivityFullFeduceViewController.h"
+#import "CreateView.h"
+#import "DatePickView.h"
+@interface ActivityFullFeduceViewController ()<UITableViewDelegate,UITableViewDataSource,DatePickViewDelegate> {
+    BOOL isExist;//判断是否在审核中  审核中的话 是取消活动跟修改活动 不在审核中的话 就是参加活动
+    NSString *activityId;
+    NSString *shopactivityId;
+    DatePickView *datepickview;
+    NSInteger selectindex;
+    NSString *starttime;
+    NSString *endtime;
+    
+    NSInteger salecount;//活动内容中的优惠个数
+    
+    NSString *onePriceStr;//第一行 满
+    NSString *oneReduceStr;//第一行 减
+    NSString *twoPriceStr;
+    NSString *twoReduceStr;
+    NSString *thrPriceStr;
+    NSString *thrReduceStr;
+    
+}
+PropertyStrong UITableView *fullreduceTableView;
+PropertyStrong UIView *reduceView;
+PropertyStrong UILabel *desclabel;
+
+
+@end
+
+@implementation ActivityFullFeduceViewController
+
+- (instancetype)initWithActivityIsExist:(BOOL)isexist activityid:(NSString *)activityid shopactivityId:(NSString *)shopactivityid{
+    self = [super init];
+    if (self) {
+        isExist = isexist;
+        activityId = activityid;
+        shopactivityId = shopactivityid;
+    }
+    return self;
+}
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    self.navigationItem.title = @"满额立减";
+    salecount = 1;
+    [self initFullReduceTbaleView];
+    
+    [self iniBtnView];
+    [self inidatepickview];
+    [self initreduceView];
+    [self inidescrlabel];
+    if (isExist) {
+        [self sendRequestToGetActinfo];
+    }
+    //    UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(hidekey)];
+    //    [self.view addGestureRecognizer:tap];
+    
+}
+- (void)initFullReduceTbaleView {
+    self.fullreduceTableView = [[UITableView alloc]initWithFrame:CGRectMake(0, Start_Height, Screen_Width, 126)];
+    self.fullreduceTableView.scrollEnabled = NO;
+    self.fullreduceTableView.delegate = self;
+    self.fullreduceTableView.dataSource = self;
+    [self.view addSubview:self.fullreduceTableView];
+    self.fullreduceTableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+}
+- (void)initreduceView {
+    self.reduceView = [[UIView alloc]initWithFrame:CGRectMake(0, CGRectGetMaxY(self.fullreduceTableView.frame)+15, Screen_Width, 48)];
+    self.reduceView.backgroundColor = WHITE_COLOR;
+    [self.view addSubview:self.reduceView];
+    [self reloadInputView];
+}
+
+- (void)inidescrlabel {
+    self.desclabel = [[UILabel alloc]initWithFrame:CGRectMake(SpaceLeftRight, CGRectGetMaxY(self.reduceView.frame), Screen_Width, 60)];
+    self.desclabel.numberOfLines = 2;
+    self.desclabel.font = Font11;
+    self.desclabel.textColor = ColorWithHexString(ColorText_999999);
+    self.desclabel.text = @"注:1.满减金额不包含配送费，餐盒费将计入满减活动的触发条件\n     2.满金额不能小于减金额";
+    [self.view addSubview:self.desclabel];
+}
+
+- (void) iniBtnView {
+    UIView *view = [[UIView alloc]initWithFrame:CGRectMake(0, Screen_Height - 49, Screen_Width, 49)];
+    view.backgroundColor = WHITE_COLOR;
+    [self.view addSubview:view];
+    if (!isExist) {
+        UIButton *sureBtn = [[UIButton alloc]initWithFrame:CGRectMake(SpaceLeftRight, 2.5, (Screen_Width-2*SpaceLeftRight), 43)];
+        SetViewCorner(sureBtn, 5);
+        
+        [sureBtn setBackgroundColor:ColorWithHexString(Color_MainFFDA44)];
+        sureBtn.titleLabel.font = Font16;
+        [sureBtn setTitle:@"创建活动" forState:UIControlStateNormal];
+        [sureBtn setTitleColor:ColorWithHexString(ColorText_333333) forState:UIControlStateNormal];
+        [sureBtn addTarget:self action:@selector(createactivity) forControlEvents:UIControlEventTouchUpInside];
+        [view addSubview:sureBtn];
+    }else {
+        
+        UIButton *cancleBtn = [[UIButton alloc]initWithFrame:CGRectMake(SpaceLeftRight, 2.5, (Screen_Width-2*SpaceLeftRight), 43)];
+        SetViewCorner(cancleBtn, 5);
+        
+        [cancleBtn setBackgroundColor:ColorWithHexString(ColorText_dadada)];
+        cancleBtn.titleLabel.font = Font16;
+        [cancleBtn setTitle:@"取消活动" forState:UIControlStateNormal];
+        [cancleBtn setTitleColor:WHITE_COLOR forState:UIControlStateNormal];
+        [cancleBtn addTarget:self action:@selector(cancleactivity) forControlEvents:UIControlEventTouchUpInside];
+        [view addSubview:cancleBtn];
+    }
+}
+- (void)inidatepickview {
+    datepickview = [[DatePickView alloc]initWithFrame:CGRectMake(0, Screen_Height, Screen_Width, 260)];
+    datepickview.delegate = self;
+    [[UIApplication sharedApplication].keyWindow addSubview:datepickview];
+}
+- (void)reloadInputView {
+    
+    
+    [[self.reduceView subviews] makeObjectsPerformSelector:@selector(removeFromSuperview)];
+    
+    for (int i = 0; i< salecount ; i++) {
+        UILabel *titleLabel = [[UILabel alloc]initWithFrame:CGRectMake(SpaceLeftRight, 4+i*48, 60, 40)];
+
+        titleLabel.text  = @"活动内容";
+        titleLabel.font = Font14;
+        titleLabel.textColor = ColorWithHexString(ColorText_333333);
+        [self.reduceView addSubview:titleLabel];
+        
+        if (i != 0) {
+            titleLabel.hidden = YES;
+        }
+        
+        UIView *lineview = [[UIView alloc]initWithFrame:CGRectMake(SpaceLeftRight+10+60, 47.5+i*48, Screen_Width - (SpaceLeftRight+10+60) , 0.5)];
+        lineview.backgroundColor = ColorWithHexString(ColorLine_e0e0e0);
+        [self.reduceView addSubview:lineview];
+        
+        if (salecount == 1) {
+            lineview.hidden = YES;
+        }else if (salecount == 2) {
+            if (i == 1) {
+                lineview.hidden = YES;
+            }
+        }else {
+            if (i == 2) {
+                lineview.hidden = YES;
+            }
+        }
+        
+        
+        
+        UILabel *manlabel = [[UILabel alloc]initWithFrame:CGRectMake(SpaceLeftRight+10+60, 4+i*48, 15, 40)];
+        manlabel.text = @"满";
+        manlabel.font = Font14;
+        manlabel.textColor = ColorWithHexString(ColorText_606060);
+        [self.reduceView addSubview:manlabel];
+        
+        if (!isExist) {
+            UITextField *infotext = [CreateView createTextFieldWithFram:CGRectMake(CGRectGetMaxX(manlabel.frame), 4+i*48, 50, 40) delegate:self placeholder:@"未设置" textColor:ColorText_606060 font:FontSize_14 superView:self.reduceView];
+            infotext.textAlignment = NSTextAlignmentCenter;
+            infotext.keyboardType = UIKeyboardTypeNumberPad;
+            infotext.tag = 100+i;
+        }else {
+            UILabel *pricelabel = [CreateView createLabelWithFrame:CGRectMake(CGRectGetMaxX(manlabel.frame), 4+i*48, 50, 40) text:@"" fontSize:FontSize_14 textColorStr:ColorText_606060 superView:self.reduceView];
+            pricelabel.textAlignment = NSTextAlignmentCenter;
+            
+            
+            if (i == 0) {
+                pricelabel.text = AvailableString(onePriceStr);
+            }else if (i == 1) {
+                pricelabel.text = AvailableString(twoPriceStr);
+            }else {
+                pricelabel.text = AvailableString(thrPriceStr);
+            }
+            
+        }
+        
+        
+        
+        
+        
+        UILabel *yuanlabel = [[UILabel alloc]initWithFrame:CGRectMake(CGRectGetMaxX(manlabel.frame)+50, 4+i*48, 15, 40)];
+        yuanlabel.text = @"元";
+        yuanlabel.font = Font14;
+        yuanlabel.textColor = ColorWithHexString(ColorText_606060);
+        [self.reduceView addSubview:yuanlabel];
+        
+        
+        UILabel *reducelabel = [[UILabel alloc]initWithFrame:CGRectMake(CGRectGetMaxX(yuanlabel.frame)+10, 4+i*48, 15, 40)];
+        reducelabel.text = @"减";
+        reducelabel.font = Font14;
+        reducelabel.textColor = ColorWithHexString(ColorText_606060);
+        [self.reduceView addSubview:reducelabel];
+        
+        if (!isExist) {
+            UITextField *reducetext = [CreateView createTextFieldWithFram:CGRectMake(CGRectGetMaxX(reducelabel.frame), 4+i*48, 50, 40) delegate:self placeholder:@"未设置" textColor:ColorText_606060 font:FontSize_14 superView:self.reduceView];
+            reducetext.textAlignment = NSTextAlignmentCenter;
+            reducetext.keyboardType = UIKeyboardTypeNumberPad;
+            reducetext.tag = 150+i;
+        }else {
+            UILabel *priceslabel = [CreateView createLabelWithFrame:CGRectMake(CGRectGetMaxX(reducelabel.frame), 4+i*48, 50, 40) text:@"" fontSize:FontSize_14 textColorStr:ColorText_606060 superView:self.reduceView];
+            priceslabel.textAlignment = NSTextAlignmentCenter;
+            
+            
+            if (i == 0) {
+                priceslabel.text = AvailableString(oneReduceStr);
+            }else if (i == 1) {
+                priceslabel.text = AvailableString(twoReduceStr);
+            }else {
+                priceslabel.text = AvailableString(thrReduceStr);
+            }
+        }
+        
+        
+        
+        
+        
+        UILabel *yuanslabel = [[UILabel alloc]initWithFrame:CGRectMake(CGRectGetMaxX(reducelabel.frame)+50, 4+i*48, 15, 40)];
+        yuanslabel.text = @"元";
+        yuanslabel.font = Font14;
+        yuanslabel.textColor = ColorWithHexString(ColorText_606060);
+        [self.reduceView addSubview:yuanslabel];
+        
+        if (!isExist) {
+            UIButton *addbtn = [[UIButton alloc]initWithFrame:CGRectMake(CGRectGetMaxX(yuanslabel.frame)+10, 9+48*i, 30, 30)];
+            addbtn.tag = 200+i;
+            if (salecount == 3) {
+                [addbtn setImage:ImageNamed(@"sc") forState:UIControlStateNormal];
+            }else {
+                if (i == salecount - 1) {
+                    [addbtn setImage:ImageNamed(@"tj") forState:UIControlStateNormal];
+                }else {
+                    [addbtn setImage:ImageNamed(@"sc") forState:UIControlStateNormal];
+                }
+            }
+            
+            [addbtn addTarget:self action:@selector(addinfo:) forControlEvents:UIControlEventTouchUpInside];
+            [self.reduceView addSubview:addbtn];
+        }
+        
+        
+        
+        
+    }
+    self.reduceView.frame = CGRectMake(0, CGRectGetMaxY(self.fullreduceTableView.frame)+15, Screen_Width, 48*salecount);
+    self.desclabel.frame = CGRectMake(SpaceLeftRight, CGRectGetMaxY(self.reduceView.frame), Screen_Width-SpaceLeftRight, 60);
+}
+
+
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
+    return 3;
+}
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+    if (section == 2) {
+        return salecount;
+    }
+    return 1;
+}
+
+
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
+    return 48;
+}
+- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section {
+    return 15;
+}
+- (CGFloat)tableView:(UITableView *)tableView heightForFooterInSection:(NSInteger)section {
+    return 0.1;
+}
+
+
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"cell"];
+    if (!cell) {
+        cell = [[UITableViewCell alloc]initWithStyle:UITableViewCellStyleValue2 reuseIdentifier:@"cell"];
+        
+        cell.selectionStyle = UITableViewCellSelectionStyleNone;
+        UILabel *titleLabel = [[UILabel alloc]initWithFrame:CGRectMake(SpaceLeftRight, 4, 60, 40)];
+        titleLabel.font = Font14;
+        titleLabel.textColor = ColorWithHexString(ColorText_333333);
+        titleLabel.tag = 100;
+        [cell.contentView addSubview:titleLabel];
+        
+        UILabel *subtitleLabel = [[UILabel alloc]initWithFrame:CGRectMake(CGRectGetMaxX(titleLabel.frame)+10, 4, Screen_Width-SpaceLeftRight-60-10, 40)];
+        subtitleLabel.font = Font14;
+        subtitleLabel.textColor = ColorWithHexString(ColorText_606060);
+        subtitleLabel.tag = 101;
+        [cell.contentView addSubview:subtitleLabel];
+        
+        
+    }
+
+    UILabel *titleLabel = (UILabel *)[cell.contentView viewWithTag:100];
+    UILabel *subtitleLabel = (UILabel *)[cell.contentView viewWithTag:101];
+
+    if (indexPath.section == 0) {
+        titleLabel.text = @"开始时间";
+        subtitleLabel.text = AvailableString(starttime);
+    }else if (indexPath.section == 1) {
+        titleLabel.text = @"结束时间";
+        subtitleLabel.text = AvailableString(endtime);
+    }
+    
+    return cell;
+}
+
+
+
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    
+    selectindex = indexPath.section;
+    
+    NSDate *currentDate = [NSDate date];
+    //用于格式化NSDate对象
+    NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
+    //设置格式：zzz表示时区
+    [dateFormatter setDateFormat:@"yyyy-MM-dd"];
+    //NSDate转NSString
+    NSString *currentDateString = [dateFormatter stringFromDate:currentDate];
+    
+    if (indexPath.section == 0) {
+        
+        if ([AvailableString(starttime) isEqualToString:@""]) {
+            [datepickview setCurrentDate:AvailableString(currentDateString)];
+        }else {
+            [datepickview setCurrentDate:AvailableString(starttime)];
+        }
+        
+        
+    }else {
+        if ([AvailableString(endtime) isEqualToString:@""]) {
+            [datepickview setCurrentDate:AvailableString(currentDateString)];
+        }else {
+            [datepickview setCurrentDate:AvailableString(endtime)];
+        }
+        
+    }
+    [self pickup];
+}
+- (void)pickdatestr:(NSString *)datestr {
+
+    if (selectindex == 0) {
+        starttime = datestr;
+    }else {
+        endtime = datestr;
+    }
+    [self datePickDown];
+    NSIndexPath *indexPath=[NSIndexPath indexPathForRow:0 inSection:selectindex];
+    [self.fullreduceTableView reloadRowsAtIndexPaths:[NSArray arrayWithObjects:indexPath,nil] withRowAnimation:UITableViewRowAnimationNone];
+
+
+}
+
+- (void)datePickDown {
+   
+    [UIView animateWithDuration:0.1 animations:^{
+        datepickview.frame = CGRectMake(0, Screen_Height, Screen_Width, 260);
+    }];
+}
+- (void)pickup {
+    [UIView animateWithDuration:0.1 animations:^{
+        datepickview.frame = CGRectMake(0, Screen_Height - 260, Screen_Width, 260);
+    }];
+}
+
+
+
+
+
+
+
+
+- (void)addinfo:(UIButton *)sender {
+    HideKeyBoard;
+    if (salecount == 3) {
+        salecount --;
+        if (sender.tag == 200) {
+            onePriceStr = AvailableString(twoPriceStr);
+            oneReduceStr = AvailableString(twoReduceStr);
+            twoPriceStr = @"";
+            twoReduceStr = @"";
+        }else if(sender.tag == 201){
+            twoPriceStr = AvailableString(thrPriceStr);
+            twoReduceStr = AvailableString(thrReduceStr);
+            thrPriceStr = @"";
+            thrReduceStr = @"";
+        }
+    }else if(salecount == 2) {
+        if (sender.tag == 200) {
+            salecount --;
+            onePriceStr = AvailableString(twoPriceStr);
+            oneReduceStr = AvailableString(twoReduceStr);
+            twoPriceStr = @"";
+            twoReduceStr = @"";
+        }else {
+            salecount ++;
+        }
+    }else {
+        salecount ++;
+    }
+
+    [self reloadInputView];
+    
+}
+
+
+- (void)textFieldDidEndEditing:(UITextField *)textField {
+
+    
+    if (salecount == 1) {
+        if (textField.tag == 100) {
+            onePriceStr = textField.text;
+        }else if (textField.tag == 150) {
+            oneReduceStr = textField.text;
+        }
+    }else if (salecount == 2) {
+        if (textField.tag == 100) {
+            onePriceStr = textField.text;
+        }else if (textField.tag == 101) {
+            twoPriceStr = textField.text;
+        }else if (textField.tag == 150) {
+            oneReduceStr = textField.text;
+        }else {
+            twoReduceStr = textField.text;
+        }
+    }else {
+        if (textField.tag == 100) {
+            onePriceStr = textField.text;
+        }else if (textField.tag == 101) {
+            twoPriceStr = textField.text;
+        }else if (textField.tag == 102){
+            thrPriceStr = textField.text;
+        }else if (textField.tag == 150) {
+            oneReduceStr = textField.text;
+        }else if (textField.tag == 151) {
+            twoReduceStr = textField.text;
+        }else {
+            thrReduceStr = textField.text;
+        }
+    }
+
+}
+
+
+- (BOOL)textFieldShouldReturn:(UITextField *)theTextField {
+    [theTextField resignFirstResponder];
+    return YES;
+}
+
+
+- (void)createactivity {
+    HideKeyBoard;
+    [self sendRequestToJoinActivity];
+}
+
+- (void)sendRequestToGetActinfo {
+    WeakSelf;
+
+    NSMutableDictionary *dic = [[NSMutableDictionary alloc]init];
+    [dic setValue:AvailableString(shopactivityId)  forKey:@"shopActId"];
+    [RequestManager sendPostRequestWithURLString:ServerUrl_Write modular:Modular_ractivity requestName:RequestName_queryAppActivityDetail parameters:dic completeBlock:^(NSString *resultCode, NSString *resultDesc, NSDictionary *dataDic)
+     {
+         if ([resultCode isEqualToString:@"0"])
+         {
+             starttime = dataDic[@"startTime"];
+             endtime = dataDic[@"endTime"];
+             NSString *str = dataDic[@"discountDetail"];
+             NSArray *lab = [str componentsSeparatedByString:@","];
+             salecount = lab.count/2;
+             if (lab.count == 2) {
+                 onePriceStr = lab[0];
+                 oneReduceStr = lab[1];
+             }else if (lab.count == 4) {
+                 onePriceStr = lab[0];
+                 oneReduceStr = lab[1];
+                 twoPriceStr = lab[0];
+                 twoReduceStr = lab[1];
+             }else {
+                 onePriceStr = lab[0];
+                 oneReduceStr = lab[1];
+                 twoPriceStr = lab[0];
+                 twoReduceStr = lab[1];
+                 thrPriceStr = lab[0];
+                 thrReduceStr = lab[1];
+             }
+
+
+         }else {
+             [weakSelf showToast:resultDesc];
+             salecount = 1;
+         }
+         [self.fullreduceTableView reloadData];
+         [self reloadInputView];
+     } failedBlock:^(NSError *error) {
+         [weakSelf showToast:ToastMsg_NetworkFailed];
+     }];
+}
+//
+////参加活动
+- (void)sendRequestToJoinActivity {
+    WeakSelf;
+    NSString *discountDetail;
+
+    if (salecount == 1) {
+        discountDetail = [NSString stringWithFormat:@"%@,%@;",onePriceStr,oneReduceStr];
+    }else if (salecount == 2) {
+        discountDetail = [NSString stringWithFormat:@"%@,%@;%@,%@;",onePriceStr,oneReduceStr,twoPriceStr,twoReduceStr];
+    }else {
+        discountDetail = [NSString stringWithFormat:@"%@,%@;%@,%@;%@,%@;",onePriceStr,oneReduceStr,twoPriceStr,twoReduceStr,thrPriceStr,thrReduceStr];
+    }
+    
+    //
+    NSMutableDictionary *dic = [[NSMutableDictionary alloc]init];
+    [dic setValue:AvailableString([UserInfo shareInstance].shopId)  forKey:@"shopId"];
+    [dic setValue:AvailableString(activityId)  forKey:@"activityId"];
+    [dic setValue:AvailableString(starttime)  forKey:@"startTime"];
+    [dic setValue:AvailableString(endtime)  forKey:@"endTime"];
+    [dic setValue:AvailableString(discountDetail)  forKey:@"discountDetail"];
+    [RequestManager sendPostRequestWithURLString:ServerUrl_Write modular:Modular_wactivity requestName:RequestName_addActivity parameters:dic completeBlock:^(NSString *resultCode, NSString *resultDesc, NSDictionary *dataDic)
+     {
+         if ([resultCode isEqualToString:@"0"])
+         {
+             [weakSelf showToast:@"参加活动成功"];
+         }else {
+             [weakSelf showToast:resultDesc];
+         }
+
+     } failedBlock:^(NSError *error) {
+         [weakSelf showToast:ToastMsg_NetworkFailed];
+     }];
+}
+
+//取消活动
+- (void)cancleactivity {
+    WeakSelf;
+
+    NSMutableDictionary *dic = [[NSMutableDictionary alloc]init];
+    [dic setValue:AvailableString(shopactivityId)  forKey:@"shopActId"];
+    [RequestManager sendPostRequestWithURLString:ServerUrl_Write modular:Modular_wactivity requestName:RequestName_updateAppActivityStatus parameters:dic completeBlock:^(NSString *resultCode, NSString *resultDesc, NSDictionary *dataDic)
+     {
+         if ([resultCode isEqualToString:@"0"])
+         {
+             [weakSelf showToast:@"取消活动成功"];
+         }else {
+             [weakSelf showToast:resultDesc];
+         }
+
+     } failedBlock:^(NSError *error) {
+         [weakSelf showToast:ToastMsg_NetworkFailed];
+     }];
+}
+
+
+@end

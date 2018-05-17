@@ -1,0 +1,23 @@
+//
+//  ThirdString_Const.h
+//  XTWL_IOS_SHOP
+//
+//  Created by Cinna on 2017/9/18.
+//  Copyright © 2017年 XTWL. All rights reserved.
+//
+
+#ifndef ThirdString_Const_h
+#define ThirdString_Const_h
+
+#pragma mark - 导航条文案
+static NSString *const NaviTitle_Order = @"订单";
+
+#pragma mark - 文本文案
+
+
+
+
+
+
+
+#endif /* ThirdString_Const_h */

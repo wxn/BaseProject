@@ -1,0 +1,21 @@
+//
+//  LocationMapViewController.h
+//  XTWL_IOS_SHOP
+//
+//  Created by Zhaoyang on 2017/10/18.
+//  Copyright © 2017年 XTWL. All rights reserved.
+//
+
+#import "BaseNextViewController.h"
+#import <MapKit/MapKit.h>
+@protocol ChooseAddressDelegate;
+@interface LocationMapViewController : BaseNextViewController
+PropertyAssign id<ChooseAddressDelegate>delegate;
+- (id)initWithcoor:(CLLocationCoordinate2D)centerCoor;
+@end
+@protocol ChooseAddressDelegate <NSObject>
+@optional
+//选中某个收货地址
+-(void)chooseAddressWith:(NSString *)lat lont:(NSString *)lont addressDeatil:(NSString *)addressdetail;
+@end
+

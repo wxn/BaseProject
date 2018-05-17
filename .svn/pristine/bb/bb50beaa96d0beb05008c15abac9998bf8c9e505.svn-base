@@ -1,0 +1,121 @@
+//
+//  SelectPictureCategoryViewController.m
+//  XTWL_IOS_SHOP
+//
+//  Created by Cinna on 2017/10/30.
+//  Copyright © 2017年 XTWL. All rights reserved.
+//
+
+#import "SelectPictureCategoryViewController.h"
+#import "PictureCategoryModel.h"
+#import "SelectPictureViewController.h"
+
+@interface SelectPictureCategoryViewController () <UITableViewDelegate, UITableViewDataSource>
+
+@end
+
+@implementation SelectPictureCategoryViewController {
+    UITableView *categoryTable;
+    NSMutableArray *categoryArray;
+    SelectedBlock selectedBlock;
+}
+
+- (instancetype)initWithSelectedBlock:(SelectedBlock)block {
+    self = [super init];
+    if (self) {
+        selectedBlock = block;
+    }
+    return self;
+}
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    // Do any additional setup after loading the view.
+    self.navigationItem.title = NaviTitle_SelectPictureCategory;
+    [self initSubviews];
+    [self sendRequestToGetCategoryIsShowProcessHud:YES];
+}
+
+- (void)initSubviews {
+    
+    categoryTable = [[UITableView alloc] initWithFrame:CGRectMake(0, Start_Height, Screen_Width, Show_Height_Next) style:UITableViewStylePlain];
+    categoryTable.rowHeight = 48;
+    categoryTable.backgroundColor = WHITE_COLOR;
+    categoryTable.separatorStyle = UITableViewCellSeparatorStyleNone;
+    categoryTable.delegate = self;
+    categoryTable.dataSource = self;
+    [self.view addSubview:categoryTable];
+}
+
+#pragma mark -
+- (void)selectCategory:(NSString *)classID {
+    if (selectedBlock) {
+        selectedBlock(classID);
+    }
+    PopVC;
+}
+
+#pragma mark - UITableViewDelegate && UITableViewDataSource
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+    return categoryArray.count;
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"SelectCategoryCell"];
+    if (!cell) {
+        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@"SelectCategoryCell"];
+        cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+        cell.textLabel.font = Font14;
+        cell.textLabel.textColor = ColorWithHexString(ColorText_333333);
+        [CreateView createLineViewWithFrame:CGRectMake(SpaceLeftRight, 47.5, Screen_Width - SpaceLeftRight, 0.5) colorStr:ColorLine_ededed superView:cell.contentView];
+    }
+    PictureCategoryModel *model = categoryArray[indexPath.row];
+    cell.textLabel.text = model.name;
+    
+    return cell;
+}
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    [tableView deselectRowAtIndexPath:indexPath animated:YES];
+    SelectPictureViewController *vc = [[SelectPictureViewController alloc] initWithPictureCategoryModel:categoryArray[indexPath.row] completeBlock:^(NSString *picUrl) {
+        
+        if (selectedBlock) {
+            selectedBlock(picUrl);
+        }
+    }];
+    [self.navigationController pushViewController:vc animated:YES];
+}
+
+
+#pragma mark - 接口请求
+- (void)sendRequestToGetCategoryIsShowProcessHud:(BOOL)isShow {
+    if (isShow)
+        ShowProcessHud;
+    WeakSelf;
+    
+    [RequestManager sendPostRequestWithURLString:ServerUrl_Read modular:Modular_selectedtype requestName:RequestName_queryTypeList parameters:nil completeBlock:^(NSString *resultCode, NSString *resultDesc, NSDictionary *dataDic) {
+        HideProcessHud;
+        if ([resultCode isEqualToString:@"0"]) {
+            categoryArray = [NSMutableArray array];
+            NSArray *listArray = [dataDic objectForKey:@"list"];
+            for (NSDictionary *dictionary in listArray) {
+                PictureCategoryModel *model = [PictureCategoryModel mj_objectWithKeyValues:dictionary];
+                [categoryArray addObject:model];
+            }
+            [categoryTable reloadData];
+        }else {
+            [weakSelf showToast:resultDesc];
+        }
+    } failedBlock:^(NSError *error) {
+        HideProcessHud;
+        [weakSelf showToast:ToastMsg_NetworkFailed];
+    }];
+}
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+
+@end

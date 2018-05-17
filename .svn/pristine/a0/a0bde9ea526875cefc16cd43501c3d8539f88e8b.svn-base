@@ -1,0 +1,42 @@
+//
+//Created by ESJsonFormatForMac on 17/09/27.
+//
+
+#import <Foundation/Foundation.h>
+
+@class UpdateModel,TabbarModel;
+@interface CheckVersionUpdateModel : NSObject
+
+@property (nonatomic, strong) UpdateModel *info;
+
+@property (nonatomic, strong) NSArray<TabbarModel *> *list;
+
+@end
+@interface UpdateModel : NSObject
+
+@property (nonatomic, copy) NSString *custId;
+
+@property (nonatomic, copy) NSString *advertisingLink;
+
+@property (nonatomic, copy) NSString *advertisingPicAddress;
+
+@property (nonatomic, copy) NSString *isForced;
+
+@property (nonatomic, copy) NSString *code;
+
+@property (nonatomic, copy) NSString *description;
+
+@property (nonatomic, copy) NSString *url;
+
+@end
+
+@interface TabbarModel : NSObject
+
+@property (nonatomic, copy) NSString *picture;
+
+@property (nonatomic, copy) NSString *checkedPicture;
+
+@property (nonatomic, copy) NSString *title;
+
+@end
+

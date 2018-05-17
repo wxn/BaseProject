@@ -1,0 +1,26 @@
+//
+//Created by ESJsonFormatForMac on 17/09/27.
+//
+
+#import "CheckVersionUpdateModel.h"
+@implementation CheckVersionUpdateModel
+
++ (NSDictionary *)mj_objectClassInArray{
+    return @{ @"list" : [TabbarModel class]};
+}
+
+
+@end
+
+@implementation UpdateModel
+
+
+@end
+
+
+@implementation TabbarModel
+
+
+@end
+
+

@@ -1,0 +1,19 @@
+//
+//  ShopGoodsTypeViewController.h
+//  XTWL_IOS_SHOP
+//
+//  Created by Zhaoyang on 2017/10/17.
+//  Copyright © 2017年 XTWL. All rights reserved.
+//
+
+#import "BaseNextViewController.h"
+
+typedef void (^SelectGoodsType)(NSString *GoodsTypeName);
+
+@interface ShopGoodsTypeViewController : BaseNextViewController
+@property (copy, nonatomic) SelectGoodsType selectGoodsType;
+
+- (instancetype)initWithShopType:(SelectGoodsType)selecttype;
+@end
+
+

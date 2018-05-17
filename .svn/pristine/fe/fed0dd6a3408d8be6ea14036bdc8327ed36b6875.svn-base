@@ -1,0 +1,856 @@
+//
+//  GoodsAddOrEditViewController.m
+//  XTWL_IOS_SHOP
+//
+//  Created by 开发003 on 2017/10/25.
+//  Copyright © 2017年 XTWL. All rights reserved.
+//
+
+#import "GoodsAddOrEditViewController.h"
+#import "GoodsInfo.h"
+#import "TitleTextCell.h"
+#import "GoodsSkuCell.h"
+#import "GoodsEditPropertyCell.h"
+#import "TitleImageBtn.h"
+#import "SetCategoryViewController.h"
+#import "GoodsDetailInfo.h"
+#import "GoodsPropertyModel.h"
+#import "CategoryModel.h"
+#import "SelectGuigeViewController.h"
+
+
+@interface GoodsAddOrEditViewController ()<UITableViewDelegate, UITableViewDataSource, UITextFieldDelegate, UITextViewDelegate, UIActionSheetDelegate, UIImagePickerControllerDelegate>
+
+PropertyAssign GoodsChangeType myType; // 上传商品或者编辑商品
+PropertyCopy NSString *goodsId;
+
+PropertyStrong UITableView *goodsInfoTable;// 商品信息列表展示
+
+PropertyStrong UIView *headerView;
+PropertyStrong UIButton *recommandButton;
+PropertyStrong UIImageView *photoView; // 照片选取
+PropertyStrong TitleImageBtn *addPhotoBtn;// 添加照片的button;
+PropertyStrong UIView *reSetImageTapView;// 重新设置图片
+// 商品相关信息
+PropertyStrong GoodsCategoryInfo *categoryInfo;// 商品分类信息
+PropertyCopy NSString *goodsName;// 商品名称
+PropertyCopy NSString *goodsPrice;// 价格
+PropertyCopy NSString *goodsStock;// 库存
+PropertyStrong NSMutableArray *goodsSkuArray;// 商品规格
+PropertyStrong NSMutableArray *goodsPropertyArray;// 商品属性
+PropertyCopy NSString *boxPrice;// 打包盒价格
+PropertyCopy NSString *goodsDesc;// 商品说明
+PropertyAssign NSInteger isRecommend;
+
+// 原始商品信息
+PropertyStrong GoodsCategoryInfo *oldCategoryInfo;// 商品分类信息
+PropertyCopy NSString *oldGoodsName;// 商品名称
+PropertyCopy NSString *oldGoodsPrice;// 价格
+PropertyCopy NSString *oldGoodsStock;// 库存
+PropertyStrong NSMutableArray *oldGoodsSkuArray;// 商品规格
+PropertyStrong NSMutableArray *oldGoodsPropertyArray;// 商品属性
+PropertyCopy NSString *oldBoxPrice;// 打包盒价格
+PropertyCopy NSString *oldGoodsDesc;// 商品说明
+PropertyAssign NSInteger oldIsRecommend;
+
+//PropertyStrong GoodsDetailInfo *goodsDetailInfo;
+
+
+PropertyAssign BOOL isSelectedImage;// 图片是否已选取
+PropertyAssign BOOL isChoosedCatogory;// 是否选择分类
+PropertyAssign BOOL isPictureChanged;// 图片是否已被替换
+
+@end
+
+@implementation GoodsAddOrEditViewController
+
+- (instancetype)initWithGoodsChangeType:(GoodsChangeType)type goodsId:(NSString *)goodsId
+{
+    self = [super init];
+    if (self) {
+        _myType = type;
+        self.goodsId = goodsId;
+    }
+    return self;
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+    
+    [super viewWillAppear:animated];
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(keyboardWillChangeFrame:)
+                                                 name:UIKeyboardWillChangeFrameNotification
+                                               object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(keyboardWillHide:)
+                                                 name:UIKeyboardWillHideNotification
+                                               object:nil];
+}
+
+- (void)viewWillDisappear:(BOOL)animated {
+    
+    [super viewWillDisappear:animated];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:UIKeyboardWillChangeFrameNotification object:nil];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:UIKeyboardWillHideNotification object:nil];
+    
+}
+
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    
+    _goodsSkuArray = [NSMutableArray array];
+    _goodsPropertyArray = [NSMutableArray array];
+    _categoryInfo = [[GoodsCategoryInfo alloc] init];
+    _oldCategoryInfo = [[GoodsCategoryInfo alloc] init];
+    
+    if (_myType == GoodsChangeTypeAdd) {
+        self.title = @"上传商品";
+        [self createSubViews];
+    }else {
+        self.title = @"编辑商品";
+        [self sendRequestToGetGoodsInfoWithGoodsId:_goodsId];
+    }
+    
+    
+    
+    
+    
+
+}
+
+- (void)createSubViews {
+    
+    self.goodsInfoTable = [[UITableView alloc] initWithFrame:CGRectMake(0, Start_Height, Screen_Width, Show_Height_Next - 48) style:(UITableViewStyleGrouped)];
+    _goodsInfoTable.dataSource = self;
+    _goodsInfoTable.delegate = self;
+    _goodsInfoTable.separatorColor = CLEAR_COLOR;
+    _goodsInfoTable.separatorStyle = UITableViewCellSeparatorStyleNone;
+    [self.view addSubview:_goodsInfoTable];
+    
+    [_goodsInfoTable registerClass:[TitleTextCell class] forCellReuseIdentifier:@"titleTextCell"];
+    [_goodsInfoTable registerClass:[GoodsSkuCell class] forCellReuseIdentifier:@"goodsSkuCell"];
+    [_goodsInfoTable registerClass:[GoodsEditPropertyCell class] forCellReuseIdentifier:@"goodsEditPropertyCell"];
+    
+    self.headerView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, Screen_Width, (Screen_Width - 120)*0.6 + 60)];
+    _headerView.backgroundColor = WHITE_COLOR;
+    
+    UIView *lineView = [[UIView alloc] initWithFrame:CGRectMake(0, 15, 3, 15)];
+    lineView.backgroundColor = ColorWithHexString(Color_MainFFDA44);
+    [_headerView addSubview:lineView];
+    
+    [CreateView createLabelWithFrame:CGRectMake(SpaceLeftRight, lineView.frame.origin.y, 100, 15) text:@"基本信息" fontSize:FontSize_14 textColorStr:ColorText_333333 superView:_headerView];
+    
+    self.recommandButton = [[UIButton alloc] initWithFrame:CGRectMake(Screen_Width - 60, 5, 45, 35)];
+    [_recommandButton setTitleColor:ColorWithHexString(Color_PriceFF2622) forState:(UIControlStateNormal)];
+    [_recommandButton setTitle:@"店长推荐" forState:(UIControlStateNormal)];
+    _recommandButton.titleLabel.font = Font11;
+    [_headerView addSubview:_recommandButton];
+    
+    self.photoView = [[UIImageView alloc] initWithFrame:CGRectMake(30, 45, Screen_Width - 60, (Screen_Width - 120)*0.6)];
+    _photoView.userInteractionEnabled = YES;
+    _photoView.backgroundColor = ColorWithHexString(Color_BackgroundF2F2F2);
+    [_headerView addSubview:_photoView];
+    
+    self.addPhotoBtn = [[TitleImageBtn alloc] initWithFrame:CGRectMake(0, 0, 60, 65) title:@"添加图片" titleColor:ColorWithHexString(ColorText_606060) imageUrlStr:nil imageName:@"" imageWidth:40 topHeight:0 titleHeight:FontSize_14 titleTop:11];
+    [_addPhotoBtn addTarget:self action:@selector(addPhotoBtnAction) forControlEvents:(UIControlEventTouchUpInside)];
+    
+    _addPhotoBtn.center = _photoView.center;
+    [_headerView addSubview:_addPhotoBtn];
+    
+    self.reSetImageTapView = [[UIView alloc] initWithFrame:CGRectMake(0, _photoView.frame.size.height - 40, _photoView.frame.size.width, 40)];
+    _reSetImageTapView.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:0.6];
+    [_photoView addSubview:_reSetImageTapView];
+    
+    
+    UILabel *reSetImageLabel = [CreateView createLabelWithFrame:_reSetImageTapView.bounds text:@"点击更换图片" fontSize:FontSize_16 textColorStr:nil superView:_reSetImageTapView];
+    reSetImageLabel.userInteractionEnabled = YES;
+    reSetImageLabel.textColor = WHITE_COLOR;
+    reSetImageLabel.textAlignment = NSTextAlignmentCenter;
+    [_reSetImageTapView addSubview:reSetImageLabel];
+    UITapGestureRecognizer *resetTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(addPhotoBtnAction)];
+    [reSetImageLabel addGestureRecognizer:resetTap];
+    
+    _reSetImageTapView.hidden = YES;
+    
+    _goodsInfoTable.tableHeaderView = _headerView;
+    
+    
+    UIView *footerView = [[UIView alloc] initWithFrame:CGRectMake(0, ScreenHeight_WithoutBottomBar - 48, Screen_Width, 48)];
+    footerView.backgroundColor = WHITE_COLOR;
+//    UIView *topLineView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, Screen_Width, 10)];
+//    topLineView.backgroundColor = ColorWithHexString(Color_BackgroundF2F2F2);
+//    [footerView addSubview:topLineView];
+    
+    UIButton *saveButton = [[UIButton alloc] initWithFrame:CGRectMake(SpaceLeftRight, 3, Screen_Width - 30, 42)];
+    saveButton.layer.cornerRadius = CornerRadius_3;
+    saveButton.layer.masksToBounds = YES;
+    [saveButton setBackgroundColor:ColorWithHexString(Color_MainFFDA44)];
+    [saveButton setTitleColor:ColorWithHexString(ColorText_333333) forState:(UIControlStateNormal)];
+    [saveButton setTitle:AlertBtn_Save forState:(UIControlStateNormal)];
+    [footerView addSubview:saveButton];
+    
+    [saveButton addTarget:self action:@selector(saveButtonAction:) forControlEvents:(UIControlEventTouchUpInside)];
+    
+    [self.view addSubview:footerView];
+    
+    
+    
+}
+
+- (void)saveButtonAction:(UIButton *)sender {
+    
+    if (self.myType == GoodsChangeTypeAdd) {
+        
+        NSMutableDictionary *dic = [NSMutableDictionary dictionary];
+        
+        // 判断是否添加图片
+        if (_isSelectedImage) {
+            
+        }else {
+            [self showToast:@"请添加图片"];
+            return;
+        }
+        
+        // 判断是否已选择分类
+        if (_isChoosedCatogory) {
+            [dic setValue:@"" forKey:@"typeId"];
+        }else {
+            [self showToast:@"请选择商品分类"];
+            return;
+        }
+        
+        // 商品名称
+        if (_goodsName.length > 0) {
+            [dic setValue:@"" forKey:@"name"];
+        }else {
+            [self showToast:@""];
+            return;
+        }
+        
+        // 规格
+        if (_goodsSkuArray.count <= 1) {// 单规格
+            
+            if (_goodsPrice.length > 0) {
+                [dic setValue:@"" forKey:@"price"];
+                
+            }else {
+                [self showToast:@""];
+                return;
+            }
+            
+            if (_goodsStock.length > 0) {
+                [dic setValue:@"" forKey:@"qty"];
+            }else {
+                [self showToast:@""];
+                return;
+            }
+            
+            
+        }else {// 多规格
+            
+            
+        }
+        
+        // 商品属性
+        if (_goodsPropertyArray.count == 0) {
+            
+            [self showToast:@""];
+            return;
+            
+        }else {
+            
+        }
+        
+        // 打包盒价格
+        if (_boxPrice.length > 0) {
+            [dic setValue:@"" forKey:@"boxPrice"];
+        }else {
+            [self showToast:@""];
+            return;
+        }
+        
+        // 商品说明 说明为非必填项
+        if (_goodsDesc.length > 0){
+            [dic setValue:@"" forKey:@"description"];
+        }
+        
+        
+        [self sendRequestToAddNewGoodsWith:dic];
+        
+        
+        
+        
+    }
+    
+    
+    
+}
+
+
+- (void)reLoadHeaderViewFrameWithState:(BOOL)isShow {
+    
+    if (isShow) {
+        self.isSelectedImage = YES;
+        _headerView.frame = CGRectMake(0, 0, Screen_Width, Screen_Width);
+        _photoView.frame = CGRectMake(30, 45, Screen_Width - 60, Screen_Width - 60);
+        _addPhotoBtn.hidden = YES;
+        _reSetImageTapView.frame = CGRectMake(0, _photoView.frame.size.height - 40, _photoView.frame.size.width, 40);
+        _reSetImageTapView.hidden = NO;
+        
+        _goodsInfoTable.tableHeaderView = _headerView;
+    }
+}
+
+- (void)addPhotoBtnAction {
+    
+    UIActionSheet *sheet;
+    if([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera])
+        sheet  = [[UIActionSheet alloc] initWithTitle:nil delegate:self cancelButtonTitle:AlertBtn_Cancle destructiveButtonTitle:nil otherButtonTitles:TakePhoto, ChooseFromLocal, nil];
+    else
+        sheet = [[UIActionSheet alloc] initWithTitle:nil delegate:self cancelButtonTitle:AlertBtn_Cancle destructiveButtonTitle:nil otherButtonTitles:ChooseFromLocal, nil];
+    [sheet showInView:self.view];
+
+}
+
+#pragma mark - 键盘变化通知
+- (void)keyboardWillChangeFrame:(NSNotification *)aNotification
+{
+    
+   
+    //获取键盘的高度
+    NSDictionary *userInfo = [aNotification userInfo];
+    NSValue *aValue = [userInfo objectForKey:UIKeyboardFrameEndUserInfoKey];
+    CGRect keyboardRect = [aValue CGRectValue];
+    
+    CGFloat keyboardHeight = keyboardRect.size.height;
+    self.goodsInfoTable.frame = CGRectMake(0, Start_Height, Screen_Width, Show_Height_Next - keyboardHeight);
+   
+    
+}
+
+- (void)keyboardWillHide:(NSNotification *)notification
+{
+    self.goodsInfoTable.frame = CGRectMake(0, Start_Height, Screen_Width, Show_Height_Next - 48);
+}
+
+#pragma mark - actionSheet代理方法
+- (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex {
+    
+    NSUInteger sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
+    // 判断是否支持相机
+    if ([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera]) {
+        switch (buttonIndex) {
+            case 0://相机
+                sourceType = UIImagePickerControllerSourceTypeCamera;
+                break;
+            case 1: //相册
+                sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
+                break;
+            default:
+                return;
+        }
+    }else {
+        if (buttonIndex == 0) {
+            sourceType = UIImagePickerControllerSourceTypeSavedPhotosAlbum;
+        }else {
+            return;
+        }
+    }
+    
+    UIImagePickerController *imagePickerController = [[UIImagePickerController alloc] init];
+    imagePickerController.delegate = (id)self;
+    imagePickerController.allowsEditing = YES;
+    imagePickerController.sourceType = sourceType;
+    
+    [self presentViewController:imagePickerController animated:YES completion:nil];
+    
+}
+
+#pragma mark - ImagePickerController代理方法
+- (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary<NSString *,id> *)info {
+    
+    [self dismissViewControllerAnimated:YES completion:nil];
+    
+    [self reLoadHeaderViewFrameWithState:YES];
+    //获取编辑后的图片
+    UIImage *image = info[@"UIImagePickerControllerEditedImage"];
+    self.photoView.image = image;
+
+}
+
+- (void)imagePickerControllerDidCancel:(UIImagePickerController *)picker {
+    [self dismissViewControllerAnimated:YES completion:nil];
+}
+
+#pragma mark - tableView的代理方法
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
+    
+    return 5;
+}
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+    if (section == 0) {
+        return 2;
+    }else if (section == 1){
+        if (_goodsSkuArray.count <= 1) {
+            return 2;
+        }else {
+            return _goodsSkuArray.count;
+        }
+    }else if (section == 2) {
+        if (_goodsPropertyArray.count <= 2) {
+            return 2;
+        }else {
+            return _goodsPropertyArray.count;
+        }
+    }else {
+        return 1;
+    }
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
+    if (indexPath.section == 0) {
+        return 48;
+    }else if (indexPath.section == 1) {
+        if (_goodsSkuArray.count <= 1) {
+            return 48;
+        }else {
+            return 112;
+        }
+    }else if (indexPath.section == 2) {
+        
+        if (_goodsPropertyArray.count == 0) {
+            return 48;
+        }else if (_goodsPropertyArray.count == 1) {
+            if (indexPath.row == 0) {
+                return 120;
+            }else {
+                return 48;
+            }
+        }else {
+            return 120;
+        }
+
+    }else if (indexPath.section == 3) {
+        return 48;
+    }else {
+        
+        return 98;
+    }
+    return 0;
+}
+
+- (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section {
+    if (section == 1) {
+        
+        if (_goodsSkuArray.count <= 1) {
+            UIView *view = [[UIView alloc] initWithFrame:CGRectMake(0, 0, Screen_Width, 10)];
+            view.backgroundColor = ColorWithHexString(Color_BackgroundF2F2F2);
+            return view;
+        }else {
+        
+            UIView *headerView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, Screen_Width, 40)];
+            UIView *greyView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, Screen_Width, 10)];
+            greyView.backgroundColor = ColorWithHexString(Color_BackgroundF2F2F2);
+            [headerView addSubview:greyView];
+            
+            UIView *whiteView = [[UIView alloc] initWithFrame:CGRectMake(0, 10, Screen_Width, 30)];
+            whiteView.backgroundColor = WHITE_COLOR;
+            [headerView addSubview:whiteView];
+            UIView *lineView = [[UIView alloc] initWithFrame:CGRectMake(0, 16, 3, 14)];
+            lineView.backgroundColor = ColorWithHexString(Color_MainFFDA44);
+            [whiteView addSubview:lineView];
+            
+            [CreateView createLabelWithFrame:CGRectMake(SpaceLeftRight, 16, 100, 14) text:@"商品规格" fontSize:FontSize_14 textColorStr:ColorText_333333 superView:whiteView];
+            
+            return headerView;
+            
+        }
+        
+    }else {
+        
+        UIView *view = [[UIView alloc] initWithFrame:CGRectMake(0, 0, Screen_Width, 10)];
+        view.backgroundColor = ColorWithHexString(Color_BackgroundF2F2F2);
+        return view;
+    }
+    
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section {
+    if (section == 1) {
+        if (_goodsSkuArray.count <= 1) {
+            return 10;
+        }else {
+            return 40;
+        }
+    }else {
+        return 10;
+    }
+}
+
+- (UIView *)tableView:(UITableView *)tableView viewForFooterInSection:(NSInteger)section {
+    
+    if (section == 1) {
+        UIView *footView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, Screen_Width, 40)];
+
+        footView.backgroundColor = WHITE_COLOR;
+        NSString *string = @"多规格(设置多种规格)";
+        CGFloat width = [CommonUtil widthForString:string fontSize:FontSize_14];
+        
+        UILabel *lab = [CreateView createLabelWithFrame:CGRectMake(Screen_Width - SpaceLeftRight - width, 11, width, 18) text:string fontSize:FontSize_14 textColorStr:ColorText_999999 superView:footView];
+        UIImageView *imageView = [CreateView createImageViewWithFrame:CGRectMake(CGRectGetMinX(lab.frame) - 28, lab.frame.origin.y, 18, 18) image:ImageNamed(@"") superView:footView];
+        imageView.backgroundColor = ColorWithHexString(Color_BackgroundF2F2F2);
+        imageView.userInteractionEnabled = YES;
+        [footView addSubview:imageView];
+        
+        UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(addSkuButtonAction:)];
+        [footView addGestureRecognizer:tap];
+        return footView;
+    }else {
+        return nil;
+    }
+    
+}
+
+- (void)addSkuButtonAction:(UITapGestureRecognizer *)sender {
+    
+    MYLog(@"加规格");
+    
+//    if (_goodsSkuArray.count == 0) {
+//        [_goodsSkuArray addObject:@"1"];
+//        [_goodsSkuArray addObject:@"2"];
+//    }else {
+//        [_goodsSkuArray removeAllObjects];
+//    }
+//    
+//    NSIndexSet *indexSet = [NSIndexSet indexSetWithIndex:1];
+//    [self.goodsInfoTable reloadSections:indexSet withRowAnimation:(UITableViewRowAnimationNone)];
+    NSMutableArray *array = [NSMutableArray arrayWithArray:_goodsSkuArray];
+    SelectGuigeViewController *selectVC = [[SelectGuigeViewController alloc] initWithType:ViewTypeGuige dataArray:array CompleteBlock:^(NSArray<GoodsPropertyModel *> *array, CategoryModel *model) {
+        
+        
+    }];
+    
+    [self.navigationController pushViewController:selectVC animated:YES];
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForFooterInSection:(NSInteger)section {
+    if (section == 1) {
+        return 40;
+    }else {
+        return 0.1;
+    }
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    
+    if (indexPath.section == 0) {
+        if (indexPath.row == 0) {
+            UITableViewCell *cell = [[UITableViewCell alloc] initWithStyle:(UITableViewCellStyleValue1) reuseIdentifier:@"firstCell"];
+            UILabel *chooseTypeLab = [CreateView createLabelWithFrame:CGRectMake(SpaceLeftRight, 17, 90, 14) text:@"" fontSize:FontSize_14 textColorStr:ColorText_333333 superView:cell.contentView];
+            chooseTypeLab.text = @"选择商品分类";
+            if (_categoryInfo.typeId.length > 0) {
+                cell.accessoryType = UITableViewCellAccessoryNone;
+                cell.detailTextLabel.text = _categoryInfo.name;
+            }else {
+                cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+                cell.detailTextLabel.text = @"";
+            }
+            UIView *line = [[UIView alloc] initWithFrame:CGRectMake(SpaceLeftRight, 47.5, Screen_Width - SpaceLeftRight, 0.5)];
+            line.backgroundColor = ColorWithHexString(ColorLine_ededed);
+            [cell.contentView addSubview:line];
+            
+            cell.selectionStyle = UITableViewCellSeparatorStyleNone;
+            return cell;
+            
+        }else{
+            TitleTextCell *cell = [tableView dequeueReusableCellWithIdentifier:@"titleTextCell" forIndexPath:indexPath];
+            cell.titleNameLabel.text = @"商品名称";
+            cell.enterTF.placeholder = @"请输入商品名称";
+            cell.enterTF.tag = indexPath.section * 10000 + indexPath.row * 100;
+            cell.enterTF.delegate = self;
+            
+            if (_goodsName.length > 0) {
+                cell.enterTF.text = _goodsName;
+            }else {
+                cell.enterTF.text = @"";
+            }
+            
+            cell.selectionStyle = UITableViewCellSeparatorStyleNone;
+            return cell;
+        }
+        
+    }else if (indexPath.section == 1) {
+        // 如果规格小于等于1 说明为单规格商品
+        if (_goodsSkuArray.count <= 1) {
+        
+            TitleTextCell *cell = [tableView dequeueReusableCellWithIdentifier:@"titleTextCell" forIndexPath:indexPath];
+        
+            if (indexPath.row == 0) {
+                cell.titleNameLabel.text = @"价格";
+                if (_goodsPrice.length > 0) {
+                    cell.enterTF.text = _goodsPrice;
+                }else {
+                    cell.enterTF.text = @"";
+                }
+                
+            }else{
+                cell.titleNameLabel.text = @"库存";
+                if (_goodsStock.length > 0) {
+                    cell.enterTF.text = _goodsStock;
+                }else {
+                    cell.enterTF.text = @"";
+                }
+            }
+            cell.enterTF.delegate = self;
+            cell.enterTF.tag = indexPath.section * 10000 + indexPath.row * 100;
+            
+            cell.selectionStyle = UITableViewCellSeparatorStyleNone;
+            return cell;
+            
+        }else {
+            GoodsSkuCell *cell = [tableView dequeueReusableCellWithIdentifier:@"goodsSkuCell" forIndexPath:indexPath];
+            
+            cell.priceTextField.tag = indexPath.section * 10000 + indexPath.row * 100 + 1;
+            cell.stockTextField.tag = indexPath.section * 10000 + indexPath.row * 100 + 2;
+            cell.priceTextField.delegate = self;
+            cell.stockTextField.delegate = self;
+            
+            cell.selectionStyle = UITableViewCellSeparatorStyleNone;
+            return cell;
+        }
+    
+    }
+    else if (indexPath.section == 2) {
+        
+        GoodsEditPropertyCell *cell = [tableView dequeueReusableCellWithIdentifier:@"goodsEditPropertyCell" forIndexPath:indexPath];
+        
+        if (_goodsPropertyArray.count == 0) {
+            cell.downBackView.hidden = YES;
+        }else if (_goodsPropertyArray.count == 1) {
+            if (indexPath.row == 0) {
+                cell.downBackView.hidden = NO;
+            }else {
+                cell.downBackView.hidden = YES;
+            }
+        }else {
+            cell.downBackView.hidden = NO;
+        }
+        [cell.addButton addTarget:self action:@selector(addPropertyAciton:) forControlEvents:(UIControlEventTouchUpInside)];
+        
+        cell.selectionStyle = UITableViewCellSeparatorStyleNone;
+        return cell;
+    }else if (indexPath.section == 3) {
+        TitleTextCell *cell = [tableView dequeueReusableCellWithIdentifier:@"titleTextCell" forIndexPath:indexPath];
+        cell.titleNameLabel.text = @"打包盒价格";
+        if (_boxPrice.length > 0) {
+            cell.enterTF.text = _boxPrice;
+        }else {
+            cell.enterTF.text = @"";
+        }
+        cell.enterTF.tag = indexPath.section * 10000 + indexPath.row * 100;
+        cell.enterTF.delegate = self;
+        
+        
+        return cell;
+    }else {
+        
+        UITableViewCell *cell = [[UITableViewCell alloc] initWithStyle:(UITableViewCellStyleValue1) reuseIdentifier:@"lastCell"];
+        
+        [CreateView createLabelWithFrame:CGRectMake(SpaceLeftRight, 17, 60, 14) text:@"商品说明" fontSize:FontSize_14 textColorStr:ColorText_333333 superView:cell.contentView];
+        UITextView *textView = [[UITextView alloc] initWithFrame:CGRectMake(SpaceLeftRight, 48, Screen_Width - 30, 35)];
+        textView.delegate = self;
+        [cell.contentView addSubview:textView];
+        
+        cell.selectionStyle = UITableViewCellSeparatorStyleNone;
+        return cell;
+    }
+   
+}
+
+- (void)addPropertyAciton:(UIButton *)sender {
+    
+    SelectGuigeViewController *selectVC = [[SelectGuigeViewController alloc] initWithType:ViewTypeShuxing dataArray:nil CompleteBlock:^(NSArray<GoodsPropertyModel *> *array, CategoryModel *model) {
+        
+    }];
+    [self.navigationController pushViewController:selectVC animated:YES];
+}
+
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    
+    if (indexPath.section == 0 && indexPath.row == 0) {
+        SetCategoryViewController *vc = [[SetCategoryViewController alloc] initWithFinishBlock:^{
+            
+        }];
+        [self.navigationController pushViewController:vc animated:YES];
+    }
+}
+
+#pragma mark - textField的代理方法
+- (void)textFieldDidEndEditing:(UITextField *)textField {
+    
+    NSInteger tag = textField.tag;
+    NSInteger section = tag/10000;// 当前分区
+    NSInteger row = (tag - section * 10000)/100;// 当前行
+    
+    NSInteger textFieldNum = tag % 100;// 如果余数为1 说明是规格的价格;如果余数为2 说明是规格的库存量
+    
+    
+    switch (tag/10000) {
+        case 0:// 第一个分区
+            _goodsName = textField.text;
+            break;
+        case 1:
+            if (_goodsSkuArray.count <= 1) {// 只包含单规格的情况
+                if (row == 0) {
+                    _goodsPrice = textField.text;
+                }else {
+                    _goodsStock = textField.text;
+                }
+            }else {
+                // 此时为多规格
+                
+                
+            }
+        
+            break;
+        case 3:
+            _boxPrice = textField.text;
+            break;
+            
+        default:
+            break;
+    }
+    
+    
+}
+
+- (BOOL)textFieldShouldReturn:(UITextField *)textField {
+    [textField resignFirstResponder];
+    return YES;
+}
+
+#pragma mark - textView的代理方法
+- (void)textViewDidEndEditing:(UITextView *)textView {
+    // 商品描述
+    _goodsDesc = textView.text;
+    
+}
+
+- (BOOL)textViewShouldEndEditing:(UITextView *)textView {
+    [textView resignFirstResponder];
+    return YES;
+}
+
+
+#pragma mark - 网络请求
+- (void)sendRequestToAddNewGoodsWith:(NSMutableDictionary *)dic {
+    
+    [RequestManager sendPostRequestWithURLString:ServerUrl_Write modular:Modular_goods requestName:@"addGoodsInfo" parameters:dic completeBlock:^(NSString *resultCode, NSString *resultDesc, NSDictionary *dataDic) {
+        
+        
+    } failedBlock:^(NSError *error) {
+        
+    }];
+    
+}
+
+
+- (void)sendRequestToGetGoodsInfoWithGoodsId:(NSString *)goodsId {
+    
+    [self showProcessHud];
+    NSMutableDictionary *dic = [NSMutableDictionary dictionary];
+    [dic setValue:@"5B27F1D916674E01E053C208A8C0BEDF" forKey:@"shopId"];
+    [dic setValue:self.goodsId forKey:@"goodsId"];
+    
+    [RequestManager sendPostRequestWithURLString:ServerUrl_Read modular:Modular_goods requestName:@"queryGoodsDetail" parameters:dic completeBlock:^(NSString *resultCode, NSString *resultDesc, NSDictionary *dataDic) {
+        [self hideProcessHud];
+        if ([resultCode isEqualToString:@"0"]) {
+            MYLog(@"%@", dataDic);
+            
+            
+            _boxPrice = AvailableString([dataDic objectForKey:@"boxPrice"]);
+            _oldBoxPrice = AvailableString([dataDic objectForKey:@"boxPrice"]);
+            
+            _goodsName = AvailableString([dataDic objectForKey:@"name"]);
+            _oldGoodsName = AvailableString([dataDic objectForKey:@"name"]);
+            
+            NSArray *listArray = [dataDic objectForKey:@"list"];
+            if (listArray.count == 0) {
+                _goodsPrice = AvailableString([dataDic objectForKey:@"price"]);
+                _goodsStock = [NSString stringWithFormat:@"%@", [dataDic objectForKey:@"qty"]];
+                
+                _oldGoodsPrice = AvailableString([dataDic objectForKey:@"price"]);
+                _oldGoodsStock = [NSString stringWithFormat:@"%@", [dataDic objectForKey:@"qty"]];
+            }else {
+                
+                for (NSDictionary *dictionary in listArray) {
+                    GoodsPropertyModel *info = [[GoodsPropertyModel alloc] init];
+                    info.proId = AvailableString([dictionary objectForKey:@"skuId"]);
+                    info.name = AvailableString([dictionary objectForKey:@"skuName"]);
+                    info.price = AvailableString([dictionary objectForKey:@"skuPrice"]);
+                    info.qty = [NSString stringWithFormat:@"%@", [dictionary objectForKey:@"skuqty"]];
+                    
+                    [_goodsSkuArray addObject:info];
+                }
+                
+                
+            }
+            
+            _goodsDesc = AvailableString([dataDic objectForKey:@"description"]);
+            _oldGoodsDesc = AvailableString([dataDic objectForKey:@"description"]);
+            
+            _isRecommend = ((NSNumber *)[dataDic objectForKey:@"isRecommend"]).integerValue;
+            _oldIsRecommend = ((NSNumber *)[dataDic objectForKey:@"isRecommend"]).integerValue;
+            
+            _categoryInfo.typeId = AvailableString([dataDic objectForKey:@"typeId"]);
+            _categoryInfo.name = AvailableString([dataDic objectForKey:@"typeName"]);
+            
+            _oldCategoryInfo.typeId = AvailableString([dataDic objectForKey:@"typeId"]);
+            _oldCategoryInfo.name = AvailableString([dataDic objectForKey:@"typeName"]);
+            
+            // 如果属性字符串存在
+            NSString *propertys = AvailableString([dataDic objectForKey:@"propertys"]);
+            if (propertys.length > 0) {
+                
+                
+            }
+            
+            
+//            self.goodsDetailInfo = [GoodsDetailInfo mj_objectWithKeyValues:dataDic];
+//            NSLog(@"%@", _goodsDetailInfo.name);
+//            NSLog(@"%@", _goodsDetailInfo.typeId);
+//            NSLog(@"%@", _goodsDetailInfo.typeName);
+//            NSLog(@"%@", _goodsDetailInfo.description);
+//            NSLog(@"%@", _goodsDetailInfo.list);
+//            NSLog(@"%ld", _goodsDetailInfo.isMultiSpec);
+            
+            [self createSubViews];
+            
+        }
+    } failedBlock:^(NSError *error) {
+        [self hideProcessHud];
+    }];
+    
+    
+    
+}
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+/*
+#pragma mark - Navigation
+
+// In a storyboard-based application, you will often want to do a little preparation before navigation
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    // Get the new view controller using [segue destinationViewController].
+    // Pass the selected object to the new view controller.
+}
+*/
+
+@end

@@ -1,0 +1,48 @@
+//
+//  ToastMessage_Const.h
+//  XTWL_IOS_SHOP
+//
+//  Created by Cinna on 2017/9/13.
+//  Copyright © 2017年 XTWL. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+
+#pragma mark - Toast提示语句
+UIKIT_EXTERN NSString *const ToastMsg_NetworkFailed;
+UIKIT_EXTERN NSString *const ToastMsg_StartMustLowerToEnd;
+UIKIT_EXTERN NSString *const ToastMsg_CategoryEditSuccess;
+UIKIT_EXTERN NSString *const ToastMsg_DefaultCategoryCannotDelete;
+#pragma mark - Alert按钮显示文案
+UIKIT_EXTERN NSString *const AlertBtn_Confirm;
+UIKIT_EXTERN NSString *const AlertBtn_Cancle;
+UIKIT_EXTERN NSString *const AlertBtn_UpdateNow;
+UIKIT_EXTERN NSString *const AlertBtn_Know;
+UIKIT_EXTERN NSString *const AlertBtn_Save;
+UIKIT_EXTERN NSString *const AlertBtn_NoSave;
+#pragma mark - Alert提示语句
+UIKIT_EXTERN NSString *const AlertMsg_NoUpdateInformation;
+UIKIT_EXTERN NSString *const AlertMsg_ChongXinHuoQu;
+UIKIT_EXTERN NSString *const AlertMsg_ImportantUpdate;
+UIKIT_EXTERN NSString *const AlertMsg_Update;
+UIKIT_EXTERN NSString *const AlertMsg_QuitMsg;
+UIKIT_EXTERN NSString *const AlertMsg_NotLocation;
+UIKIT_EXTERN NSString *const AlertMsg_SearchAddress;
+UIKIT_EXTERN NSString *const AlertMsg_AccountAlreadyExists;
+UIKIT_EXTERN NSString *const AlertMsg_NoAccount;
+UIKIT_EXTERN NSString *const AlertMsg_CodeError;
+UIKIT_EXTERN NSString *const AlertMsg_AccountExistsToLogin;
+UIKIT_EXTERN NSString *const AlertMsg_CodeSuccess;
+UIKIT_EXTERN NSString *const AlertMsg_RegistSuccess;
+UIKIT_EXTERN NSString *const AlertMsg_ReSetingPswSuccess;
+
+UIKIT_EXTERN NSString *const AlertMsg_NoService;
+UIKIT_EXTERN NSString *const AlertMsg_IsSaveInfo;
+
+UIKIT_EXTERN NSString *const AlertMsg_AddCategory;
+UIKIT_EXTERN NSString *const AlertMsg_EditCategory;
+UIKIT_EXTERN NSString *const AlertMsg_PleaseInputNewCategoryName;
+UIKIT_EXTERN NSString *const AlertMsg_PleaseInputCategoryName;
+#pragma mark - 其他提示语句
+
+

@@ -1,0 +1,52 @@
+//
+//Created by ESJsonFormatForMac on 17/10/26.
+//
+
+#import <Foundation/Foundation.h>
+
+@class GoodsSkuInfoModel;
+@interface GoodsDetailInfo : NSObject
+
+@property (nonatomic, copy) NSString *description;
+
+@property (nonatomic, assign) NSInteger isShow;
+
+@property (nonatomic, copy) NSString *propertys;
+
+@property (nonatomic, copy) NSString *name;
+
+@property (nonatomic, copy) NSString *typeId;
+
+@property (nonatomic, copy) NSString *boxPrice;
+
+@property (nonatomic, copy) NSString *picture;
+
+@property (nonatomic, assign) NSInteger saleNumber;
+
+@property (nonatomic, assign) NSInteger isRecommend;
+
+@property (nonatomic, copy) NSString *price;
+
+@property (nonatomic, assign) NSInteger qty;
+
+@property (nonatomic, copy) NSString *shopId;
+
+@property (nonatomic, strong) NSArray<GoodsSkuInfoModel *> *list;
+
+@property (nonatomic, copy) NSString *typeName;
+
+@property (nonatomic, assign) NSInteger isMultiSpec;
+
+@end
+@interface GoodsSkuInfoModel : NSObject
+
+@property (nonatomic, assign) NSInteger skuqty;
+
+@property (nonatomic, copy) NSString *skuPrice;
+
+@property (nonatomic, copy) NSString *skuId;
+
+@property (nonatomic, copy) NSString *skuName;
+
+@end
+

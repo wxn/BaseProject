@@ -1,0 +1,20 @@
+//
+//  GoodsPropertyCell.h
+//  XTWL_IOS_SHOP
+//
+//  Created by Cinna on 2017/10/25.
+//  Copyright © 2017年 XTWL. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+
+@interface GoodsPropertyCell : UICollectionViewCell
+
+PropertyStrong UILabel *titleLabel;
+
+PropertyStrong UIButton *deleteBtn;
+
+PropertyAssign BOOL isSelected;
+
+
+@end

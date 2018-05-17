@@ -1,0 +1,307 @@
+//
+//  ShopActivityViewController.m
+//  XTWL_IOS_SHOP
+//
+//  Created by Zhaoyang on 2017/10/25.
+//  Copyright © 2017年 XTWL. All rights reserved.
+//
+
+#import "ShopActivityViewController.h"
+#import "UserInfo.h"
+#import "ShopActivityModel.h"
+#import "UIImgeView+MyImageView.h"
+#import "ActivityFullGiveViewController.h"
+#import "ActivityFullFeduceViewController.h"
+#import "ActivityNewOrNoDispatchViewController.h"
+@interface ShopActivityViewController ()<UITableViewDelegate,UITableViewDataSource>{
+    NSArray *titlearr;
+    NSInteger seleceindex;
+    ShopActivityModel *activitModel;
+}
+PropertyStrong UISegmentedControl *segment;
+PropertyStrong UIView *TagView;
+PropertyStrong UIView *hengtiaoview;
+PropertyStrong UITableView *activityTableView;
+@end
+
+@implementation ShopActivityViewController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    self.view.backgroundColor = [UIColor clearColor];
+    seleceindex = 0;
+    self.navigationItem.title = @"店铺活动";
+    titlearr = @[@"创建活动",@"活动记录"];
+    [self initTagView];
+    [self iniActivityTableView];
+    [self sendRequestToActivity];
+}
+
+- (void)initTagView {
+    
+    self.TagView = [[UIView alloc]initWithFrame:CGRectMake(0, Start_Height,Screen_Width , 42)];
+    self.TagView.backgroundColor = WHITE_COLOR;
+    [self.view addSubview:self.TagView];
+    
+    UIView *lineView = [[UIView alloc]initWithFrame:CGRectMake(0, 37.5, Screen_Width, 0.5)];
+    [self.TagView addSubview:lineView];
+    
+    for (NSInteger i=0; i<titlearr.count; i++) {
+        
+        UILabel *label = [[UILabel alloc]initWithFrame:CGRectMake((Screen_Width/4-30)+i*Screen_Width/2 , 0, 60, 38)];
+        label.userInteractionEnabled = YES;
+        label.text = titlearr[i];
+        label.tag = i;
+        label.font = Font14;
+        if (i == 0) {
+            label.textColor = ColorWithHexString(Color_MainFFDA44);
+        }else {
+            label.textColor = ColorWithHexString(ColorText_333333);
+        }
+        [self.TagView addSubview:label];
+UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tapAction:)];
+        [label addGestureRecognizer:tap];
+        
+    }
+            self.hengtiaoview = [[UIView alloc]initWithFrame:CGRectMake((Screen_Width/4 - 15), 38, 30, 4)];
+            self.hengtiaoview.backgroundColor = ColorWithHexString(Color_MainFFDA44);
+            [self.TagView addSubview:self.hengtiaoview];
+}
+
+- (void)iniActivityTableView {
+    self.activityTableView = [[UITableView alloc]initWithFrame:CGRectMake(0, Start_Height + 42, Screen_Width, Show_Height_Next - 42) style:UITableViewStylePlain];
+    self.activityTableView.delegate = self;
+    self.activityTableView.dataSource = self;
+    [self.view addSubview:self.activityTableView];
+    
+}
+
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
+    return activitModel.list.count;
+}
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+    return 1;
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
+    return 48;
+}
+- (CGFloat)tableView:(UITableView *)tableView heightForFooterInSection:(NSInteger)section {
+    return 15;
+}
+- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section {
+    return 0.1;
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"cell"];
+    if (!cell) {
+        cell = [[UITableViewCell alloc]initWithStyle:UITableViewCellStyleValue1 reuseIdentifier:@"cell"];
+        
+        UIImageView *iconImageview = [[UIImageView alloc]initWithFrame:CGRectMake(SpaceLeftRight, 9, 30, 30)];
+        iconImageview.tag = 100;
+        [cell.contentView addSubview:iconImageview];
+        
+        UILabel *actitylabel = [[UILabel alloc]initWithFrame:CGRectMake(55, 9, 100, 30)];
+        actitylabel.tag = 101;
+        actitylabel.textColor = ColorWithHexString(ColorText_333333);
+        actitylabel.font = Font14;
+        [cell.contentView addSubview:actitylabel];
+        
+        
+        UIButton *joinactBtn = [[UIButton alloc]initWithFrame:CGRectMake(Screen_Width-80-SpaceLeftRight, 9, 80, 30)];
+        SetViewCorner(joinactBtn, 3);
+        joinactBtn.titleLabel.font = Font11;
+        joinactBtn.tag = 102;
+        [joinactBtn addTarget:self action:@selector(joinact:) forControlEvents:UIControlEventTouchUpInside];
+        [cell.contentView addSubview:joinactBtn];
+        
+        
+        UILabel *timeLabel = [[UILabel alloc]initWithFrame:CGRectMake(Screen_Width-SpaceLeftRight-15-150, 9, 150, 30)];
+        timeLabel.textAlignment = NSTextAlignmentRight;
+        timeLabel.tag = 103;
+        timeLabel.textColor = ColorWithHexString(ColorText_999999);
+        timeLabel.font = Font11;
+        [cell.contentView addSubview:timeLabel];
+        
+        cell.selectionStyle = UITableViewCellSelectionStyleNone;
+        
+    }
+    UIButton *actbtn = (UIButton *)[cell.contentView viewWithTag:102];
+    UIImageView *iconImageview = (UIImageView *)[cell.contentView viewWithTag:100];
+    UILabel *actitylabel = (UILabel *)[cell.contentView viewWithTag:101];
+    UILabel *timelabel = (UILabel *)[cell.contentView viewWithTag:103];
+    ActivityInfo *actinfo = activitModel.list[indexPath.section];
+    [iconImageview sd_setImageWithURLStr:AvailableString(actinfo.icon) placeholderImage:DefaultImage1];
+
+    switch (actinfo.type) {
+        case 1:
+            actitylabel.text = @"新用户立减";
+            break;
+        case 2:
+            actitylabel.text = @"满额免运费";
+            break;
+        case 3:
+            actitylabel.text = @"满减";
+            break;
+        case 4:
+            actitylabel.text = @"满赠";
+            break;
+        case 5:
+            actitylabel.text = @"折扣";
+            break;
+            
+        default:
+            break;
+    }
+    
+    if (seleceindex == 0) {
+        actbtn.hidden = NO;
+        timelabel.hidden = YES;
+        cell.accessoryType = UITableViewCellAccessoryNone;
+        if (actinfo.isExist == 1) {
+            [actbtn setTitle:@"新建" forState:UIControlStateNormal];
+            actbtn.backgroundColor = ColorWithHexString(Color_MainFFDA44);
+            [actbtn setTitleColor:ColorWithHexString(ColorText_333333) forState:UIControlStateNormal];
+        }else {
+            [actbtn setTitle:@"已创建" forState:UIControlStateNormal];
+            actbtn.backgroundColor = ColorWithHexString(Color_BackgroundF2F2F2);
+            [actbtn setTitleColor:ColorWithHexString(Color_CodeBtnFFFFFF) forState:UIControlStateNormal];
+        }
+    }else {
+         actbtn.hidden = YES;
+        timelabel.hidden = NO;
+        timelabel.text = AvailableString(actinfo.time);
+        cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+    }
+    
+    return cell;
+}
+
+- (void)joinact:(UIButton *)sender {
+    UITableViewCell *cell = (UITableViewCell *)[[sender superview] superview];
+    NSIndexPath *indexPath = [self.activityTableView indexPathForCell:cell];
+    ActivityInfo *actinfo = activitModel.list[indexPath.section];
+    
+    
+    if (actinfo.type == 1) {
+        //新用户立减
+        
+    }else if (actinfo.type == 2) {
+        //满额免运费
+       
+    }else if (actinfo.type == 3) {
+        //满减
+        //参数  是否存在 活动id  商家活动id创建暂时用不到
+        ActivityFullFeduceViewController *fullgive = [[ActivityFullFeduceViewController alloc]initWithActivityIsExist:NO activityid:actinfo.activityId shopactivityId:actinfo.shopActId];
+
+        [self.navigationController pushViewController:fullgive animated:YES];
+    }else if (actinfo.type == 4) {
+        //满赠
+        //参数  是否存在 活动id  商家活动id创建暂时用不到
+        ActivityFullGiveViewController *fullgive = [[ActivityFullGiveViewController alloc]initWithActivityIsExist:NO activityid:actinfo.activityId shopactivityId:actinfo.shopActId];
+        [self.navigationController pushViewController:fullgive animated:YES];
+    }else {
+        //折扣
+    }
+    
+}
+
+//查看活动详情
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    if (seleceindex == 1) {
+        ActivityInfo *actinfo = activitModel.list[indexPath.section];
+        if (actinfo.type == 1 ||actinfo.type == 2) {
+            //新用户立减
+            ActivityNewOrNoDispatchViewController *actinfos = [[ActivityNewOrNoDispatchViewController alloc]initWithActivityType:[NSString stringWithFormat:@"%ld",actinfo.type] shopactivityId:actinfo.shopActId];
+            
+            [self.navigationController pushViewController:actinfos animated:YES];
+        }else if (actinfo.type == 3) {
+            //满减
+            //参数  是否存在 活动id  商家活动id
+            ActivityFullFeduceViewController *fullgive = [[ActivityFullFeduceViewController alloc]initWithActivityIsExist:YES activityid:actinfo.activityId shopactivityId:actinfo.shopActId];
+            [self.navigationController pushViewController:fullgive animated:YES];
+        }else if (actinfo.type == 4) {
+            //满赠
+            //参数  是否存在 活动id  商家活动id
+            ActivityFullGiveViewController *fullgive = [[ActivityFullGiveViewController alloc]initWithActivityIsExist:YES activityid:actinfo.activityId shopactivityId:actinfo.shopActId];
+            [self.navigationController pushViewController:fullgive animated:YES];
+        }else {
+            //折扣
+        }
+    }
+}
+
+
+
+- (void)finfresh {
+    [self.activityTableView reloadData];
+}
+
+
+
+
+-(void)tapAction:(UITapGestureRecognizer *)tap
+{
+    UILabel *lab = (UILabel *)tap.view;
+    seleceindex = lab.tag ;
+    [self layoutViewWithIndex:seleceindex];
+    [self sendRequestToActivity];
+}
+- (void)layoutViewWithIndex:(NSInteger)index
+{
+    for (UILabel *sublabels in [self.TagView subviews])
+    {
+        if ([sublabels isKindOfClass:[UILabel class]]) {
+            
+            if (sublabels.tag == index) {
+                
+                sublabels.textColor = ColorWithHexString(Color_MainFFDA44);
+            }else{
+                
+                sublabels.textColor = ColorWithHexString(ColorText_333333);
+            }
+        }
+    }
+    
+   
+    [UIView animateWithDuration:0.3 animations:^{
+        
+        self.hengtiaoview.frame = CGRectMake((Screen_Width/4 - 15)+index *(Screen_Width/2), 38, 30, 4);
+    }];
+    
+    
+}
+
+#pragma mark - 查询活动
+- (void)sendRequestToActivity {
+    WeakSelf;
+    //
+    NSMutableDictionary *dic = [[NSMutableDictionary alloc]init];
+    [dic setValue:AvailableString([UserInfo shareInstance].shopId)  forKey:@"shopId"];
+    [dic setValue:[NSString stringWithFormat:@"%ld",seleceindex+1]  forKey:@"type"];
+    [RequestManager sendPostRequestWithURLString:ServerUrl_Read modular:Modular_ractivity requestName:RequestName_queryAppActivityList parameters:dic completeBlock:^(NSString *resultCode, NSString *resultDesc, NSDictionary *dataDic)
+     {
+         
+         if ([resultCode isEqualToString:@"0"])
+         {
+             activitModel = [ShopActivityModel mj_objectWithKeyValues:dataDic];
+             
+
+             
+             
+         }else {
+             [weakSelf showToast:resultDesc];
+         }
+         [self finfresh];
+     } failedBlock:^(NSError *error) {
+         [weakSelf showToast:ToastMsg_NetworkFailed];
+     }];
+}
+
+
+
+
+
+@end

@@ -1,0 +1,113 @@
+//
+//  Method_Macro.h
+//  XTWL_IOS_SHOP
+//
+//  Created by Cinna on 2017/9/13.
+//  Copyright © 2017年 XTWL. All rights reserved.
+//
+
+#ifndef Method_Macro_h
+#define Method_Macro_h
+
+//MYLog
+#ifdef DEBUG
+#define MYLog(...) NSLog(__VA_ARGS__)
+#else
+#define MYLog(...)
+#endif
+
+#pragma mark - 系统信息
+//App名称
+#define App_Name      [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleDisplayName"]
+//App版本
+#define App_Version   [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"]
+//AppBundleID
+#define App_BundleID  [[NSBundle mainBundle] bundleIdentifier]
+//保存App是否首次打开
+#define UserDefaults_FirstComeIn [NSString stringWithFormat:@"FirstComeIn"]
+//保存App显示引导页的版本
+#define UserDefaults_WelcomeVersion [NSString stringWithFormat:@"WelcomeVersion"]
+
+#pragma mark - 工具
+#define PushVC(id) {id *vc = [[id alloc] init];[self.navigationController pushViewController:vc animated:YES];}
+//属性
+#define PropertyStrong          @property (nonatomic, strong)
+#define PropertyWeak            @property (nonatomic, weak)
+#define PropertyCopy            @property (nonatomic, copy)
+#define PropertyAssign          @property (nonatomic, assign)
+//获取当前AppDelegate
+#define App_Delegate (AppDelegate *)[UIApplication sharedApplication].delegate
+#define WeakSelf  __weak typeof(self) weakSelf = self;
+#define ShowProcessHud  [self showProcessHud];
+#define HideProcessHud  [self hideProcessHud];
+#define HideKeyBoard [[UIApplication sharedApplication].keyWindow endEditing:YES];
+//若字符串为空则返回@""
+#define AvailableString(string) string == nil || ![string isKindOfClass:[NSString class]] ? @"":string
+//拼接NSString
+#define StringFromIdToId(idType,idTypet) [NSString stringWithFormat:@"%@%@",idType,idTypet]
+//适合常用的图片
+#define ImageNamed(name) [UIImage imageNamed:name]
+//适合不经常使用的图片
+#define ImageWithContentFile(name) [UIScreen mainScreen].bounds.size.height > 667?[UIImage imageWithContentsOfFile:[[NSBundle mainBundle] pathForResource:[NSString stringWithFormat:@"%@@3x",name] ofType:@"png"]]:[UIImage imageWithContentsOfFile:[[NSBundle mainBundle] pathForResource:[NSString stringWithFormat:@"%@@2x",name] ofType:@"png"]]
+//获取Bundle文件中的图片
+#define BundleImageNamed(name) ImageNamed([BundleName stringByAppendingPathComponent:name])
+//默认图，小号尺寸
+#define DefaultImage1 [UIImage imageNamed:@"welcome1"]
+//默认图，中号尺寸
+#define DefaultImage2 [UIImage imageNamed:@"defaultImage2"]
+//默认图，大号尺寸
+#define DefaultImage3 [UIImage imageNamed:@"defaultImage3"]
+//Logo图
+#define LogoImage     [UIImage imageNamed:@"logo"]
+
+#pragma mark - Layout
+//navi下面的起始位置
+#define Start_Height ([[UIApplication sharedApplication] statusBarFrame].size.height + self.navigationController.navigationBar.frame.size.height)
+//Tabbar的view的高度，去除了statusBar、navigationBar、tabBar、bottomBar
+#define Show_Height [UIScreen mainScreen].bounds.size.height - ([[UIApplication sharedApplication] statusBarFrame].size.height + self.navigationController.navigationBar.frame.size.height) - self.tabBarController.tabBar.frame.size.height - ([[CommonUtil getPhoneDevicName] isEqualToString:@"iPhone Simulator"]?34:0)
+//nav二级页面的高度，去除了statusBar、navigationBar、bottomBar
+#define Show_Height_Next [UIScreen mainScreen].bounds.size.height - ([[UIApplication sharedApplication] statusBarFrame].size.height + self.navigationController.navigationBar.frame.size.height) - ([[CommonUtil getPhoneDevicName] isEqualToString:@"iPhone Simulator"]?34:0)
+//去除bottomBar后的设备高度
+#define ScreenHeight_WithoutBottomBar ([[UIScreen mainScreen] bounds].size.height - ([[CommonUtil getPhoneDevicName] isEqualToString:@"iPhone Simulator"]?34:0))
+
+//设备宽高
+#define Screen_Width ([[UIScreen mainScreen] bounds].size.width)
+//此方法仅适用于需要全屏显示时，如欢迎页、广告页等
+#define Screen_Height ([[UIScreen mainScreen] bounds].size.height)
+
+#define HideKeyBoard [[UIApplication sharedApplication].keyWindow endEditing:YES];
+
+//字体
+#define Font(size)                 [UIFont systemFontOfSize:size]
+#define Font16                     [UIFont systemFontOfSize:16.0]
+#define Font14                     [UIFont systemFontOfSize:14.0]
+#define Font11                     [UIFont systemFontOfSize:11.0]
+#define Font9                      [UIFont systemFontOfSize:9.0]
+//设置View圆角
+#define SetViewCorner(view,radius)   {view.layer.cornerRadius = radius; view.layer.masksToBounds = YES;}
+//HexColor
+#define ColorWithHexString(string)   [UIColor colorWithHexString:string]
+//常用Color
+#define RED_COLOR    [UIColor redColor]
+#define GREEN_COLOR    [UIColor greenColor]
+#define BLUE_COLOR    [UIColor blueColor]
+#define WHITE_COLOR    [UIColor whiteColor]
+#define CLEAR_COLOR    [UIColor clearColor]
+#define BLACK_COLOR    [UIColor blackColor]
+
+#define Page_Size_Twenty 20
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#endif /* Method_Macro_h */

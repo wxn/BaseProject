@@ -1,0 +1,24 @@
+//
+//  GoodsManageCell.h
+//  XTWL_IOS_SHOP
+//
+//  Created by 开发003 on 2017/10/24.
+//  Copyright © 2017年 XTWL. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+
+@interface GoodsManageCell : UITableViewCell
+
+PropertyStrong UIImageView *picView;// 图片
+PropertyStrong UIView *blackBackView;// 图片文字半透明黑色背景
+PropertyStrong UILabel *recommandLabel;// 是否店长推荐
+PropertyStrong UILabel *goodsnameLabel;// 商品名称
+PropertyStrong UILabel *stockLabel;// 库存
+PropertyStrong UILabel *saleNumLabel;// 销量
+PropertyStrong UILabel *priceLabel;// 价格
+PropertyStrong UIButton *recommandBtn;// 推荐按钮
+PropertyStrong UIButton *onSaleBtn;// 上架按钮
+PropertyStrong UIButton *offSaleBtn;// 下架按钮
+
+@end

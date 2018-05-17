@@ -1,0 +1,34 @@
+//
+//  SecondString_Const.h
+//  XTWL_IOS_SHOP
+//
+//  Created by Cinna on 2017/9/18.
+//  Copyright © 2017年 XTWL. All rights reserved.
+//
+
+#ifndef SecondString_Const_h
+#define SecondString_Const_h
+
+#pragma mark - 导航条文案
+static NSString *const NaviTitle_OperateState = @"营业状态";
+
+#pragma mark - 文本文案
+static NSString *const StopBusiness = @"暂停营业";
+static NSString *const InBusiness = @"营业中";
+static NSString *const NotInBusinessTime = @"非营业时间";
+static NSString *const BusinessTime = @"营业时间";
+static NSString *const ChangeBusinessTime = @"修改营业时间";
+static NSString *const ShopIsNotInBusinessTime = @"当前餐厅不在营业时间内";
+static NSString *const ChangeTimeToStartBusiness = @"如需正常营业请修改营业时间";
+static NSString *const SetTimeToBusiness = @"友情提醒：设置营业时间后才能营业";
+static NSString *const ClickBtnToBusiness = @"友情提醒：可点击上方按钮暂停营业";
+static NSString *const ShopCannotAcceptOrder = @"当前餐厅已停止提供服务，无法接受订单";
+static NSString *const StartBusinessToAcceptOrder = @"需恢复营业后才能接单";
+static NSString *const ContinueBusiness = @"继续营业";
+static NSString *const ShopCanAcceptOrder = @"当前餐厅正在营业中，可正常接受新订单";
+
+
+
+
+
+#endif /* SecondString_Const_h */

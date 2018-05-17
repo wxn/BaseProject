@@ -1,0 +1,13 @@
+//
+//  ShopRegistViewController.h
+//  XTWL_IOS_SHOP
+//
+//  Created by Zhaoyang on 2017/10/13.
+//  Copyright © 2017年 XTWL. All rights reserved.
+//
+
+#import "BaseNextViewController.h"
+
+@interface ShopRegistViewController : BaseNextViewController
+
+@end

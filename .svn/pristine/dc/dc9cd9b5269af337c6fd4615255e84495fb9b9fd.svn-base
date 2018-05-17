@@ -1,0 +1,421 @@
+//
+//  GoodsPropertyViewController.m
+//  XTWL_IOS_SHOP
+//
+//  Created by Cinna on 2017/10/25.
+//  Copyright © 2017年 XTWL. All rights reserved.
+//
+
+#import "GoodsPropertyViewController.h"
+#import "GoodsPropertyCell.h"
+#import "GoodsPropertyModel.h"
+#import "GoodsAddOrEditViewController.h"
+
+
+#define CollectionViewNumInteger 3
+#define CollectionViewNumFloat 3.0
+#define MaxNum 50
+#define MaxSelectNum 5
+
+@interface GoodsPropertyViewController () <UICollectionViewDelegate, UICollectionViewDataSource>
+
+@end
+
+@implementation GoodsPropertyViewController {
+    CategoryModel *categoryModel;//上级分类
+    UICollectionView *collectionView;
+    NSMutableArray *propertyArray;
+    BOOL isEditMode;//当前是否为编辑模式
+    UIAlertController *alert;
+    GoodsPropertyModel *currentEditModel;
+    CompleteBlock completeBlock;
+    
+    NSInteger selectNum;
+    NSMutableArray *currentArray;//当前分类下的规格数组
+    ViewType viewType;
+    NSArray *guigeArray;//所有规格数组
+    NSMutableArray *otherArray;//其他分类下的规格数组
+}
+
+- (instancetype)initWithCategoryModel:(CategoryModel *)model viewType:(ViewType)type dataArray:(NSArray *)array completeBlock:(CompleteBlock)block {
+    self = [super init];
+    if (self) {
+        categoryModel = model;
+        viewType = type;
+        guigeArray = array;
+        completeBlock = block;
+    }
+    return self;
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    
+}
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    // Do any additional setup after loading the view.
+    UIBarButtonItem *left = [[UIBarButtonItem alloc] initWithImage:ImageNamed(@"navi_back") style:UIBarButtonItemStylePlain target:self action:@selector(backClicked)];
+    self.navigationItem.leftBarButtonItem = left;
+    
+    if (viewType == ViewTypeGuige)
+        self.navigationItem.title = NaviTitle_GoodsGuige;
+    else
+        self.navigationItem.title = NaviTitle_GoodsShuxing;
+    currentArray = [NSMutableArray array];
+    [self sendRequestToGetGoodsPropertyIsShowProcessHud:YES];
+    
+    [self initSubviews];
+}
+
+- (void)initSaveBtn {
+    
+    UIButton *btn = [CreateView createCustomBtnWithFrame:CGRectMake(0, 0, 40, 44) title:@"编辑" image:nil titleColorStr:ColorText_606060 fontSize:FontSize_14 superView:nil];
+    [btn setTitleColor:ColorWithHexString(ColorText_606060) forState:UIControlStateNormal];
+    btn.titleLabel.font = Font14;
+    [btn addTarget:self action:@selector(saveClicked) forControlEvents:UIControlEventTouchUpInside];
+    UIBarButtonItem *right = [[UIBarButtonItem alloc] initWithCustomView:btn];
+    self.navigationItem.rightBarButtonItem = right;
+}
+
+- (void)initSubviews {
+    [self initSaveBtn];
+    UICollectionViewFlowLayout *layout = [[UICollectionViewFlowLayout alloc] init];
+    layout.itemSize = CGSizeMake(Screen_Width/CollectionViewNumFloat, 30 + SpaceLeftRight);
+    layout.minimumInteritemSpacing = 0;
+    layout.minimumLineSpacing = 0;
+    NSInteger i = [self sectionNum];
+    collectionView = [[UICollectionView alloc] initWithFrame:CGRectMake(0, Start_Height, Screen_Width, i * (30 + SpaceLeftRight) + SpaceLeftRight) collectionViewLayout:layout];
+    [collectionView registerClass:[GoodsPropertyCell class] forCellWithReuseIdentifier:@"GoodsPropertyCell"];
+    collectionView.backgroundColor = WHITE_COLOR;
+    collectionView.delegate = self;
+    collectionView.dataSource = self;
+    [self.view addSubview:collectionView];
+    
+}
+
+- (void)reloadCollectionView {
+    
+    NSInteger i = [self sectionNum];
+    collectionView.frame = CGRectMake(0, Start_Height, Screen_Width, i * (30 + SpaceLeftRight) + SpaceLeftRight);
+    [collectionView reloadData];
+}
+
+- (NSInteger)sectionNum {
+    if (propertyArray.count >= MaxNum)//若等于50，则不显示添加按钮
+        return ceilf(propertyArray.count/CollectionViewNumFloat);
+    return ceilf((propertyArray.count + 1)/CollectionViewNumFloat);
+}
+
+- (NSInteger)propertyNum {
+    if (propertyArray.count >= MaxNum)//若等于50，则不显示添加按钮
+        return propertyArray.count;
+    return propertyArray.count + 1;
+}
+
+- (void)initCurrentArray {
+    if (!otherArray){
+        [self initOtherArray];
+    }
+    currentArray = [NSMutableArray array];
+    if (viewType == ViewTypeGuige) {
+        for (NSInteger i = 0;i < propertyArray.count;i ++) {
+            GoodsPropertyModel *model = propertyArray[i];
+            for (NSInteger j = 0;j < guigeArray.count;j ++) {
+                GoodsPropertyModel *model1 = guigeArray[j];
+                if ([model.proId isEqualToString:model1.proId]) {
+                    [currentArray addObject:model];
+                    model.isSelect = YES;
+                }
+            }
+        }
+    }
+}
+
+- (void)initOtherArray {
+    otherArray = [NSMutableArray arrayWithArray:guigeArray];
+    for (NSInteger i = 0;i < propertyArray.count;i ++) {
+        GoodsPropertyModel *model = propertyArray[i];
+        for (NSInteger j = 0;j < otherArray.count;j ++) {
+            GoodsPropertyModel *model1 = otherArray[j];
+            if ([model.proId isEqualToString:model1.proId]) {
+                [otherArray removeObjectAtIndex:j];
+                j --;
+            }
+        }
+    }
+}
+
+#pragma mark -
+- (void)saveClicked {
+    isEditMode = !isEditMode;
+    UIButton *btn = self.navigationItem.rightBarButtonItem.customView;
+    if (isEditMode) {
+        isEditMode = YES;
+        [btn setTitle:Complete forState:UIControlStateNormal];
+        [collectionView reloadData];
+    }else {
+        isEditMode = NO;
+        [btn setTitle:Edit forState:UIControlStateNormal];
+        [collectionView reloadData];
+    }
+}
+
+- (void)addPropertyClicked {
+    currentEditModel = nil;
+    [self showInputAlertWithEditModel:nil];
+}
+
+- (void)deletePropertyClicked:(UIButton *)btn {
+    GoodsPropertyModel *model = propertyArray[btn.tag];
+    [self sendRequestToDeletePropertyWithProId:model.proId];
+}
+
+- (void)showInputAlertWithEditModel:(GoodsPropertyModel *)model {
+    WeakSelf;
+    if (model) {
+        alert = [UIAlertController alertControllerWithTitle:@"编辑属性" message:@"请输入新的规格名称" preferredStyle:UIAlertControllerStyleAlert];
+    }else {
+        alert = [UIAlertController alertControllerWithTitle:@"添加属性" message:@"请输入新的规格名称" preferredStyle:UIAlertControllerStyleAlert];
+    }
+    
+    [alert addTextFieldWithConfigurationHandler:^(UITextField * _Nonnull textField) {
+        if (model) {
+            textField.placeholder = model.name;
+        }else {
+            textField.placeholder = @"请输入属性名称";
+        }
+        [[NSNotificationCenter defaultCenter] addObserver:weakSelf selector:@selector(alertTextFieldDidChange:) name:UITextFieldTextDidChangeNotification object:textField];
+    }];
+    
+    UIAlertAction *cancle = [UIAlertAction actionWithTitle:AlertBtn_Cancle style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
+    }];
+    [alert addAction:cancle];
+    UIAlertAction *confirm = [UIAlertAction actionWithTitle:AlertBtn_Confirm style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+        if (currentEditModel) {
+            [weakSelf sendRequestToUpdatePropertyWithName:alert.textFields[0].text];
+        }else {
+            [weakSelf sendRequestToAddPropertyWithName:alert.textFields[0].text];
+        }
+        
+    }];
+    [alert addAction:confirm];
+    confirm.enabled = NO;
+    [self presentViewController:alert animated:YES completion:nil];
+}
+
+- (void)alertTextFieldDidChange:(NSNotification *)notification {
+    UITextField *textField = notification.object;
+    if (textField.text.length > 0) {
+        alert.actions[1].enabled = YES;
+    }else {
+        alert.actions[1].enabled = NO;
+    }
+    if (textField.text.length > 5) {
+        textField.text = [textField.text substringToIndex:5];
+    }
+}
+
+- (void)backClicked {
+    if (completeBlock) {
+        if (viewType == ViewTypeGuige) {
+            NSMutableArray *new = [NSMutableArray arrayWithArray:otherArray];
+            [new addObjectsFromArray:currentArray];
+            completeBlock(new ,nil);
+        }else {
+            categoryModel.dataArray = [NSArray arrayWithArray:currentArray];
+            completeBlock(nil, categoryModel);
+        }
+    }
+    for (UIViewController *vc in self.navigationController.viewControllers) {
+        if ([vc isKindOfClass:[GoodsAddOrEditViewController class]]) {
+            [self.navigationController popToViewController:vc animated:YES];
+            return;
+        }
+    }
+}
+
+- (void)reloadCurrentArrayWithModel:(GoodsPropertyModel *)model {
+    if (model.isSelect) {
+        [currentArray addObject:model];
+        return;
+    }
+    NSMutableArray *new = [NSMutableArray arrayWithArray:currentArray];
+    for (NSInteger i = 0;i < new.count;i ++) {
+        GoodsPropertyModel *mode = new[i];
+        if ([model.proId isEqualToString:mode.proId]) {
+            [new removeObject:mode];
+        }
+    }
+    currentArray = [NSMutableArray arrayWithArray:new];
+}
+
+- (void)reloadCurrentArray {
+    
+    NSMutableArray *new = [NSMutableArray array];
+    for (NSInteger i = 0;i < propertyArray.count;i ++) {
+        GoodsPropertyModel *model = propertyArray[i];
+        for (NSInteger j = 0;j < currentArray.count;j ++) {
+            GoodsPropertyModel *model1 = currentArray[j];
+            if ([model.proId isEqualToString:model1.proId]) {
+                [new addObject:model];
+                model.isSelect = YES;
+            }
+        }
+    }
+    currentArray = [NSMutableArray arrayWithArray:new];
+}
+
+#pragma mark - UICollectionViewDelegate && DataSource
+- (NSInteger)numberOfSectionsInCollectionView:(UICollectionView *)collectionView {
+    return [self sectionNum];;
+}
+
+- (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {
+    NSInteger i = [self sectionNum];
+    if (section == ceilf(i) - 1)
+        return [self propertyNum] - section * CollectionViewNumInteger;
+    return CollectionViewNumInteger;
+}
+
+- (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
+    
+    GoodsPropertyCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"GoodsPropertyCell" forIndexPath:indexPath];
+    if (indexPath.section * CollectionViewNumInteger + indexPath.row == propertyArray.count) {
+        cell.titleLabel.text = @"+添加";
+        cell.deleteBtn.hidden = YES;
+        cell.isSelected = NO;
+        return cell;
+    }
+    GoodsPropertyModel *model = propertyArray[indexPath.section * CollectionViewNumInteger + indexPath.row];
+    cell.titleLabel.text = model.name;
+    cell.isSelected = model.isSelect;
+    cell.deleteBtn.hidden = !isEditMode;
+    cell.deleteBtn.tag = indexPath.section * CollectionViewNumInteger + indexPath.row;
+    [cell.deleteBtn addTarget:self action:@selector(deletePropertyClicked:) forControlEvents:UIControlEventTouchUpInside];
+    return cell;
+    
+}
+
+- (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath {
+    
+    if (indexPath.section * CollectionViewNumInteger + indexPath.row == propertyArray.count) {
+        [self addPropertyClicked];
+        return;
+    }
+    GoodsPropertyCell *cell = (GoodsPropertyCell *)[collectionView cellForItemAtIndexPath:indexPath];
+    GoodsPropertyModel *model = propertyArray[indexPath.section * CollectionViewNumInteger + indexPath.row];
+    if (isEditMode) {//编辑模式下点击修改名称
+        currentEditModel = model;
+        [self showInputAlertWithEditModel:model];
+    }else {
+        //只可选择五个
+        if (currentArray.count + otherArray.count >= MaxSelectNum && !model.isSelect) {
+            return;
+        }
+        model.isSelect = !model.isSelect;
+        cell.isSelected = model.isSelect;
+        [self reloadCurrentArrayWithModel:model];
+    }
+}
+
+#pragma mark - 接口请求
+- (void)sendRequestToGetGoodsPropertyIsShowProcessHud:(BOOL)isShow {
+    if (isShow)
+        ShowProcessHud;
+    WeakSelf;
+    NSMutableDictionary *dic = [NSMutableDictionary dictionary];
+    [dic setValue:categoryModel.proId forKey:@"proId"];
+    [RequestManager sendPostRequestWithURLString:ServerUrl_Read modular:Modular_goods requestName:RequestName_querySonProList parameters:dic completeBlock:^(NSString *resultCode, NSString *resultDesc, NSDictionary *dataDic) {
+        HideProcessHud;
+        if ([resultCode isEqualToString:@"0"]) {
+            propertyArray = [NSMutableArray array];
+            NSArray *listArray = [dataDic objectForKey:@"list"];
+            for (NSDictionary *dictionary in listArray) {
+                GoodsPropertyModel *model = [GoodsPropertyModel mj_objectWithKeyValues:dictionary];
+                [propertyArray addObject:model];
+            }
+            if (isShow)
+                [self initCurrentArray];
+            else
+                [self reloadCurrentArray];
+            
+            [self reloadCollectionView];
+        }else {
+            [weakSelf showToast:resultDesc];
+        }
+    } failedBlock:^(NSError *error) {
+        HideProcessHud;
+        [weakSelf showToast:ToastMsg_NetworkFailed];
+    }];
+}
+
+- (void)sendRequestToAddPropertyWithName:(NSString *)name {
+    ShowProcessHud;
+    WeakSelf;
+    NSMutableDictionary *dic = [NSMutableDictionary dictionary];
+    [dic setValue:CustID forKey:@"custId"];
+    [dic setValue:ShopID forKey:@"shopId"];
+    [dic setValue:name forKey:@"name"];
+    [dic setValue:@"2" forKey:@"type"];//1规格名/属性名称，2规格值/属性值
+    [dic setValue:categoryModel.proId forKey:@"parentId"];
+    [RequestManager sendPostRequestWithURLString:ServerUrl_Write modular:Modular_goods requestName:RequestName_addSonPro parameters:dic completeBlock:^(NSString *resultCode, NSString *resultDesc, NSDictionary *dataDic) {
+        HideProcessHud;
+        if ([resultCode isEqualToString:@"0"]) {
+            
+            [weakSelf sendRequestToGetGoodsPropertyIsShowProcessHud:NO];
+        }else {
+            [weakSelf showToast:resultDesc];
+        }
+    } failedBlock:^(NSError *error) {
+        HideProcessHud;
+        [weakSelf showToast:ToastMsg_NetworkFailed];
+    }];
+}
+
+- (void)sendRequestToUpdatePropertyWithName:(NSString *)name {
+    ShowProcessHud;
+    WeakSelf;
+    NSMutableDictionary *dic = [NSMutableDictionary dictionary];
+    [dic setValue:currentEditModel.proId forKey:@"proId"];
+    [dic setValue:name forKey:@"name"];
+    [dic setValue:categoryModel.proId forKey:@"parentId"];
+    [RequestManager sendPostRequestWithURLString:ServerUrl_Write modular:Modular_goods requestName:RequestName_updateSonPro parameters:dic completeBlock:^(NSString *resultCode, NSString *resultDesc, NSDictionary *dataDic) {
+        HideProcessHud;
+        if ([resultCode isEqualToString:@"0"]) {
+            
+            [weakSelf sendRequestToGetGoodsPropertyIsShowProcessHud:NO];
+        }else {
+            [weakSelf showToast:resultDesc];
+        }
+    } failedBlock:^(NSError *error) {
+        HideProcessHud;
+        [weakSelf showToast:ToastMsg_NetworkFailed];
+    }];
+}
+
+- (void)sendRequestToDeletePropertyWithProId:(NSString *)proId {
+    ShowProcessHud;
+    WeakSelf;
+    NSMutableDictionary *dic = [NSMutableDictionary dictionary];
+    [dic setValue:proId forKey:@"proId"];
+    [RequestManager sendPostRequestWithURLString:ServerUrl_Write modular:Modular_goods requestName:RequestName_delSonPro parameters:dic completeBlock:^(NSString *resultCode, NSString *resultDesc, NSDictionary *dataDic) {
+        HideProcessHud;
+        if ([resultCode isEqualToString:@"0"]) {
+            
+            [weakSelf sendRequestToGetGoodsPropertyIsShowProcessHud:NO];
+        }else {
+            [weakSelf showToast:resultDesc];
+        }
+    } failedBlock:^(NSError *error) {
+        HideProcessHud;
+        [weakSelf showToast:ToastMsg_NetworkFailed];
+    }];
+}
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+@end

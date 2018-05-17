@@ -1,0 +1,32 @@
+//
+//Created by ESJsonFormatForMac on 17/10/25.
+//
+
+#import <Foundation/Foundation.h>
+
+@class ActivityInfo;
+@interface ShopActivityModel : NSObject
+
+@property (nonatomic, assign) NSInteger count;
+
+@property (nonatomic, strong) NSArray<ActivityInfo *> *list;
+
+@end
+@interface ActivityInfo : NSObject
+
+@property (nonatomic, copy) NSString *icon;
+
+@property (nonatomic, copy) NSString *activityId;
+
+@property (nonatomic, assign) NSInteger type;
+
+@property (nonatomic, copy) NSString *shopActId;
+
+@property (nonatomic, copy) NSString *name;
+
+@property (nonatomic, copy) NSString *time;
+
+@property (nonatomic, assign) NSInteger isExist;
+
+@end
+

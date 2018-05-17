@@ -1,0 +1,60 @@
+//
+//  HistoryOrdersViewController.m
+//  XTWL_IOS_SHOP
+//
+//  Created by Cinna on 2017/10/24.
+//  Copyright © 2017年 XTWL. All rights reserved.
+//
+
+#import "HistoryOrdersViewController.h"
+
+@interface HistoryOrdersViewController ()
+
+@end
+
+@implementation HistoryOrdersViewController {
+    UILabel *dateLabel;
+    UILabel *orderNumLabel;
+    UILabel *orderMoneyLabel;
+    UILabel *returnMoneyLabel;
+    UILabel *peisongMoneyLabel;
+    UILabel *totalMoneyLabel;
+}
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    
+    self.navigationItem.title = NaviTitle_HistoryOrders;
+    
+    [self initSubviews];
+}
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+- (void)initSubviews {
+    
+    dateLabel = [CreateView createLabelWithFrame:CGRectMake(SpaceLeftRight, 0, 300, 20) text:@"本月" fontSize:FontSize_11 textColorStr:ColorText_606060 superView:self.view];
+    
+    orderNumLabel = [CreateView createLabelWithFrame:CGRectMake(SpaceLeftRight, 80, 300, 20) text:@"订单数15单" fontSize:FontSize_11 textColorStr:ColorText_606060 superView:self.view];
+    
+    orderMoneyLabel = [CreateView createLabelWithFrame:CGRectMake(SpaceLeftRight + 120, orderNumLabel.frame.origin.y + orderNumLabel.frame.size.height + 5, Screen_Width - 120 - SpaceLeftRight * 2, 20) text:@"200" fontSize:FontSize_11 textColorStr:ColorText_606060 superView:self.view];
+    orderMoneyLabel.textAlignment = NSTextAlignmentRight;
+    [CreateView createLabelWithFrame:CGRectMake(SpaceLeftRight, orderMoneyLabel.frame.origin.y, 120, 20) text:@"订单金额" fontSize:FontSize_11 textColorStr:ColorText_606060 superView:self.view];
+    
+    returnMoneyLabel = [CreateView createLabelWithFrame:CGRectMake(SpaceLeftRight + 120, orderMoneyLabel.frame.origin.y + orderMoneyLabel.frame.size.height + 5, Screen_Width - 120 - SpaceLeftRight * 2, 20) text:@"-20.00" fontSize:FontSize_11 textColorStr:Color_PriceFF2622 superView:self.view];
+    returnMoneyLabel.textAlignment = NSTextAlignmentRight;
+    [CreateView createLabelWithFrame:CGRectMake(SpaceLeftRight, returnMoneyLabel.frame.origin.y, 120, 20) text:@"退款金额" fontSize:FontSize_11 textColorStr:ColorText_606060 superView:self.view];
+    
+    peisongMoneyLabel = [CreateView createLabelWithFrame:CGRectMake(SpaceLeftRight + 120, returnMoneyLabel.frame.origin.y + returnMoneyLabel.frame.size.height + 5, Screen_Width - 120 - SpaceLeftRight * 2, 20) text:@"20.12" fontSize:FontSize_11 textColorStr:ColorText_606060 superView:self.view];
+    peisongMoneyLabel.textAlignment = NSTextAlignmentRight;
+    [CreateView createLabelWithFrame:CGRectMake(SpaceLeftRight, peisongMoneyLabel.frame.origin.y, 120, 20) text:@"配送金额（自行配送）" fontSize:FontSize_11 textColorStr:ColorText_606060 superView:self.view];
+    
+    totalMoneyLabel = [CreateView createLabelWithFrame:CGRectMake(SpaceLeftRight + 120, peisongMoneyLabel.frame.origin.y + peisongMoneyLabel.frame.size.height + 5, Screen_Width - 120 - SpaceLeftRight * 2, 20) text:@"199.88" fontSize:FontSize_11 textColorStr:ColorText_606060 superView:self.view];
+    totalMoneyLabel.textAlignment = NSTextAlignmentRight;
+    [CreateView createLabelWithFrame:CGRectMake(SpaceLeftRight, totalMoneyLabel.frame.origin.y, 120, 20) text:@"总   计" fontSize:FontSize_11 textColorStr:ColorText_606060 superView:self.view];
+}
+
+@end

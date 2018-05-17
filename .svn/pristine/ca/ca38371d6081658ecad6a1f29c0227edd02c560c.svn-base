@@ -1,0 +1,16 @@
+//
+//  GoodsPropertyDescModel.h
+//  XTWL_IOS_SHOP
+//
+//  Created by 开发003 on 2017/10/27.
+//  Copyright © 2017年 XTWL. All rights reserved.
+//
+
+#import <Foundation/Foundation.h>
+
+@interface GoodsPropertyDescModel : NSObject
+
+PropertyCopy NSString *propertyName;// 名称
+PropertyCopy NSString *propertyDesc;// 拼接字符串描述
+
+@end

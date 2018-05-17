@@ -1,0 +1,278 @@
+//
+//  SetCategoryViewController.m
+//  XTWL_IOS_SHOP
+//
+//  Created by Cinna on 2017/10/25.
+//  Copyright © 2017年 XTWL. All rights reserved.
+//
+
+#import "SetCategoryViewController.h"
+#import "GoodsInfo.h"
+
+@interface SetCategoryViewController () <UITableViewDelegate, UITableViewDataSource>
+
+@end
+
+@implementation SetCategoryViewController {
+    UITableView *categoryTable;
+    NSMutableArray *categoryArray;
+    UIAlertController *alert;
+    NSInteger editIndex;
+    BOOL isEditMode;
+    UIButton *submitBtn;
+    FinishEditBlock finishEditBlock;
+}
+
+- (instancetype)initWithFinishBlock:(FinishEditBlock)block {
+    self = [super init];
+    if (self) {
+        finishEditBlock = block;
+    }
+    return self;
+}
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    // Do any additional setup after loading the view.
+    self.navigationItem.title = NaviTitle_GoodsPropertyCategory;
+    editIndex = 1000;
+    [self initSaveBtn];
+    [self initSubviews];
+    [self sendRequestToGetCategoryIsShowProcessHud:YES];
+}
+
+- (void)initSaveBtn {
+    
+    UIButton *btn = [CreateView createCustomBtnWithFrame:CGRectMake(0, 0, 40, 44) title:Complete image:nil titleColorStr:ColorText_606060 fontSize:FontSize_14 superView:nil];
+    [btn setTitleColor:ColorWithHexString(ColorText_606060) forState:UIControlStateNormal];
+    btn.titleLabel.font = Font14;
+    [btn addTarget:self action:@selector(submitClicked) forControlEvents:UIControlEventTouchUpInside];
+    UIBarButtonItem *right = [[UIBarButtonItem alloc] initWithCustomView:btn];
+    self.navigationItem.rightBarButtonItem = right;
+}
+
+- (void)initSubviews {
+    
+    categoryTable = [[UITableView alloc] initWithFrame:CGRectMake(0, Start_Height, Screen_Width, Show_Height_Next - 50) style:UITableViewStylePlain];
+    categoryTable.rowHeight = 48;
+    categoryTable.backgroundColor = WHITE_COLOR;
+    categoryTable.separatorStyle = UITableViewCellSeparatorStyleNone;
+    categoryTable.delegate = self;
+    categoryTable.dataSource = self;
+    categoryTable.scrollEnabled = NO;
+    categoryTable.allowsSelectionDuringEditing = YES;
+    [categoryTable setEditing:YES animated:YES];
+    [self.view addSubview:categoryTable];
+    
+    
+    UIButton *addCategoryBtn = [CreateView createCustomBtnWithFrame:CGRectMake(SpaceLeftRight, ScreenHeight_WithoutBottomBar - 45, Screen_Width - SpaceLeftRight * 2, 40) title:AlertMsg_AddCategory image:nil titleColorStr:ColorText_606060 fontSize:FontSize_14 superView:self.view];
+    [addCategoryBtn addTarget:self action:@selector(addCategoryClicked) forControlEvents:UIControlEventTouchUpInside];
+    addCategoryBtn.backgroundColor = ColorWithHexString(Color_MainFFDA44);
+}
+
+#pragma mark -
+- (void)submitClicked {
+    [self sendRequestToUpdateCategoryIsShowProcessHud:YES];
+}
+
+- (void)addCategoryClicked {
+    [self showInputAlertWithEditModel:nil];
+}
+
+- (void)showInputAlertWithEditModel:(GoodsCategoryInfo *)model {
+    WeakSelf;
+    if (model) {
+        
+        alert = [UIAlertController alertControllerWithTitle:AlertMsg_EditCategory message:AlertMsg_PleaseInputNewCategoryName preferredStyle:UIAlertControllerStyleAlert];
+    }else {
+        alert = [UIAlertController alertControllerWithTitle:AlertMsg_AddCategory message:AlertMsg_PleaseInputNewCategoryName preferredStyle:UIAlertControllerStyleAlert];
+    }
+    
+    [alert addTextFieldWithConfigurationHandler:^(UITextField * _Nonnull textField) {
+        if (model) {
+            textField.placeholder = model.name;
+        }else {
+            textField.placeholder = AlertMsg_PleaseInputCategoryName;
+        }
+        [[NSNotificationCenter defaultCenter] addObserver:weakSelf selector:@selector(alertTextFieldDidChange:) name:UITextFieldTextDidChangeNotification object:textField];
+    }];
+    
+    UIAlertAction *cancle = [UIAlertAction actionWithTitle:AlertBtn_Cancle style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
+    }];
+    [alert addAction:cancle];
+    UIAlertAction *confirm = [UIAlertAction actionWithTitle:AlertBtn_Confirm style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+        if (model) {
+            [self updateCategoryWithName:alert.textFields[0].text];
+        }else {
+            [self addCategoryWithName:alert.textFields[0].text];
+        }
+        
+    }];
+    [alert addAction:confirm];
+    confirm.enabled = NO;
+    [self presentViewController:alert animated:YES completion:nil];
+}
+
+- (void)alertTextFieldDidChange:(NSNotification *)notification {
+    UITextField *textField = notification.object;
+    if (textField.text.length > 0) {
+        alert.actions[1].enabled = YES;
+    }else {
+        alert.actions[1].enabled = NO;
+    }
+    if (textField.text.length > 5) {
+        textField.text = [textField.text substringToIndex:5];
+    }
+}
+
+- (void)updateCategoryWithName:(NSString *)name {
+    
+    GoodsCategoryInfo *model = categoryArray[editIndex];
+    model.name = name;
+    [categoryTable reloadRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:editIndex inSection:0]] withRowAnimation:UITableViewRowAnimationNone];
+}
+
+- (void)addCategoryWithName:(NSString *)name {
+    GoodsCategoryInfo *model = [[GoodsCategoryInfo alloc] init];
+    model.name = name;
+    [categoryArray addObject:model];
+    
+    [categoryTable insertRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:categoryArray.count - 1 inSection:0]] withRowAnimation:UITableViewRowAnimationNone];
+}
+
+- (void)deleteCategoryAtIndex:(NSInteger)index {
+    
+    if (index <= categoryArray.count) {
+        
+        GoodsCategoryInfo *model = categoryArray[index];
+        if (model.isDefault == 1) {
+            [self showToast:ToastMsg_DefaultCategoryCannotDelete];
+            return;
+        }
+        
+        [categoryArray removeObjectAtIndex:index];
+        [categoryTable deleteRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:index inSection:0]] withRowAnimation:UITableViewRowAnimationNone];
+        return;
+    }
+    
+}
+#pragma mark - UITableViewDelegate && UITableViewDataSource
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+    return categoryArray.count;
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    UITableViewCell *cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@""];
+    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+    
+    cell.textLabel.font = Font14;
+    cell.textLabel.textColor = ColorWithHexString(ColorText_333333);
+    
+    GoodsCategoryInfo *model = categoryArray[indexPath.row];
+    
+    cell.textLabel.text = model.name;
+    [CreateView createLineViewWithFrame:CGRectMake(SpaceLeftRight, 47.5, Screen_Width - SpaceLeftRight, 0.5) colorStr:ColorLine_ededed superView:cell.contentView];
+    
+    return cell;
+}
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    [tableView deselectRowAtIndexPath:indexPath animated:YES];
+    GoodsCategoryInfo *model = categoryArray[indexPath.row];
+    if (tableView.isEditing) {
+        editIndex = indexPath.row;
+        [self showInputAlertWithEditModel:model];
+    }
+}
+
+- (BOOL) tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath{
+    return YES;
+}
+- (UITableViewCellEditingStyle)tableView:(UITableView *)tableView editingStyleForRowAtIndexPath:(NSIndexPath *)indexPath {
+    return UITableViewCellEditingStyleNone | UITableViewCellEditingStyleDelete;
+}
+
+-(void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath{
+    
+    [self deleteCategoryAtIndex:indexPath.row];
+    
+}
+
+-(void)tableView:(UITableView *)tableView moveRowAtIndexPath:(NSIndexPath *)sourceIndexPath toIndexPath:(NSIndexPath *)destinationIndexPath {
+    GoodsCategoryInfo *model1 = categoryArray[sourceIndexPath.row];
+    [categoryArray removeObjectAtIndex:sourceIndexPath.row];
+    [categoryArray insertObject:model1 atIndex:destinationIndexPath.row];
+}
+
+#pragma mark - 接口请求
+- (void)sendRequestToGetCategoryIsShowProcessHud:(BOOL)isShow {
+    if (isShow)
+        ShowProcessHud;
+    WeakSelf;
+    NSMutableDictionary *dic = [NSMutableDictionary dictionary];
+    [dic setValue:ShopID forKey:@"shopId"];
+    
+    [RequestManager sendPostRequestWithURLString:ServerUrl_Read modular:Modular_goods requestName:RequestName_queryGoodsTypeByUp parameters:dic completeBlock:^(NSString *resultCode, NSString *resultDesc, NSDictionary *dataDic) {
+        HideProcessHud;
+        if ([resultCode isEqualToString:@"0"]) {
+            categoryArray = [NSMutableArray array];
+            NSArray *listArray = [dataDic objectForKey:@"list"];
+            for (NSDictionary *dictionary in listArray) {
+                GoodsCategoryInfo *model = [GoodsCategoryInfo mj_objectWithKeyValues:dictionary];
+                [categoryArray addObject:model];
+            }
+            [categoryTable reloadData];
+        }else {
+            [weakSelf showToast:resultDesc];
+        }
+    } failedBlock:^(NSError *error) {
+        HideProcessHud;
+        [weakSelf showToast:ToastMsg_NetworkFailed];
+    }];
+}
+
+- (void)sendRequestToUpdateCategoryIsShowProcessHud:(BOOL)isShow {
+    if (isShow)
+        ShowProcessHud;
+    WeakSelf;
+    NSMutableDictionary *dic = [NSMutableDictionary dictionary];
+    [dic setValue:ShopID forKey:@"shopId"];
+    NSMutableArray *array = [NSMutableArray array];
+    for (NSInteger i = 0;i < categoryArray.count;i++) {
+        NSMutableDictionary *dict = [NSMutableDictionary dictionary];
+        GoodsCategoryInfo *model = categoryArray[i];
+        [dict setValue:model.typeId forKey:@"typeId"];
+        [dict setValue:model.name forKey:@"name"];
+        [dict setValue:[NSNumber numberWithInteger:i + 1] forKey:@"sort"];
+        [dict setValue:[NSNumber numberWithInteger:model.isDefault] forKey:@"isDefault"];
+        [array addObject:dict];
+    }
+    [dic setValue:array forKey:@"list"];
+    [RequestManager sendPostRequestWithURLString:ServerUrl_Write modular:Modular_goods requestName:RequestName_updateShopGoodsType parameters:dic completeBlock:^(NSString *resultCode, NSString *resultDesc, NSDictionary *dataDic) {
+        HideProcessHud;
+        if ([resultCode isEqualToString:@"0"]) {
+            [weakSelf showToast:ToastMsg_CategoryEditSuccess];
+            [weakSelf performSelector:@selector(finish) withObject:nil afterDelay:PushVCDelayTime];
+        }else {
+            [weakSelf showToast:resultDesc];
+        }
+    } failedBlock:^(NSError *error) {
+        HideProcessHud;
+        [weakSelf showToast:ToastMsg_NetworkFailed];
+    }];
+}
+
+
+#pragma mark -
+- (void)finish {
+    if (finishEditBlock) {
+        finishEditBlock();
+    }
+    PopVC;
+}
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+@end

@@ -1,0 +1,305 @@
+//
+//  ShopGoodsTypeViewController.m
+//  XTWL_IOS_SHOP
+//
+//  Created by Zhaoyang on 2017/10/17.
+//  Copyright © 2017年 XTWL. All rights reserved.
+//
+
+#import "ShopGoodsTypeViewController.h"
+#import "OpenShopInfo.h"
+#import "ShopTypeModel.h"
+#import "ShopSecTypeModel.h"
+@interface ShopGoodsTypeViewController ()<UITableViewDelegate,UITableViewDataSource>{
+    ShopTypeModel *shoptypeModel;
+    ShopSecTypeModel *shopsectypeModel;
+    NSInteger selectindex;
+}
+PropertyStrong UITableView *firstTable;
+PropertyStrong UITableView *secTableView;
+@end
+
+@implementation ShopGoodsTypeViewController
+
+- (instancetype)initWithShopType:(SelectGoodsType)selecttype {
+    self = [super init];
+    if (self) {
+        self.selectGoodsType = selecttype;
+
+    }
+    return self;
+}
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    self.navigationItem.title = ShopGoodsTypeSt;
+    
+    //右上角保存
+    UIButton *saveBtn = [[UIButton alloc]initWithFrame:CGRectMake(10, 0, 40, 30)];
+    [saveBtn setTitle:AlertBtn_Save forState:UIControlStateNormal];
+    saveBtn.titleLabel.font = Font14;
+    [saveBtn setTitleColor:ColorWithHexString(ColorText_333333) forState:UIControlStateNormal];
+    [saveBtn addTarget:self action:@selector(save) forControlEvents:UIControlEventTouchUpInside];
+    UIBarButtonItem *rightItem = [[UIBarButtonItem alloc] initWithCustomView:saveBtn];
+    self.navigationItem.rightBarButtonItem = rightItem;
+    
+    [self initFirstTable];
+    [self initSecTable];
+
+    [self sendRequestToGetShopinfoWithid:@"0"];
+}
+- (void)initFirstTable {
+    UIView *backview = [[UIView alloc]initWithFrame:CGRectMake(0, Start_Height, 140, Show_Height_Next)];
+    backview.backgroundColor = ColorWithHexString(Color_BackgroundF2F2F2);
+    [self.view addSubview:backview];
+    
+    self.firstTable = [[UITableView alloc]initWithFrame:backview.bounds style:UITableViewStylePlain];
+    self.firstTable.delegate = self;
+    self.firstTable.dataSource = self;
+    self.firstTable.backgroundColor = ColorWithHexString(Color_BackgroundF2F2F2);
+    [backview addSubview:self.firstTable];
+    UIView *view = [[UIView alloc]init];
+    self.firstTable.tableFooterView = view;
+    self.firstTable.separatorStyle = UITableViewCellSeparatorStyleNone;
+}
+
+- (void)initSecTable {
+    UIView *backview = [[UIView alloc]initWithFrame:CGRectMake(140, Start_Height, Screen_Width-140, Show_Height_Next)];
+    backview.backgroundColor = WHITE_COLOR;
+    [self.view addSubview:backview];
+    
+    self.secTableView = [[UITableView alloc]initWithFrame:backview.bounds style:UITableViewStylePlain];
+    self.secTableView.backgroundColor = WHITE_COLOR;
+    self.secTableView.delegate = self;
+    self.secTableView.dataSource = self;
+    [backview addSubview:self.secTableView];
+    UIView *view = [[UIView alloc]init];
+    self.secTableView.tableFooterView = view;
+    self.secTableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+}
+
+#pragma UITableViewDelegate&&UITableViewDataSource
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+    if (tableView == self.firstTable) {
+        return shoptypeModel.list.count;
+    }else {
+        return shopsectypeModel.list.count;
+    }
+}
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
+    return 40;
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    if (tableView == self.firstTable) {
+        UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"cell"];
+        if (!cell) {
+            cell = [[UITableViewCell alloc]initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@"cell"];
+            cell.selectionStyle = UITableViewCellSelectionStyleNone;
+            
+            
+            
+            
+            UIView *view = [[UIView alloc]initWithFrame:CGRectMake(0, 10, 5, 20)];
+            view.backgroundColor = ColorWithHexString(Color_MainFFDA44);
+            view.tag = 100;
+            [cell.contentView addSubview:view];
+            
+        }
+        UIView *coloView = (UIView *)[cell.contentView viewWithTag:100];
+        
+        FirstShopmodel *first = shoptypeModel.list[indexPath.row];
+        cell.textLabel.text = first.supTypeName;
+        cell.textLabel.font = Font14;
+        
+        for (int i =0 ; i<shoptypeModel.list.count; i++) {
+            if ([[OpenShopInfo shareInstance].SupTypeId isEqualToString:first.supTypeId]) {
+                cell.textLabel.textColor = ColorWithHexString(Color_MainFFDA44);
+                cell.backgroundColor = ColorWithHexString(Color_ShopGoodsTypeF9F9F9);
+                coloView.hidden = NO;
+            }else {
+                cell.textLabel.textColor = ColorWithHexString(ColorText_333333);
+                cell.backgroundColor = ColorWithHexString(Color_BackgroundF2F2F2);
+                coloView.hidden = YES;
+            }
+        }
+        
+        return cell;
+    }
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"cellid"];
+    if (!cell) {
+        cell = [[UITableViewCell alloc]initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@"cellid"];
+        cell.selectionStyle = UITableViewCellSelectionStyleNone;
+    }
+    SecshopModel *secshop = shopsectypeModel.list[indexPath.row];
+    cell.textLabel.text = secshop.supTypeName;
+    cell.textLabel.font = Font11;
+    NSMutableArray *mutableCopyArr = [[OpenShopInfo shareInstance].SecsupTypeIDArr mutableCopy];
+    if ([mutableCopyArr containsObject: secshop.supTypeId]) {
+        cell.textLabel.textColor = ColorWithHexString(Color_MainFFDA44);
+    }else {
+        cell.textLabel.textColor = ColorWithHexString(ColorText_333333);
+    }
+
+    
+    
+    
+    
+    
+    
+    return cell;
+}
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    if (tableView == self.firstTable) {
+       
+        FirstShopmodel *first = shoptypeModel.list[indexPath.row];
+        [OpenShopInfo shareInstance].SupTypeId = first.supTypeId;
+        [OpenShopInfo shareInstance].shopTypeName = first.supTypeName;
+        [self removeObjects];
+        [self sendRequestToGetShopinfo];
+        
+    }else {
+        SecshopModel *secshop = shopsectypeModel.list[indexPath.row];
+        [self saveSecTypewithtypeid:secshop.supTypeId goodsNmae:secshop.supTypeName];
+
+    }
+}
+
+//右上角保存
+- (void)save {
+    HideKeyBoard;
+    [[OpenShopInfo shareInstance] writeToDefaults];
+    [self showToast:SaveSuccess];
+    [self performSelector:@selector(returnback) withObject:nil afterDelay:1.5];
+    
+   
+    
+}
+
+
+
+
+//选中第一分类 清空第二分类的数据
+- (void)removeObjects {
+    
+    
+    NSMutableArray *mutableCopyArr = [[OpenShopInfo shareInstance].SecsupTypeIDArr mutableCopy];
+    if (mutableCopyArr.count >0) {
+        NSMutableArray *infoarr = [[NSMutableArray alloc]initWithArray:mutableCopyArr];
+        [infoarr removeAllObjects];
+        mutableCopyArr = infoarr;
+        [OpenShopInfo shareInstance].SecsupTypeIDArr =mutableCopyArr;
+        
+        NSMutableArray *goodsCopyArr = [[OpenShopInfo shareInstance].SecsupTypeNmaeArr mutableCopy];
+        [goodsCopyArr removeAllObjects];
+        [OpenShopInfo shareInstance].SecsupTypeNmaeArr =goodsCopyArr;
+
+    }
+    
+}
+//存放选中的第二分类
+- (void)saveSecTypewithtypeid:(NSString *)supid  goodsNmae:(NSString *)goodsname
+{
+    NSMutableArray *mutableCopyArr = [[OpenShopInfo shareInstance].SecsupTypeIDArr mutableCopy];
+    NSMutableArray *goodsCopyArr = [[OpenShopInfo shareInstance].SecsupTypeNmaeArr mutableCopy];
+    if (mutableCopyArr.count == 0) {
+        [mutableCopyArr addObject:supid];
+        [goodsCopyArr addObject:goodsname];
+        [OpenShopInfo shareInstance].SecsupTypeIDArr = mutableCopyArr;
+        [OpenShopInfo shareInstance].SecsupTypeNmaeArr = goodsCopyArr;
+    }else{
+        NSMutableArray *goodsarr= [[NSMutableArray alloc]initWithArray:goodsCopyArr];
+         NSMutableArray *arr= [[NSMutableArray alloc]initWithArray:mutableCopyArr];
+
+        if ([arr containsObject:supid]) {
+            [arr removeObject:supid];
+            [goodsarr removeObject:goodsname];
+        }else {
+            if (arr.count<2) {
+                [arr addObject:supid];
+                [goodsarr addObject:goodsname];
+            }else {
+                //超出两个了
+                UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"" message:AlertMsg_ChooseTwo preferredStyle:UIAlertControllerStyleAlert];
+                UIAlertAction *action = [UIAlertAction actionWithTitle:AlertBtn_Know style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+                    
+                }];
+                [alert addAction:action];
+                [self presentViewController:alert animated:YES completion:nil];
+            }
+        }
+        [OpenShopInfo shareInstance].SecsupTypeIDArr = arr;
+        [OpenShopInfo shareInstance].SecsupTypeNmaeArr = goodsarr;
+    }
+    
+    [self finishRefresh];
+
+}
+
+
+
+
+- (void)finishRefresh {
+    [self.firstTable reloadData];
+    [self.secTableView reloadData];
+}
+
+#pragma 查询商品种类
+- (void)sendRequestToGetShopinfoWithid:(NSString *)shopid {
+    WeakSelf;
+    NSMutableDictionary *dic = [[NSMutableDictionary alloc]init];
+    [dic setValue:AvailableString([OpenShopInfo shareInstance].shopType) forKey:@"type"];
+    [dic setValue:shopid forKey:@"id"];
+    [RequestManager sendPostRequestWithURLString:ServerUrl_Read modular:Modular_readShop requestName:RequestName_queryShopTypeList parameters:dic completeBlock:^(NSString *resultCode, NSString *resultDesc, NSDictionary *dataDic)
+     {
+
+        if ([resultCode isEqualToString:@"0"]) {
+            
+            shoptypeModel = [ShopTypeModel mj_objectWithKeyValues:dataDic];
+            
+            if (![AvailableString([OpenShopInfo shareInstance].SupTypeId) isEqualToString:@""]) {
+                [self sendRequestToGetShopinfo];
+            }else{
+                [self finishRefresh];
+            }
+
+        }else  {
+            [weakSelf showToast:resultDesc];
+        }
+        
+    } failedBlock:^(NSError *error) {
+        
+        [weakSelf showToast:ToastMsg_NetworkFailed];
+    }];
+}
+
+
+- (void)sendRequestToGetShopinfo {
+    WeakSelf;
+    NSMutableDictionary *dic = [[NSMutableDictionary alloc]init];
+    [dic setValue:AvailableString([OpenShopInfo shareInstance].shopType) forKey:@"type"];
+    [dic setValue:AvailableString([OpenShopInfo shareInstance].SupTypeId) forKey:@"id"];
+    [RequestManager sendPostRequestWithURLString:ServerUrl_Read modular:Modular_readShop requestName:RequestName_queryShopTypeList parameters:dic completeBlock:^(NSString *resultCode, NSString *resultDesc, NSDictionary *dataDic)
+     {
+         
+         if ([resultCode isEqualToString:@"0"]) {
+             
+             shopsectypeModel = [ShopSecTypeModel mj_objectWithKeyValues:dataDic];
+             
+         }else  {
+             [weakSelf showToast:resultDesc];
+         }
+                 [weakSelf finishRefresh];
+     } failedBlock:^(NSError *error) {
+         
+         [weakSelf showToast:ToastMsg_NetworkFailed];
+     }];
+}
+
+
+- (void)returnback {
+    [self.navigationController popViewControllerAnimated:YES];
+}
+
+@end

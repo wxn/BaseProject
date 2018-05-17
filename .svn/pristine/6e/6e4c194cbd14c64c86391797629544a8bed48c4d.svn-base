@@ -1,0 +1,106 @@
+//
+//  NewOldPriceView.m
+//  XTWL_XFJY
+//
+//  Created by Cinna on 16/9/6.
+//  Copyright © 2016年 xuntiangwangluo. All rights reserved.
+//
+
+#import "NewOldPriceView.h"
+#import "CommonUtil.h"
+#import "PriceUtil.h"
+
+@implementation NewOldPriceView {
+    UILabel *newPriceLabel;
+    UILabel *oldPriceLabel;
+    UIView *lineView;
+    float maxWidth;//view最大的width，也就是初始化时的宽度
+    double newPricel;
+    double oldPricel;
+}
+
+- (instancetype)initWithFrame:(CGRect)frame {
+    self = [super initWithFrame:frame];
+    if (self) {
+        maxWidth = frame.size.width;
+        [self initSubviews];
+    }
+    return self;
+}
+
+- (void)initSubviews {
+    
+    newPriceLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 0, self.frame.size.height)];
+    newPriceLabel.textColor = ColorWithHexString(Color_PriceFF2622);
+    newPriceLabel.font = Font(15.0);
+    
+    oldPriceLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 3, 0, 15)];
+    oldPriceLabel.textColor = ColorWithHexString(ColorText_999999);
+    oldPriceLabel.font = Font(13.0);
+    
+    lineView = [[UIView alloc] initWithFrame:CGRectMake(0, oldPriceLabel.center.y, 0, 1)];
+    lineView.backgroundColor = ColorWithHexString(ColorText_999999);
+    
+    [self addSubview:newPriceLabel];
+    [self addSubview:oldPriceLabel];
+    [self addSubview:lineView];
+}
+
+- (void)reloadSubviews {
+    lineView.hidden = NO;
+    oldPriceLabel.hidden = NO;
+    oldPriceLabel.textColor = ColorWithHexString(ColorText_999999);
+    oldPriceLabel.font = Font(13.0);
+    
+    float newPriceWidth = [CommonUtil widthForString:[PriceUtil rmbPriceStrWithFloat:newPricel] fontSize:15.0];
+    
+    newPriceLabel.frame = CGRectMake(newPriceLabel.frame.origin.x, newPriceLabel.frame.origin.y, newPriceWidth, newPriceLabel.frame.size.height);
+    
+    newPriceLabel.text = [PriceUtil rmbPriceStrWithFloat:newPricel];
+    float oldPriceWidth;
+    oldPriceWidth = [CommonUtil widthForString:[PriceUtil rmbPriceStrWithFloat:oldPricel] fontSize:13.0];
+    oldPriceLabel.text = [PriceUtil rmbPriceStrWithFloat:oldPricel];
+    //如果超出了width
+    if (oldPriceWidth > maxWidth - newPriceWidth - 5) {
+        oldPriceWidth = maxWidth - newPriceWidth - 5;
+    }
+    if (oldPricel <= 0 || oldPricel == newPricel) {
+        oldPriceWidth = 0;
+        oldPriceLabel.text = @"";
+    }
+    oldPriceLabel.frame = CGRectMake(newPriceWidth + 5, oldPriceLabel.frame.origin.y, oldPriceWidth, oldPriceLabel.frame.size.height);
+    
+    lineView.frame = CGRectMake(oldPriceLabel.frame.origin.x, lineView.frame.origin.y, oldPriceWidth, lineView.frame.size.height);
+    
+    self.frame = CGRectMake(self.frame.origin.x, self.frame.origin.y, newPriceWidth+5+oldPriceWidth, self.frame.size.height);
+}
+
+- (void)setNewPrice:(double)newPrice oldPrice:(double)oldPrice {
+    newPricel = newPrice;
+    oldPricel = oldPrice;
+
+    [self reloadSubviews];
+}
+
+- (void)showPriceRangeWithFirstPrice:(double)first secondPrice:(double)second {
+    oldPriceLabel.hidden = YES;
+    lineView.hidden = YES;
+    
+    float priceWidth;
+    NSString *priceStr = [PriceUtil rmbPriceStrWithFloat:first];
+    if (first < second && second > 0) {
+        priceStr = [PriceUtil rmbPriceStrWithStr:[NSString stringWithFormat:@"%.2f-%.2f",first,second]];
+    }
+    priceWidth = [CommonUtil widthForString:priceStr fontSize:15.0];
+    newPriceLabel.text = priceStr;
+    //如果超出了width
+    if (priceWidth > maxWidth) {
+        priceWidth = maxWidth;
+    }
+    newPriceLabel.frame = CGRectMake(newPriceLabel.frame.origin.x, newPriceLabel.frame.origin.y, priceWidth, newPriceLabel.frame.size.height);
+    
+    self.frame = CGRectMake(self.frame.origin.x, self.frame.origin.y, priceWidth, self.frame.size.height);
+}
+
+
+@end

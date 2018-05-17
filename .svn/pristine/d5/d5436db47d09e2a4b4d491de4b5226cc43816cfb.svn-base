@@ -1,0 +1,23 @@
+//
+//  IdeaBackCell.h
+//  XTWL_IOS_SHOP
+//
+//  Created by Cinna on 2017/10/24.
+//  Copyright © 2017年 XTWL. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+
+@interface IdeaBackCell : UITableViewCell
+
+PropertyStrong UIImageView *iconImageView;
+PropertyStrong UILabel *userNameLabel;
+PropertyStrong UILabel *dateLabel;
+PropertyStrong UILabel *goodsNameLabel;
+PropertyStrong UILabel *reasonLabel;
+
+PropertyStrong UIView *redDotView;//红点
+
+- (instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier;
+
+@end

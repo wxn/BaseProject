@@ -1,0 +1,18 @@
+//
+//  GoodsSearchViewController.h
+//  XTWL_IOS_SHOP
+//
+//  Created by 开发003 on 2017/10/30.
+//  Copyright © 2017年 XTWL. All rights reserved.
+//
+
+#import "BaseNextViewController.h"
+
+
+typedef void(^SearchBackBlock)();
+
+@interface GoodsSearchViewController : BaseNextViewController
+
+- (instancetype)initWithSearchBackBlock:(SearchBackBlock)searchBlock;
+
+@end

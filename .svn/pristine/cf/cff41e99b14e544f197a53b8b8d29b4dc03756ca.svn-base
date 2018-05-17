@@ -1,0 +1,303 @@
+//
+//  ForgetPswViewController.m
+//  XTWL_IOS_SHOP
+//
+//  Created by Zhaoyang on 2017/10/13.
+//  Copyright © 2017年 XTWL. All rights reserved.
+//
+
+#import "ForgetPswViewController.h"
+#import "SettingNewPswViewController.h"
+@interface ForgetPswViewController ()<UITextFieldDelegate>{
+    NSString *accountStr;
+    NSString *codeStr;
+}
+PropertyStrong UIView *accountView;
+PropertyStrong UIView *codeView;
+PropertyStrong UIButton *sendCodeBtn;
+PropertyStrong UIButton *nextBtn;
+
+@end
+
+@implementation ForgetPswViewController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    
+    self.navigationItem.title = NaviTitle_FindPsw;
+
+    
+    self.accountView = [self createTextfieldWithFrame:CGRectMake(0, Start_Height+15, Screen_Width, 50) placeholder:RegistPhonePlaceholder tag:100 textcolor:ColorText_333333 font:FontSize_14 placeholderColor:ColorText_dadada superView:self.view];
+
+    
+    self.codeView = [self createTextfieldWithFrame:CGRectMake(0, CGRectGetMaxY(self.accountView.frame)+10, Screen_Width, 50) placeholder:RegistCodePlaceholder tag:101 textcolor:ColorText_333333 font:FontSize_14 placeholderColor:ColorText_dadada superView:self.view];
+    
+    
+    self.nextBtn = [[UIButton alloc]initWithFrame:CGRectMake(SpaceLeftRight, CGRectGetMaxY(self.codeView.frame)+15, Screen_Width-2*SpaceLeftRight, 40)];
+    SetViewCorner(self.nextBtn, 5);
+    self.nextBtn.userInteractionEnabled = NO;
+    [self.nextBtn setBackgroundColor:ColorWithHexString(Color_LoginF9E69B)];
+    self.nextBtn.titleLabel.font = Font16;
+    [self.nextBtn setTitle:NextStep forState:UIControlStateNormal];
+    [self.nextBtn setTitleColor:ColorWithHexString(ColorText_999999) forState:UIControlStateNormal];
+    [self.nextBtn addTarget:self action:@selector(nextnow) forControlEvents:UIControlEventTouchUpInside];
+    [self.view addSubview:self.nextBtn];
+    
+    
+    
+    
+    UITapGestureRecognizer *tapGes = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(hidekeyboard:)];
+    [self.view addGestureRecognizer:tapGes];
+    
+}
+
+- (void)textFieldDidEndEditing:(UITextField *)textField {
+    if (textField.tag == 100) {
+        accountStr = textField.text;
+    }else {
+        codeStr = textField.text;
+    }
+}
+
+- (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string {
+    //判断 限制长度
+    NSString *allText = StringFromIdToId(textField.text, string);
+    
+    switch (textField.tag) {
+            //账号
+        case 100:
+            if ([allText length]>11) {
+                return NO;
+            }
+            break;
+        case 101:
+            if ([allText length]>4) {
+                return NO;
+            }
+            break;
+            
+        default:
+            break;
+    }
+    
+    return YES;
+}
+
+//检测账号密码是否为空 同时改变按钮可点击的状态
+- (void)textFieldChanged:(UITextField *)textField {
+    
+    NSString *temp = textField.text;
+    
+    
+    //填写完信息的同时 确定按钮根据信息的完成的情况判断是否置灰或是可以点击
+    [self changeBtnImage];
+}
+
+//当满足条件时 按钮可以点击
+- (void)changeBtnImage {
+
+    UITextField *accounttext = (UITextField *)[self.accountView viewWithTag:100];
+    UITextField *codetext = (UITextField *)[self.codeView viewWithTag:101];
+    
+    if (![AvailableString(accounttext.text) isEqualToString:@""]&&![AvailableString(codetext.text) isEqualToString:@"" ]) {
+        self.nextBtn.userInteractionEnabled = YES;
+        [self.nextBtn setBackgroundColor:ColorWithHexString(Color_MainFFDA44)];
+        [self.nextBtn setTitleColor:ColorWithHexString(ColorText_333333) forState:UIControlStateNormal];
+    }else {
+        self.nextBtn.userInteractionEnabled = NO;
+        [self.nextBtn setBackgroundColor:ColorWithHexString(Color_LoginF9E69B)];
+        [self.nextBtn setTitleColor:ColorWithHexString(ColorText_999999) forState:UIControlStateNormal];
+    }
+    
+}
+
+- (void)sendCodeBtnClick {
+    [self sendRequestToGetCode];
+   
+}
+
+//判断是否满足保存条件
+- (BOOL)canSave {
+    if ([AvailableString(accountStr) length] != 11) {
+        [self showToast:PhoneErrorToast];
+        return NO;
+    }
+    if ([AvailableString(codeStr) length] != 4) {
+        [self showToast:CodeLengthError];
+        return NO;
+    }
+
+    return YES;
+}
+
+
+
+
+
+
+- (void)nextnow {
+    HideKeyBoard
+    if ([self canSave]) {
+        [self sendRequestToCheckCode];
+        
+    }
+    
+}
+
+
+
+#pragma mark - 发送验证码
+- (void)sendRequestToGetCode {
+    WeakSelf;
+    NSMutableDictionary *dic = [[NSMutableDictionary alloc]init];
+    [dic setValue:AvailableString(accountStr)  forKey:@"phone"];
+    [dic setValue:@"1"  forKey:@"typeSign"];
+    [dic setValue:@"1"  forKey:@"source"];
+    [RequestManager sendPostRequestWithURLString:ServerUrl_Write modular:Modular_sms requestName:RequestName_sendSms parameters:dic completeBlock:^(NSString *resultCode, NSString *resultDesc, NSDictionary *dataDic) {
+        if ([resultCode isEqualToString:@"0"]) {
+            
+            [weakSelf showToast:AlertMsg_CodeSuccess];
+            [weakSelf timerStart];
+            
+        }else {
+            [weakSelf showToast:resultDesc];
+        }
+        
+    } failedBlock:^(NSError *error) {
+        [weakSelf showToast:ToastMsg_NetworkFailed];
+    }];
+}
+
+#pragma mark - 验证码校验
+- (void)sendRequestToCheckCode {
+    WeakSelf;
+    NSMutableDictionary *dic = [[NSMutableDictionary alloc]init];
+    [dic setValue:AvailableString(accountStr)  forKey:@"account"];
+    [dic setValue:AvailableString(codeStr)  forKey:@"code"];
+    
+    [RequestManager sendPostRequestWithURLString:ServerUrl_Write modular:Modular_register requestName:RequestName_queryCodeByAccount parameters:dic completeBlock:^(NSString *resultCode, NSString *resultDesc, NSDictionary *dataDic) {
+
+        if ([resultCode isEqualToString:@"0"]) {
+            
+            [weakSelf pushNextToSetPsw];
+        }else if ([resultCode isEqualToString:@"0002"]) {
+            [weakSelf showToast:AlertMsg_CodeError];
+        }else {
+            [weakSelf showToast:resultDesc];
+        }
+    } failedBlock:^(NSError *error) {
+        [weakSelf showToast:ToastMsg_NetworkFailed];
+    }];
+}
+- (void)pushNextToSetPsw {
+    SettingNewPswViewController *setting= [[SettingNewPswViewController alloc]initWithPhone:accountStr Code:codeStr];
+    [self.navigationController pushViewController:setting animated:YES];
+}
+
+- (void)hidekeyboard:(UITapGestureRecognizer *)tapGes {
+    HideKeyBoard
+}
+
+
+
+
+//开始倒计时
+-(void)timerStart {
+    __block int timeout = 59; //倒计时时间
+    dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
+    dispatch_source_t _timer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0,queue);
+    dispatch_source_set_timer(_timer,dispatch_walltime(NULL, 0),1.0*NSEC_PER_SEC, 0); //每秒执行
+    dispatch_source_set_event_handler(_timer, ^{
+        if(timeout<=0) {
+            //倒计时结束，关闭
+            dispatch_source_cancel(_timer);
+            dispatch_async(dispatch_get_main_queue(), ^{
+                //验证码按钮正常状态
+                [self.sendCodeBtn setBackgroundColor:ColorWithHexString(Color_MainFFDA44)];
+                [self.sendCodeBtn setTitle:ResendCode forState:UIControlStateNormal];
+                [self.sendCodeBtn setTitleColor:ColorWithHexString(ColorText_333333) forState:UIControlStateNormal];
+                self.sendCodeBtn.userInteractionEnabled = YES;
+            });
+        }else {
+            //            int minutes = timeout / 60;
+            int seconds = timeout % 60;
+            NSString *strTime = [NSString stringWithFormat:@"%.2d", seconds];
+            dispatch_async(dispatch_get_main_queue(), ^{
+                //验证码按钮置灰状态
+                [self.sendCodeBtn setBackgroundColor:ColorWithHexString(Color_CodeBtnFFFFFF)];
+                [self.sendCodeBtn setTitleColor:ColorWithHexString(ColorText_dadada) forState:UIControlStateNormal];
+                [self.sendCodeBtn setTitle:[NSString stringWithFormat:@"%@(%@s)",SendAgainAfterSecond,strTime] forState:UIControlStateNormal];
+                self.sendCodeBtn.userInteractionEnabled = NO;
+            });
+            timeout--;
+        }
+    });
+    dispatch_resume(_timer);
+}
+
+
+
+
+- (UIView *)createTextfieldWithFrame: (CGRect)frame
+                              placeholder: (NSString *)str
+                                      tag: (int)tag
+                                textcolor: (NSString *)colorstr
+                                     font: (CGFloat)font
+                         placeholderColor: (NSString *)placeholdercolor
+                                superView: (UIView *)superview
+{
+    UIView *backview = [[UIView alloc]initWithFrame:frame];
+    backview.backgroundColor = WHITE_COLOR;
+    [superview addSubview:backview];
+    
+    UITextField *tempTf = [[UITextField alloc]initWithFrame:CGRectMake(10, 0, backview.frame.size.width-10, backview.frame.size.height)];
+    tempTf.placeholder = str;
+    tempTf.backgroundColor = [UIColor whiteColor];
+    tempTf.borderStyle = UITextBorderStyleNone;
+    tempTf.font = Font(14);
+    tempTf.tag = tag;
+    tempTf.delegate = self;
+    [backview addSubview:tempTf];
+    switch (tempTf.tag) {
+        case 100:
+            tempTf.keyboardType = UIKeyboardTypePhonePad;
+            break;
+        case 101:
+            tempTf.keyboardType = UIKeyboardTypeNumberPad;
+            break;
+        default:
+            break;
+    }
+    [tempTf addTarget:self action:@selector(textFieldChanged:) forControlEvents:UIControlEventEditingChanged];
+    
+    if (tag == 100) {
+        UIView *rightView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, 80, 50)];
+        self.sendCodeBtn = [[UIButton alloc] init];
+        SetViewCorner(self.sendCodeBtn, 5);
+        self.sendCodeBtn.layer.borderWidth = 0.5;
+        self.sendCodeBtn.layer.borderColor = ColorWithHexString(ColorLine_e0e0e0).CGColor;
+        [self.sendCodeBtn setTitle:GetCodeStr forState:UIControlStateNormal];
+        [self.sendCodeBtn setTitleColor:ColorWithHexString(ColorText_333333) forState:UIControlStateNormal];
+        self.sendCodeBtn.backgroundColor = ColorWithHexString(ColorLine_ededed);
+        self.sendCodeBtn.frame = CGRectMake(0, 7, 70, 36);
+        self.sendCodeBtn.titleLabel.font = Font11;
+        [self.sendCodeBtn addTarget:self action:@selector(sendCodeBtnClick) forControlEvents:UIControlEventTouchUpInside];
+        [rightView addSubview:self.sendCodeBtn];
+        
+        
+        tempTf.rightView = rightView;
+        tempTf.rightViewMode = UITextFieldViewModeAlways;
+    }else {
+        tempTf.clearButtonMode = UITextFieldViewModeWhileEditing;
+    }
+    
+    
+    
+    
+    
+    return backview;
+}
+
+
+
+@end

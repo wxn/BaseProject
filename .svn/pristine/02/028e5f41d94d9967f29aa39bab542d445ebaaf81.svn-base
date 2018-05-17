@@ -1,0 +1,78 @@
+//
+//  RequestManager.h
+//  XTWL_IOS_USER
+//
+//  Created by Cinna on 2017/9/14.
+//  Copyright © 2017年 XTWL. All rights reserved.
+//
+
+#import <Foundation/Foundation.h>
+
+@interface RequestManager : NSObject
+
+/**
+ 发送Get请求
+ 
+ @param urlStr 接口地址
+ @param modular 接口板块
+ @param requestName 接口名称
+ @param parameters 接口所传参数，一般是Dictionary
+ @param completeBlock 请求成功后的回调
+ @param failedBlock 请求失败后的回调
+ */
++ (void)sendGetRequestWithURLString:(NSString *)urlStr
+                            modular:(NSString *)modular
+                        requestName:(NSString*)requestName
+                         parameters:(NSDictionary *)parameters
+                      completeBlock:(void (^)(NSString *resultCode, NSString *resultDesc, NSDictionary *dataDic))completeBlock
+                        failedBlock:(void (^)(NSError *error))failedBlock;
+
+/**
+ 发送Post请求
+ 
+ @param urlStr 接口地址
+ @param modular 接口板块
+ @param requestName 接口名称
+ @param parameters 接口所传参数，一般是Dictionary
+ @param completeBlock 请求成功后的回调
+ @param failedBlock 请求失败后的回调
+ */
++ (void)sendPostRequestWithURLString:(NSString *)urlStr
+                             modular:(NSString *)modular
+                         requestName:(NSString*)requestName
+                          parameters:(NSDictionary *)parameters
+                       completeBlock:(void (^)(NSString *resultCode, NSString *resultDesc, NSDictionary *dataDic))completeBlock
+                         failedBlock:(void (^)(NSError *error))failedBlock;
+
+/**
+ 上传图片
+ 
+ @param urlStr 图片上传地址
+ @param image 上传的图片文件
+ @param completeBlock 成功后的回调
+ @param failedBlock 失败后的回调
+ */
++ (void)sendRequestToUploadImageWithURLString:(NSString *)urlStr
+                                        image:(UIImage *)image
+                                completeBlock:(void (^)(NSString *resultCode, NSString *resultDesc, NSDictionary *dataDic))completeBlock
+                                  failedBlock:(void (^)(NSError *error))failedBlock;
+
++ (NSString *)md5:(NSString *) input;
+
+
+
+/**
+ 上传图片
+ 
+ @param urlStr 图片上传地址
+ @param image 上传的图片文件
+ @param completeBlock 成功后的回调
+ @param failedBlock 失败后的回调
+ */
++ (void)sendRequestToUploadImageWithURLString:(NSString *)urlStr
+                                        image:(UIImage *)image
+                                completeBlock:(void (^)(NSString *resultCode, NSString *resultDesc, NSDictionary *dataDic))completeBlock
+                                  failedBlock:(void (^)(NSError *error))failedBlock;
+
+@end
+

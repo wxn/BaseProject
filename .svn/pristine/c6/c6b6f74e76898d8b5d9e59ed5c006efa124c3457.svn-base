@@ -1,0 +1,26 @@
+//
+//  ServiceURL_Const_First.h
+//  XTWL_IOS_SHOP
+//
+//  Created by Cinna on 2017/9/13.
+//  Copyright © 2017年 XTWL. All rights reserved.
+//
+
+#ifndef ServiceURL_Const_First_h
+#define ServiceURL_Const_First_h
+
+
+//static NSString *const ServerUrl_Wap = @"";
+//static NSString *const ServerUrl_Upload = @"http://comm.ejiangyin.net/xtwl_universal_interface/upload";
+//static NSString *const ServerUrl_Read = @"http://192.168.8.193:1080/xtwl_read_interface/cmd";
+//static NSString *const ServerUrl_Write = @"http://192.168.8.193:1080/xtwl_write_interface/cmd";
+//static NSString *const ServerUrl_Pay = @"";
+
+//沈聪
+static NSString *const ServerUrl_Wap = @"";
+static NSString *const ServerUrl_Upload = @"http://comm.ejiangyin.net/xtwl_universal_interface/upload";
+static NSString *const ServerUrl_Read = @"http://192.168.8.151:8080/xtwl_read_interface/cmd";
+static NSString *const ServerUrl_Write = @"http://192.168.8.151:8080/xtwl_write_interface/cmd";
+static NSString *const ServerUrl_Pay = @"";
+
+#endif /* ServiceURL_Macro_First_h */

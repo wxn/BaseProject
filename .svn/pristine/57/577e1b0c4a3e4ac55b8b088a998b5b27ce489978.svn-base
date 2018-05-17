@@ -1,0 +1,46 @@
+//
+//  UserInfo.m
+//  XTWL_IOS_SHOP
+//
+//  Created by Cinna on 2017/9/26.
+//  Copyright © 2017年 XTWL. All rights reserved.
+//
+
+#import "UserInfo.h"
+
+@implementation UserInfo
+
++(instancetype)shareInstance
+{
+    static UserInfo *info;
+    static dispatch_once_t onceToken=0;
+    dispatch_once(&onceToken, ^{
+        info = [[UserInfo alloc] init];
+        [info getUserInfoFromDefaults];
+    });
+    return info;
+}
+//获取本地用户信息
+- (void)getUserInfoFromDefaults
+{
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    self.userAccount = [defaults objectForKey:@"userAcount"];
+    self.userMd5Psw = [defaults objectForKey:@"user_pswMd5"];
+    self.userKey = [defaults objectForKey:@"userkey"];
+    self.isAutoLogin = [defaults boolForKey:@"autologin"];
+}
+
+//保存用户信息至本地
+- (void)writeToDefaults
+{
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    
+    [defaults setValue:self.userAccount forKey:@"userAcount"];
+    [defaults setValue:self.userMd5Psw forKey:@"user_pswMd5"];
+    [defaults setValue:self.userKey forKey:@"userkey"];
+    [defaults setBool:self.isAutoLogin forKey:@"autologin"];
+
+    
+    [defaults synchronize];
+}
+@end

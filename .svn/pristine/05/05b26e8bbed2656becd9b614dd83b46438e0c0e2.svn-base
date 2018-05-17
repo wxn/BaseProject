@@ -1,0 +1,126 @@
+//
+//  ReadyOpenShopViewController.m
+//  XTWL_IOS_SHOP
+//
+//  Created by Zhaoyang on 2017/10/13.
+//  Copyright © 2017年 XTWL. All rights reserved.
+//
+
+#import "ReadyOpenShopViewController.h"
+#import "CommonUtil.h"
+#import "ShopTypeViewController.h"
+@interface ReadyOpenShopViewController ()<UIScrollViewDelegate>{
+    NSArray *titlearr;
+    NSArray *imagearr;
+    NSArray *subtitlearr;
+    
+}
+PropertyStrong UIScrollView *infoScrollView;
+@end
+
+@implementation ReadyOpenShopViewController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    titlearr = @[@"法人手持身份证照",@"营业执照",@"食品流通许可证"];
+    imagearr = @[@"rw_sf",@"qy_fr",@"sp_aq"];
+    subtitlearr = @[@"1、五官清晰，无遮挡\n2、不可自拍，不可只拍身份证\n3、身份证信息清晰",@"1、文字清晰,执照完整,真实有效\n2、执照复印件需要加盖公司红章\n",@"1、文字清晰,执照完整,真实有效\n"];
+    self.navigationItem.title = ReadyOpen;
+        //左上角返回
+    
+    UIButton *leftBackBtn = [[UIButton alloc]initWithFrame:CGRectMake(-15, 0, 30, 30)];
+    leftBackBtn.titleLabel.font = Font16;
+    [leftBackBtn setImage:ImageNamed(@"navi_back") forState:UIControlStateNormal];
+    [leftBackBtn addTarget:self action:@selector(save) forControlEvents:UIControlEventTouchUpInside];
+    UIBarButtonItem *leftItem = [[UIBarButtonItem alloc] initWithCustomView:leftBackBtn];
+    self.navigationItem.leftBarButtonItem = leftItem;
+    
+    self.infoScrollView = [[UIScrollView alloc]initWithFrame:CGRectMake(0, Start_Height, Screen_Width, Show_Height_Next)];
+    self.infoScrollView.delegate = self;
+    self.infoScrollView.showsVerticalScrollIndicator = NO;
+    self.infoScrollView.showsHorizontalScrollIndicator = NO;
+    [self.view addSubview:self.infoScrollView];
+    self.infoScrollView.contentSize = CGSizeMake(Screen_Width, 525);
+    
+    
+    [self createTitleView];
+    [self initImageView];
+}
+- (void)createTitleView {
+    UIView *view = [[UIView alloc]initWithFrame:CGRectMake(0, 0, Screen_Width, 60)];
+    view.backgroundColor = WHITE_COLOR;
+    [self.infoScrollView addSubview:view];
+    
+    UILabel *titleLabel = [[UILabel alloc]initWithFrame:CGRectMake(0,10, Screen_Width, 15)];
+    titleLabel.font = Font11;
+    titleLabel.textColor = ColorWithHexString(ColorText_606060);
+    titleLabel.textAlignment = NSTextAlignmentCenter;
+    titleLabel.text = PreInfo;
+    [view addSubview:titleLabel];
+    
+    UILabel *subTitleLabel = [[UILabel alloc]initWithFrame:CGRectMake(0, 30, Screen_Width, 20)];
+    subTitleLabel.font = Font16;
+    titleLabel.textColor = ColorWithHexString(ColorText_333333);
+    subTitleLabel.textAlignment = NSTextAlignmentCenter;
+    subTitleLabel.text = ThreeImageInfo;
+    [view addSubview:subTitleLabel];
+    
+    UIView *linewview = [[UIView alloc]initWithFrame:CGRectMake(SpaceLeftRight, 59, Screen_Width-2*SpaceLeftRight, 1)];
+    linewview.backgroundColor = ColorWithHexString(ColorLine_ededed);
+    [view addSubview:linewview];
+    
+    
+    
+    UIButton *sureBtn = [[UIButton alloc]initWithFrame:CGRectMake(SpaceLeftRight, 465, (Screen_Width-2*SpaceLeftRight), 50)];
+    SetViewCorner(sureBtn, 5);
+    
+    [sureBtn setBackgroundColor:ColorWithHexString(Color_MainFFDA44)];
+    sureBtn.titleLabel.font = Font16;
+    [sureBtn setTitle:JoinNow forState:UIControlStateNormal];
+    [sureBtn setTitleColor:ColorWithHexString(ColorText_333333) forState:UIControlStateNormal];
+    [sureBtn addTarget:self action:@selector(openstore) forControlEvents:UIControlEventTouchUpInside];
+    [self.infoScrollView addSubview:sureBtn];
+    
+
+}
+
+- (void)initImageView{
+    for (int i =0; i<3; i++){
+        UIView *view = [[UIView alloc]initWithFrame:CGRectMake(0, 60+125*i, Screen_Width, 125)];
+        view.backgroundColor = WHITE_COLOR;
+        [self.infoScrollView addSubview:view];
+        if (i<2) {
+            UIView *linewview = [[UIView alloc]initWithFrame:CGRectMake(SpaceLeftRight, 124, Screen_Width-2*SpaceLeftRight, 1)];
+            linewview.backgroundColor = ColorWithHexString(ColorLine_ededed);
+            [view addSubview:linewview];
+        }
+        
+        UILabel *titleLabel = [[UILabel alloc]initWithFrame:CGRectMake(SpaceLeftRight, 5, Screen_Width, 15)];
+        titleLabel.textColor = ColorWithHexString(ColorText_333333);
+        titleLabel.font = Font11;
+        titleLabel.text = titlearr[i];
+        [view addSubview:titleLabel];
+        
+        UIImageView *imageView = [[UIImageView alloc]initWithFrame:CGRectMake(SpaceLeftRight, 25, 120, 80)];
+        imageView.image = ImageNamed(imagearr[i]);
+        [view addSubview:imageView];
+        
+        CGFloat height = [CommonUtil heightForString:subtitlearr[i] stringWidth:Screen_Width-120-SpaceLeftRight-20 fontSize:11.0];
+        UILabel *subTitleLabel = [[UILabel alloc]initWithFrame:CGRectMake(CGRectGetMaxX(imageView.frame)+20, 25, Screen_Width-120-SpaceLeftRight-20, height)];
+        subTitleLabel.font = Font11;
+        subTitleLabel.textColor = ColorWithHexString(ColorText_999999);
+        subTitleLabel.numberOfLines = 3;
+        subTitleLabel.text = subtitlearr[i];
+        [view addSubview:subTitleLabel];
+    }
+}
+
+- (void)openstore {
+    ShopTypeViewController *shoptype = [[ShopTypeViewController alloc]init];
+    [self.navigationController pushViewController:shoptype animated:YES];
+}
+
+- (void)save{
+    [self.navigationController popToRootViewControllerAnimated:YES];
+}
+@end

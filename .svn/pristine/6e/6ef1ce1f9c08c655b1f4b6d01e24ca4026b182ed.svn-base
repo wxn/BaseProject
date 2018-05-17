@@ -1,0 +1,32 @@
+//
+//  Request_Const.h
+//  XTWL_IOS_SHOP
+//
+//  Created by Cinna on 2017/9/26.
+//  Copyright © 2017年 XTWL. All rights reserved.
+//
+
+#ifndef Request_Const_h
+#define Request_Const_h
+
+//加密拼接的字符串
+static NSString *const Request_Secret = @"123456";
+
+#pragma mark - 接口Modular
+//前缀不变，后面内容即是Modular
+static NSString *const Modular_register = @"register";
+static NSString *const Modular_login = @"login";
+static NSString *const Modular_version = @"version";
+static NSString *const Modular_home = @"home";
+
+#pragma mark - 接口名称
+//前缀不变，后面内容即是接口名称
+static NSString *const RequestName_addUserAccount = @"addUserAccount";
+static NSString *const RequestName_userAppLogin = @"userAppLogin";
+static NSString *const RequestName_ThirdLogin = @"ThirdLogin";
+static NSString *const RequestName_checkVersionUpdate = @"checkVersionUpdate";
+static NSString *const RequestName_queryHomeApp = @"queryHomeApp";
+static NSString *const RequestName_updateUserPassword = @"updateUserPassword";
+static NSString *const RequestName_queryCodeByAccount = @"queryCodeByAccount";
+static NSString *const RequestName_queryUserExist = @"queryUserExist";
+#endif /* Request_Const_h */

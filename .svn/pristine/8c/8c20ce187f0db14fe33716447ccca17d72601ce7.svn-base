@@ -1,0 +1,26 @@
+//
+//  ShopSecTypeModel.h
+//  XTWL_IOS_SHOP
+//
+//  Created by Zhaoyang on 2017/10/24.
+//  Copyright © 2017年 XTWL. All rights reserved.
+//
+
+#import <Foundation/Foundation.h>
+
+@class SecshopModel;
+@interface ShopSecTypeModel : NSObject
+
+@property (nonatomic, assign) NSInteger count;
+
+@property (nonatomic, strong) NSArray<SecshopModel *> *list;
+
+@end
+@interface SecshopModel : NSObject
+
+@property (nonatomic, copy) NSString *supTypeName;
+
+@property (nonatomic, copy) NSString *supTypeId;
+
+
+@end

@@ -1,0 +1,48 @@
+//
+//  TitleTextCell.m
+//  XTWL_IOS_SHOP
+//
+//  Created by 开发003 on 2017/10/25.
+//  Copyright © 2017年 XTWL. All rights reserved.
+//
+
+#import "TitleTextCell.h"
+
+@implementation TitleTextCell
+
+
+- (instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier {
+    
+    if ([super initWithStyle:style reuseIdentifier:reuseIdentifier]) {
+        [self createSubViews];
+    }
+    return self;
+}
+
+- (void)createSubViews {
+    
+    self.titleNameLabel = [CreateView createLabelWithFrame:CGRectMake(SpaceLeftRight, 17, 120, 14) text:@"" fontSize:FontSize_14 textColorStr:ColorText_333333 superView:self.contentView];
+    
+    self.enterTF = [[UITextField alloc] initWithFrame:CGRectMake(145, 5, Screen_Width - 160, 38)];
+    _enterTF.font = Font14;
+    _enterTF.textColor = ColorWithHexString(ColorText_606060);
+    _enterTF.textAlignment = NSTextAlignmentRight;
+    [self.contentView addSubview:_enterTF];
+    
+    self.lineView = [[UIView alloc] initWithFrame:CGRectMake(SpaceLeftRight, 47.5, Screen_Width - SpaceLeftRight, 0.5)];
+    _lineView.backgroundColor = ColorWithHexString(ColorLine_ededed);
+    [self.contentView addSubview:_lineView];
+}
+
+- (void)awakeFromNib {
+    [super awakeFromNib];
+    // Initialization code
+}
+
+- (void)setSelected:(BOOL)selected animated:(BOOL)animated {
+    [super setSelected:selected animated:animated];
+
+    // Configure the view for the selected state
+}
+
+@end

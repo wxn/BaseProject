@@ -1,0 +1,288 @@
+//
+//  SetBusinessStateViewController.m
+//  XTWL_IOS_SHOP
+//
+//  Created by Cinna on 2017/10/21.
+//  Copyright © 2017年 XTWL. All rights reserved.
+//
+
+#import "SetBusinessStateViewController.h"
+
+@interface SetBusinessStateViewController ()
+
+@end
+
+@implementation SetBusinessStateViewController {
+    UIImageView *stateImageView;
+    UILabel *stateLabel;
+    UILabel *timeLabel;
+    UILabel *descLabel;
+    UILabel *desc2Label;
+    UILabel *remindLabel;
+    
+    UIButton *changeTimeBtn;
+    UIButton *setStateBtn;
+    UIView *bottomView;
+    
+    UIView *pickerView;
+    UIDatePicker *startTimePicker;
+    UIDatePicker *endTimePicker;
+    
+    
+    //以下三个参数到时会删除，替换成model里的参数
+    BusinessState currentBusinessState;//当前营业状态
+    
+    NSString *startTimeStr;//开始时间
+    NSString *endTimeStr;//结束时间
+}
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    // Do any additional setup after loading the view.
+    self.navigationItem.title = NaviTitle_OperateState;
+    [self initSubviews];
+    [self initPickerView];
+    currentBusinessState = BusinessStateNotInTime;
+    [self setViewState:currentBusinessState];
+}
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+- (void)initSubviews {
+    stateImageView = [CreateView createImageViewWithFrame:CGRectMake(Screen_Width/2.0 - 63, Start_Height + 45, 126, 85) image:ImageNamed(@"open2") superView:self.view];
+    stateLabel = [CreateView createLabelWithFrame:CGRectMake(0, stateImageView.frame.origin.y + stateImageView.frame.size.height + 15, Screen_Width, 20) text:@"" fontSize:FontSize_16 textColorStr:ColorText_333333 superView:self.view];
+    stateLabel.font = [UIFont boldSystemFontOfSize:18.0];
+    stateLabel.textAlignment = NSTextAlignmentCenter;
+    
+    timeLabel = [CreateView createLabelWithFrame:CGRectMake(0, stateLabel.frame.origin.y + stateLabel.frame.size.height + 30, Screen_Width/2.0, 20) text:@"" fontSize:FontSize_14 textColorStr:ColorText_333333 superView:self.view];
+    timeLabel.textAlignment = NSTextAlignmentRight;
+    
+    changeTimeBtn = [CreateView createCustomBtnWithFrame:CGRectMake(timeLabel.frame.origin.x + timeLabel.frame.size.width + 10, timeLabel.frame.origin.y, 100, 20) title:@"" image:nil titleColorStr:ColorText_Blue34aeff fontSize:FontSize_14 superView:self.view];
+    
+    NSMutableAttributedString *str = [[NSMutableAttributedString alloc] initWithString:ChangeBusinessTime];
+    [str addAttribute:NSUnderlineStyleAttributeName value:[NSNumber numberWithInteger:NSUnderlineStyleSingle] range:NSMakeRange(0, str.length)];
+    [str addAttribute:NSForegroundColorAttributeName value:ColorWithHexString(ColorText_Blue34aeff) range:NSMakeRange(0, str.length)];
+    [changeTimeBtn setAttributedTitle:str forState:UIControlStateNormal];
+    [changeTimeBtn addTarget:self action:@selector(changeTime) forControlEvents:UIControlEventTouchUpInside];
+    
+    descLabel = [CreateView createLabelWithFrame:CGRectMake(0, timeLabel.frame.origin.y + timeLabel.frame.size.height + 15, Screen_Width, 15) text:@"" fontSize:FontSize_11 textColorStr:ColorText_606060 superView:self.view];
+    descLabel.textAlignment = NSTextAlignmentCenter;
+    
+    bottomView = [[UIView alloc] initWithFrame:CGRectMake(0, descLabel.frame.origin.y + descLabel.frame.size.height, Screen_Width, 200)];
+    [self.view addSubview:bottomView];
+    desc2Label = [CreateView createLabelWithFrame:CGRectMake(0, 0, Screen_Width, 15) text:@"" fontSize:FontSize_11 textColorStr:ColorText_606060 superView:bottomView];
+    desc2Label.textAlignment = NSTextAlignmentCenter;
+    
+    setStateBtn = [CreateView createCustomBtnWithFrame:CGRectMake(SpaceLeftRight, desc2Label.frame.origin.y + desc2Label.frame.size.height + 30, Screen_Width - SpaceLeftRight * 2, 44) title:@"" image:nil titleColorStr:ColorText_333333 fontSize:FontSize_16 superView:bottomView];
+    setStateBtn.backgroundColor = ColorWithHexString(Color_MainFFDA44);
+    SetViewCorner(setStateBtn, 5);
+    
+    remindLabel = [CreateView createLabelWithFrame:CGRectMake(0, setStateBtn.frame.origin.y + setStateBtn.frame.size.height + 15, Screen_Width, 15) text:@"" fontSize:FontSize_11 textColorStr:ColorText_999999 superView:bottomView];
+    remindLabel.textAlignment = NSTextAlignmentCenter;
+}
+
+-(void)initPickerView {
+    pickerView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, Screen_Width, Screen_Height)];
+    pickerView.backgroundColor = [UIColor colorWithRed:0/255.0 green:0/255.0 blue:0/255.0 alpha:0.5];
+    
+    UIView *bgView = [[UIView alloc] initWithFrame:CGRectMake(5, Screen_Height/2.0 - 150, Screen_Width - 10, 262)];
+    bgView.backgroundColor = [UIColor whiteColor];
+    bgView.layer.cornerRadius = 6.0;
+    bgView.layer.masksToBounds = YES;
+    [pickerView addSubview:bgView];
+    
+    UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(15, 15, bgView.frame.size.width - 22, 15)];
+    label.textColor = ColorWithHexString(ColorText_606060);
+    label.font = Font(15.0);
+    label.text = @"";
+    [bgView addSubview:label];
+    
+    startTimePicker = [[UIDatePicker alloc] initWithFrame:CGRectMake(0, 40, bgView.frame.size.width/2.0 - 10, 162)];
+    startTimePicker.frame = CGRectMake(0, 40, bgView.frame.size.width/2.0 - 10, 162);
+    startTimePicker.datePickerMode = UIDatePickerModeTime;
+    endTimePicker = [[UIDatePicker alloc] initWithFrame:CGRectMake(bgView.frame.size.width/2.0 + 10, 40, bgView.frame.size.width/2.0 - 10, 126)];
+    endTimePicker.frame = CGRectMake(bgView.frame.size.width/2.0 + 10, 40, bgView.frame.size.width/2.0 - 10, 162);
+    endTimePicker.datePickerMode = UIDatePickerModeTime;
+    endTimePicker.date = [NSDate new];
+    startTimePicker.date = [NSDate new];
+    [bgView addSubview:startTimePicker];
+    [bgView addSubview:endTimePicker];
+    
+    [CreateView createLineViewWithFrame:CGRectMake(bgView.frame.size.width/2.0-10, startTimePicker.center.y, 20, 1) colorStr:ColorLine_ededed superView:bgView];
+    [CreateView createLineViewWithFrame:CGRectMake(0,bgView.frame.size.height - 50, bgView.frame.size.width, 0.5) colorStr:ColorLine_ededed superView:bgView];
+    [CreateView createLineViewWithFrame:CGRectMake(bgView.frame.size.width/2.0,bgView.frame.size.height - 50, 0.5, 50) colorStr:ColorLine_ededed superView:bgView];
+    
+    UIButton *submitBtn = [UIButton buttonWithType:UIButtonTypeCustom];
+    submitBtn.frame = CGRectMake(bgView.frame.size.width/2.0, bgView.frame.size.height - 50, bgView.frame.size.width/2.0, 50);
+    [submitBtn setTitle:AlertBtn_Confirm forState:UIControlStateNormal];
+    [submitBtn setTitleColor:ColorWithHexString(Color_MainFFDA44) forState:UIControlStateNormal];
+    submitBtn.titleLabel.font = Font(16.0);
+    [submitBtn addTarget:self action:@selector(confirm) forControlEvents:UIControlEventTouchUpInside];
+    [bgView addSubview:submitBtn];
+    
+    UIButton *cancleBtn = [UIButton buttonWithType:UIButtonTypeCustom];
+    cancleBtn.frame = CGRectMake(0, bgView.frame.size.height - 50, bgView.frame.size.width/2.0, 50);
+    [cancleBtn setTitle:AlertBtn_Cancle forState:UIControlStateNormal];
+    [cancleBtn setTitleColor:ColorWithHexString(ColorText_606060) forState:UIControlStateNormal];
+    cancleBtn.titleLabel.font = Font(16.0);
+    [cancleBtn addTarget:self action:@selector(cancle) forControlEvents:UIControlEventTouchUpInside];
+    [bgView addSubview:cancleBtn];
+    
+    pickerView.hidden = YES;
+    UIWindow *window = [UIApplication sharedApplication].keyWindow;
+    [window addSubview:pickerView];
+}
+
+- (void)setViewState:(BusinessState)state {
+    setStateBtn.backgroundColor = ColorWithHexString(Color_MainFFDA44);
+    [setStateBtn setTitleColor:ColorWithHexString(ColorText_333333) forState:UIControlStateNormal];
+    switch (state) {
+        case BusinessStateOpen:
+            stateImageView.image = ImageNamed(@"open2");
+            stateLabel.text = InBusiness;
+            timeLabel.text = [NSString stringWithFormat:@"%@：09:19-21:00",BusinessTime];;
+            remindLabel.text = ClickBtnToBusiness;
+            descLabel.text = @"";
+            desc2Label.text = ShopCanAcceptOrder;
+            bottomView.frame = CGRectMake(0, descLabel.frame.origin.y, Screen_Width, bottomView.frame.size.height);
+            [setStateBtn setTitle:StopBusiness forState:UIControlStateNormal];
+            [setStateBtn addTarget:self action:@selector(stopBusiness) forControlEvents:UIControlEventTouchUpInside];
+            [setStateBtn removeTarget:self action:@selector(startBusiness) forControlEvents:UIControlEventTouchUpInside];
+            break;
+        case BusinessStateNotInTime:
+            stateImageView.image = ImageNamed(@"close");
+            stateLabel.text = NotInBusinessTime;
+            timeLabel.text = [NSString stringWithFormat:@"%@：09:19-21:00",BusinessTime];
+            remindLabel.text = ClickBtnToBusiness;
+            descLabel.text = ShopIsNotInBusinessTime;
+            desc2Label.text = ChangeTimeToStartBusiness;
+            bottomView.frame = CGRectMake(0, descLabel.frame.origin.y + descLabel.frame.size.height, Screen_Width, bottomView.frame.size.height);
+            [setStateBtn setTitle:StopBusiness forState:UIControlStateNormal];
+            [setStateBtn addTarget:self action:@selector(stopBusiness) forControlEvents:UIControlEventTouchUpInside];
+            [setStateBtn removeTarget:self action:@selector(startBusiness) forControlEvents:UIControlEventTouchUpInside];
+            break;
+        case BusinessStateStop:
+            stateImageView.image = ImageNamed(@"close");
+            stateLabel.text = StopBusiness;
+            descLabel.text = ShopCannotAcceptOrder;
+            desc2Label.text = StartBusinessToAcceptOrder;
+            bottomView.frame = CGRectMake(0, descLabel.frame.origin.y + descLabel.frame.size.height, Screen_Width, bottomView.frame.size.height);
+            remindLabel.text = SetTimeToBusiness;
+            remindLabel.enabled = NO;
+            if (startTimeStr.length <= 0 || endTimeStr.length <= 0) {
+                timeLabel.text = [NSString stringWithFormat:@"%@：--——--",BusinessTime];
+                setStateBtn.enabled = NO;
+                setStateBtn.backgroundColor = ColorWithHexString(Color_LoginF9E69B);
+                [setStateBtn setTitleColor:ColorWithHexString(ColorText_999999) forState:UIControlStateNormal];
+            }else {
+                timeLabel.text = [NSString stringWithFormat:@"%@：%@——%@",BusinessTime,startTimeStr,endTimeStr];
+                setStateBtn.enabled = YES;
+                setStateBtn.backgroundColor = ColorWithHexString(Color_MainFFDA44);
+                [setStateBtn setTitleColor:ColorWithHexString(ColorText_333333) forState:UIControlStateNormal];
+            }
+            [setStateBtn setTitle:ContinueBusiness forState:UIControlStateNormal];
+            [setStateBtn addTarget:self action:@selector(startBusiness) forControlEvents:UIControlEventTouchUpInside];
+            [setStateBtn removeTarget:self action:@selector(stopBusiness) forControlEvents:UIControlEventTouchUpInside];
+            break;
+        default:
+            break;
+    }
+    
+}
+
+#pragma mark -
+//修改时间
+-(void)changeTime {
+    pickerView.hidden = NO;
+}
+
+//确定修改时间
+-(void)confirm {
+    
+    NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
+    [formatter setDateFormat:@"HH:mm"];
+    NSString *timeStr = [NSString stringWithFormat:@"%@--%@",[formatter stringFromDate:startTimePicker.date],[formatter stringFromDate:endTimePicker.date]];
+    NSComparisonResult result = [endTimePicker.date compare:startTimePicker.date];
+    //结束时间大于开始时间
+    if (result == NSOrderedDescending) {
+        pickerView.hidden = YES;
+        [self sendRequestToSetBusinessState:2 timeStr:timeStr];
+    }else {
+        [self showToast:ToastMsg_StartMustLowerToEnd];
+    }
+}
+
+//取消修改时间
+-(void)cancle {
+    pickerView.hidden = YES;
+}
+
+//暂停营业
+- (void)stopBusiness {
+    [self sendRequestToSetBusinessState:0 timeStr:nil];
+}
+//继续营业
+- (void)startBusiness {
+    [self sendRequestToSetBusinessState:1 timeStr:nil];
+}
+
+#pragma mark - 接口请求
+/**
+ @param state 2仅修改营业时间，1正常，0打烊
+ @param timeStr 营业时间，格式 08:00--16:00
+ */
+- (void)sendRequestToSetBusinessState:(NSInteger)state timeStr:(NSString *)timeStr {
+    ShowProcessHud;
+    WeakSelf;
+    NSMutableDictionary *dic = [NSMutableDictionary dictionary];
+    [dic setValue:ShopID forKey:@"shopId"];
+    switch (state) {
+        case 0:
+            [dic setValue:@"0" forKey:@"businessStatus"];
+            break;
+        case 1:
+            [dic setValue:@"1" forKey:@"businessStatus"];
+            break;
+        case 2:
+            [dic setValue:timeStr forKey:@"businessHours"];
+            break;
+        default:
+            break;
+    }
+    [RequestManager sendPostRequestWithURLString:ServerUrl_Write modular:Modular_writeShop requestName:RequestName_updateShopBusinessStatus parameters:dic completeBlock:^(NSString *resultCode, NSString *resultDesc, NSDictionary *dataDic) {
+        if ([resultCode isEqualToString:@"0"]) {
+            [weakSelf sendRequestToGetShopHomeInfo];
+        }else {
+            HideProcessHud;
+            [weakSelf showToast:resultDesc];
+        }
+    } failedBlock:^(NSError *error) {
+        HideProcessHud;
+        [weakSelf showToast:ToastMsg_NetworkFailed];
+    }];
+}
+
+//获取商家信息
+-(void)sendRequestToGetShopHomeInfo {
+    WeakSelf;
+    NSMutableDictionary *dic = [NSMutableDictionary dictionary];
+    [dic setValue:ShopID forKey:@"shopId"];
+    //商家类型：1外卖，2团购，3商城
+//    [dic setValue:@"1" forKey:@"type"];
+    [RequestManager sendPostRequestWithURLString:ServerUrl_Read modular:Modular_readShop requestName:RequestName_queryShopHomePage parameters:dic completeBlock:^(NSString *resultCode, NSString *resultDesc, NSDictionary *dataDic) {
+        HideProcessHud;
+        if ([resultCode isEqualToString:@"0"]) {
+            [weakSelf setViewState:currentBusinessState];
+        }else {
+            [weakSelf showToast:resultDesc];
+        }
+    } failedBlock:^(NSError *error) {
+        HideProcessHud;
+        [weakSelf showToast:ToastMsg_NetworkFailed];
+    }];
+}
+
+@end

@@ -1,0 +1,27 @@
+//
+//Created by ESJsonFormatForMac on 17/10/17.
+//
+
+#import <Foundation/Foundation.h>
+
+@class FirstShopmodel;
+@interface ShopTypeModel : NSObject
+
+@property (nonatomic, assign) NSInteger count;
+
+@property (nonatomic, strong) NSArray<FirstShopmodel *> *list;
+
+@end
+@interface FirstShopmodel : NSObject
+
+@property (nonatomic, copy) NSString *supTypeName;
+
+@property (nonatomic, copy) NSString *supTypeId;
+
+
+//@property (nonatomic, strong) NSArray<SecTypeList *> *typeList;
+
+@end
+
+
+

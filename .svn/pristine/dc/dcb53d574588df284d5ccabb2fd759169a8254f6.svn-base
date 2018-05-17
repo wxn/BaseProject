@@ -1,0 +1,39 @@
+//
+//  ToastMessage_Const.m
+//  XTWL_IOS_USER
+//
+//  Created by Cinna on 2017/10/23.
+//  Copyright © 2017年 XTWL. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+
+#pragma mark - Toast提示语句
+NSString *const ToastMsg_NetworkFailed = @"网络不给力！";
+
+#pragma mark - Alert按钮显示文案
+NSString *const AlertBtn_Confirm = @"确定";
+NSString *const AlertBtn_Cancle = @"取消";
+NSString *const AlertBtn_UpdateNow = @"立即更新";
+NSString *const AlertBtn_Know = @"知道了";
+NSString *const AlertBtn_Save = @"保存";
+NSString *const AlertBtn_NoSave = @"不保存";
+#pragma mark - Alert提示语句
+NSString *const AlertMsg_NoUpdateInformation = @"暂无获取到版本信息";
+NSString *const AlertMsg_ChongXinHuoQu = @"重新获取";
+NSString *const AlertMsg_ImportantUpdate = @"重要版本更新";
+NSString *const AlertMsg_Update = @"版本更新";
+NSString *const AlertMsg_QuitMsg = @"确定放弃本次编辑";
+NSString *const AlertMsg_NotLocation = @"定位服务未开启";
+NSString *const AlertMsg_SearchAddress = @"手动搜索地址";
+NSString *const AlertMsg_AccountAlreadyExists = @"账号已存在";
+NSString *const AlertMsg_NoAccount = @"该号码未注册，请先注册";
+NSString *const AlertMsg_CodeError = @"验证码错误请重新输入";
+NSString *const AlertMsg_AccountExistsToLogin = @"账号已存在请直接登录";
+NSString *const AlertMsg_CodeSuccess = @"发送成功";
+NSString *const AlertMsg_RegistSuccess = @"注册成功";
+NSString *const AlertMsg_ReSetingPswSuccess = @"重置密码成功";
+
+NSString *const AlertMsg_NoService = @"由于你所在的城市该功能未开通，请联系相关人员";
+
+NSString *const AlertMsg_IsSaveInfo = @"是否保存当前信息";

@@ -1,0 +1,375 @@
+//
+//  GoodsSearchViewController.m
+//  XTWL_IOS_SHOP
+//
+//  Created by 开发003 on 2017/10/30.
+//  Copyright © 2017年 XTWL. All rights reserved.
+//
+
+#import "GoodsSearchViewController.h"
+#import "GoodsManageCell.h"
+#import "GoodsInfo.h"
+#import "PriceUtil.h"
+#import "GoodsAddOrEditViewController.h"
+
+@interface GoodsSearchViewController () <UITextFieldDelegate, UITableViewDelegate, UITableViewDataSource>
+
+PropertyStrong UIView *searchView;// 导航栏搜索
+
+PropertyStrong UITextField *searchTextField;// 搜索框
+
+PropertyStrong UITableView *searchResultTable;// 搜索结果列表
+
+PropertyCopy SearchBackBlock searchBackBlock;
+
+// 商品数组
+PropertyStrong NSMutableArray *searchGoodsArray;
+// 网络请求开始和结尾的数字
+PropertyAssign NSInteger fromnum;
+PropertyAssign NSInteger tonum;
+// 总的数量
+PropertyAssign NSInteger totalCount;
+// 无商品时显示
+
+// 记录搜索的字符
+PropertyCopy NSString *searchString;
+
+PropertyStrong GoodsInfo *curGoodsInfo;// 当前操作的商品model
+
+@end
+
+@implementation GoodsSearchViewController
+
+- (instancetype)initWithSearchBackBlock:(SearchBackBlock)searchBlock {
+    
+    if ([super init]) {
+        _searchBackBlock = searchBlock;
+    }
+    
+    return self;
+}
+
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    
+    self.searchGoodsArray = [NSMutableArray array];
+    
+    [self createNaviButtonAndTitleView];
+    [self createTableView];
+}
+
+
+
+- (void)createNaviButtonAndTitleView {
+    
+    UIBarButtonItem *searchItem = [[UIBarButtonItem alloc] initWithTitle:Search style:(UIBarButtonItemStylePlain) target:self action:@selector(searchButtonAction:)];
+    self.navigationItem.rightBarButtonItem = searchItem;
+    
+    self.searchView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, Screen_Width - 140, 30)];
+    _searchView.backgroundColor = ColorWithHexString(Color_BackgroundF2F2F2);
+    _searchView.layer.cornerRadius = 15;
+    _searchView.layer.masksToBounds = YES;
+    
+    [CreateView createImageViewWithFrame:CGRectMake(10, 5, 20, 20) image:ImageNamed(@"goods_search") superView:_searchView];
+    
+    _searchTextField = [[UITextField alloc] initWithFrame:CGRectMake(40, 5, _searchView.frame.size.width - 50, 20)];
+    _searchTextField.font = Font11;
+    _searchTextField.placeholder = EnterSearchContent;
+    _searchTextField.returnKeyType = UIReturnKeySearch;
+    _searchTextField.delegate = self;
+    _searchTextField.textColor = ColorWithHexString(ColorText_333333);
+    [_searchView addSubview:_searchTextField];
+    
+    self.navigationItem.titleView = _searchView;
+    
+}
+
+- (void)backAction {
+    MYLog(@"-----------------");
+    [self.navigationController popViewControllerAnimated:YES];
+    
+}
+
+
+- (void)createTableView {
+    
+    self.searchResultTable = [[UITableView alloc] initWithFrame:CGRectMake(0, Start_Height, Screen_Width, Show_Height_Next)];
+    _searchResultTable.dataSource = self;
+    _searchResultTable.delegate = self;
+    _searchResultTable.separatorStyle = UITableViewCellSelectionStyleNone;
+    [_searchResultTable registerClass:[GoodsManageCell class] forCellReuseIdentifier:@"goodsManage"];
+    _searchResultTable.userInteractionEnabled = NO;
+    [self.view addSubview:_searchResultTable];
+}
+
+- (void)searchButtonAction:(UIBarButtonItem *)sender {
+    [_searchTextField resignFirstResponder];
+    
+    if (self.searchTextField.text.length == 0) {
+        [self showToast:EnterSearchContent];
+        return;
+    }
+    
+    self.searchString = self.searchTextField.text;
+    _fromnum = 1;
+    _tonum = 10;
+    [self sendRequestToSearchGoods];
+
+
+}
+
+#pragma mark - textField代理方法
+- (void)textFieldDidEndEditing:(UITextField *)textField {
+    
+
+}
+
+- (BOOL)textFieldShouldReturn:(UITextField *)textField {
+    [textField resignFirstResponder];
+    if (self.searchTextField.text.length == 0) {
+        [self showToast:EnterSearchContent];
+    }else {
+        
+        self.searchString = self.searchTextField.text;
+        _fromnum = 1;
+        _tonum = 10;
+
+        [self sendRequestToSearchGoods];
+    }
+    
+    return YES;
+}
+
+
+#pragma mark - tableView代理方法
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+    return self.searchGoodsArray.count;
+}
+
+
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
+    return 113;
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    GoodsManageCell *cell = [tableView dequeueReusableCellWithIdentifier:@"goodsManage" forIndexPath:indexPath];
+    
+    GoodsInfo *info = _searchGoodsArray[indexPath.row];
+    
+    [cell.picView sd_setImageWithURLStr:info.picture placeholderImage:DefaultImage2];
+    
+    cell.goodsnameLabel.text = info.name;
+    
+    cell.stockLabel.text = [NSString stringWithFormat:@"%@(%ld)", StockOfGoods, info.qty];
+    if (info.isWarning == 1) {
+        cell.stockLabel.textColor = ColorWithHexString(Color_PriceFF2622);
+    }else {
+        cell.stockLabel.textColor = ColorWithHexString(ColorText_999999);
+    }
+    cell.saleNumLabel.text = [NSString stringWithFormat:@"%@:%ld", SaleNum, info.saleNum];
+    
+    cell.priceLabel.text = [PriceUtil rmbPriceStrWithStr:info.price];
+    
+    if (info.isRecommend == 1) {
+        [cell.recommandBtn setTitle:DeleteRecommand forState:(UIControlStateNormal)];
+        cell.blackBackView.hidden = NO;
+    }else {
+        [cell.recommandBtn setTitle:RecommandGoods forState:(UIControlStateNormal)];
+        cell.blackBackView.hidden = YES;
+    }
+    
+    if (info.isForSale == 1) {
+        cell.onSaleBtn.hidden = YES;
+        cell.offSaleBtn.hidden = NO;
+        cell.recommandBtn.hidden = NO;
+    }else {
+        cell.onSaleBtn.hidden = NO;
+        cell.offSaleBtn.hidden = YES;
+        cell.recommandBtn.hidden = YES;
+    }
+    
+    [cell.onSaleBtn addTarget:self action:@selector(onSaleBtnAction:) forControlEvents:(UIControlEventTouchUpInside)];
+    [cell.offSaleBtn addTarget:self action:@selector(offSaleBtnAction:) forControlEvents:(UIControlEventTouchUpInside)];
+    [cell.recommandBtn addTarget:self action:@selector(recommandBtnAction:) forControlEvents:(UIControlEventTouchUpInside)];
+    
+    cell.selectionStyle = UITableViewCellSelectionStyleNone;
+    return cell;
+
+    return nil;
+    
+}
+
+// 推荐按钮
+- (void)recommandBtnAction:(UIButton *)sender {
+    
+    GoodsManageCell *cell = (GoodsManageCell *)sender.superview.superview;
+    
+    NSIndexPath *indexPath = [_searchResultTable indexPathForCell:cell];
+    
+    _curGoodsInfo = _searchGoodsArray[indexPath.row];
+    
+    if (_curGoodsInfo.isRecommend == 1) {
+        
+        [self sendRequestToRecommandGoodsOrNotWithGoodsId:_curGoodsInfo.goodsId isRecommand:0];
+    }else {
+        
+        [self sendRequestToRecommandGoodsOrNotWithGoodsId:_curGoodsInfo.goodsId isRecommand:1];
+    }
+    
+}
+// 上架商品
+- (void)onSaleBtnAction:(UIButton *)sender {
+    
+    GoodsManageCell *cell = (GoodsManageCell *)sender.superview.superview;
+    
+    NSIndexPath *indexPath = [_searchResultTable indexPathForCell:cell];
+    
+    _curGoodsInfo = _searchGoodsArray[indexPath.row];
+    
+    [self sendRequestToOnOrOffSaleGoodsWithGoodsId:_curGoodsInfo.goodsId isForSale:1];
+
+}
+
+// 下架商品
+- (void)offSaleBtnAction:(UIButton *)sender {
+    
+    GoodsManageCell *cell = (GoodsManageCell *)sender.superview.superview;
+    
+    NSIndexPath *indexPath = [_searchResultTable indexPathForCell:cell];
+    
+    _curGoodsInfo = _searchGoodsArray[indexPath.row];
+    
+    [self sendRequestToOnOrOffSaleGoodsWithGoodsId:_curGoodsInfo.goodsId isForSale:0];
+    
+
+}
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    
+    _curGoodsInfo = _searchGoodsArray[indexPath.row];
+    GoodsAddOrEditViewController *vc = [[GoodsAddOrEditViewController alloc] initWithGoodsChangeType:GoodsChangeTypeEdit goodsId:_curGoodsInfo.goodsId completeBlock:^{
+        _searchBackBlock();
+        [self sendRequestToSearchGoods];
+    }];
+    [self.navigationController pushViewController:vc animated:YES];
+}
+
+
+#pragma mark - 网络请求
+- (void)sendRequestToSearchGoods {
+    ShowProcessHud;
+    NSMutableDictionary *dic = [NSMutableDictionary dictionary];
+    [dic setValue:self.searchString forKey:@"search"];
+    [dic setValue:@"1" forKey:@"custId"];
+    [dic setValue:@"5B27F1D916674E01E053C208A8C0BEDF" forKey:@"shopId"];
+    [RequestManager sendPostRequestWithURLString:ServerUrl_Read modular:Modular_goods requestName:@"querySearchList" parameters:dic completeBlock:^(NSString *resultCode, NSString *resultDesc, NSDictionary *dataDic) {
+        [self hideProcessHud];
+        if ([resultCode isEqualToString:@"0"]) {
+            [_searchGoodsArray removeAllObjects];
+            NSLog(@"%@", dataDic);
+            NSArray *listArray = [dataDic objectForKey:@"list"];
+            for (NSDictionary *dictionary in listArray) {
+                GoodsInfo *info = [[GoodsInfo alloc] init];
+                info.goodsId = AvailableString([dictionary objectForKey:@"goodsId"]);
+                info.isForSale = ((NSNumber *)[dictionary objectForKey:@"isForSale"]).integerValue;
+                info.isRecommend = ((NSNumber *)[dictionary objectForKey:@"isRecommend"]).integerValue;
+                info.isWarning = ((NSNumber *)[dictionary objectForKey:@"isWarning"]).integerValue;
+                info.name = AvailableString([dictionary objectForKey:@"name"]);
+                info.picture = AvailableString([dictionary objectForKey:@"picture"]);
+                info.price = AvailableString([dictionary objectForKey:@"price"]);
+                info.qty = ((NSNumber *)[dictionary objectForKey:@"qty"]).integerValue;
+                info.saleNum = ((NSNumber *)[dictionary objectForKey:@"saleNum"]).integerValue;
+                
+                [_searchGoodsArray addObject:info];
+            }
+            [_searchResultTable reloadData];
+            _searchResultTable.userInteractionEnabled = YES;
+        }
+        
+    } failedBlock:^(NSError *error) {
+        HideProcessHud;
+        [self showToast:ToastMsg_NetworkFailed];
+    }];
+}
+
+// 推荐/取消推荐
+- (void)sendRequestToRecommandGoodsOrNotWithGoodsId:(NSString *)goodsId isRecommand:(NSInteger)isRecommand {
+    ShowProcessHud;
+    NSMutableDictionary *dic = [NSMutableDictionary dictionary];
+    [dic setValue:@"5B27F1D916674E01E053C208A8C0BEDF" forKey:@"shopId"];
+    [dic setValue:goodsId forKey:@"goodsId"];
+    [dic setValue:[NSString stringWithFormat:@"%ld", isRecommand] forKey:@"isRecommend"];
+    
+    [RequestManager sendPostRequestWithURLString:ServerUrl_Write modular:Modular_goods requestName:RequestName_updateGoodsRecomm parameters:dic completeBlock:^(NSString *resultCode, NSString *resultDesc, NSDictionary *dataDic) {
+        HideProcessHud;
+        if ([resultCode isEqualToString:@"0"]) {
+            
+            _searchBackBlock();
+            
+            if (isRecommand == 1) {
+                
+                [self showToast:@"推荐成功"];
+                
+               
+            }else {
+                [self showToast:@"已取消推荐"];
+                
+                
+            }
+        }
+        
+    } failedBlock:^(NSError *error) {
+        HideProcessHud;
+        [self showToast:ToastMsg_NetworkFailed];
+        
+    }];
+    
+}
+
+// 商品上下架
+- (void)sendRequestToOnOrOffSaleGoodsWithGoodsId:(NSString *)goodsId isForSale:(NSInteger)isForsale {
+    ShowProcessHud;
+    NSMutableDictionary *dic = [NSMutableDictionary dictionary];
+    [dic setValue:@"5B27F1D916674E01E053C208A8C0BEDF" forKey:@"shopId"];
+    [dic setValue:goodsId forKey:@"goodsId"];
+    [dic setValue:[NSString stringWithFormat:@"%ld", isForsale] forKey:@"isForSale"];
+    
+    [RequestManager sendPostRequestWithURLString:ServerUrl_Write modular:Modular_goods requestName:RequestName_updateForSale parameters:dic completeBlock:^(NSString *resultCode, NSString *resultDesc, NSDictionary *dataDic) {
+        HideProcessHud;
+        if ([resultCode isEqualToString:@"0"]) {
+            
+            _searchBackBlock();
+            
+            if (isForsale == 1) {
+                [self showToast:@"商品上架成功"];
+                [self sendRequestToSearchGoods];
+            }else {
+                [self showToast:@"商品下架成功"];
+                [self sendRequestToSearchGoods];
+            }
+        }
+        
+    } failedBlock:^(NSError *error) {
+        HideProcessHud;
+        [self showToast:ToastMsg_NetworkFailed];
+    }];
+}
+
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+/*
+#pragma mark - Navigation
+
+// In a storyboard-based application, you will often want to do a little preparation before navigation
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    // Get the new view controller using [segue destinationViewController].
+    // Pass the selected object to the new view controller.
+}
+*/
+
+@end

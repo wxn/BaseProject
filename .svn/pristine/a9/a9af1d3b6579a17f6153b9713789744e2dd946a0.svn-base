@@ -1,0 +1,46 @@
+//
+//  HomeViewController.m
+//  XTWL_IOS_SHOP
+//
+//  Created by Cinna on 2017/9/15.
+//  Copyright © 2017年 XTWL. All rights reserved.
+//
+
+#import "HomeViewController.h"
+
+@interface HomeViewController ()
+
+@end
+
+@implementation HomeViewController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    // Do any additional setup after loading the view.
+    self.navigationItem.title = NaviTitle_HomePage;
+    
+}
+
+#pragma mark - 接口请求
+- (void)sendHomeInfoRequest {
+    
+    WeakSelf;
+    NSMutableDictionary *dic = [NSMutableDictionary dictionary];
+    [dic setValue:CustID forKey:@"custId"];
+    
+    [RequestManager sendPostRequestWithURLString:ServerUrl_Read modular:Modular_home requestName:RequestName_queryHomeApp parameters:dic completeBlock:^(NSString *resultCode, NSString *resultDesc, NSDictionary *dataDic) {
+        
+    } failedBlock:^(NSError *error) {
+        
+    }];
+}
+
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+
+
+@end

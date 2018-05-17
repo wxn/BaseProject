@@ -1,0 +1,5 @@
+#import <Foundation/Foundation.h>
+@interface PodsDummy_Pods_XTWL_XTWL_XTWL_IOS_SHOP : NSObject
+@end
+@implementation PodsDummy_Pods_XTWL_XTWL_XTWL_IOS_SHOP
+@end

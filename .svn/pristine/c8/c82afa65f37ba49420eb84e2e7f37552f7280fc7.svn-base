@@ -1,0 +1,481 @@
+//
+//  GoodsManageViewController.m
+//  XTWL_IOS_SHOP
+//
+//  Created by 开发003 on 2017/10/24.
+//  Copyright © 2017年 XTWL. All rights reserved.
+//
+
+#import "GoodsManageViewController.h"
+#import "ShopSegmentView.h"
+#import "GoodsManageCell.h"
+#import "GoodsInfo.h"
+#import "PriceUtil.h"
+
+#define Height_Next [UIScreen mainScreen].bounds.size.height - ([[UIApplication sharedApplication] statusBarFrame].size.height + self.navigationController.navigationBar.frame.size.height)
+
+@interface GoodsManageViewController ()<ShopSegmentViewDelegate, UITableViewDelegate, UITableViewDataSource>
+
+PropertyStrong ShopSegmentView *segmentView;// 分段控制
+
+// 商品区域
+PropertyStrong UIView *BackView;
+PropertyStrong UITableView *leftCategoryTable;// 左侧分类
+PropertyStrong UITableView *rightGoodsTable;// 右侧商品
+
+PropertyStrong UIButton *categorySetButton;// 分类设置
+PropertyStrong UIButton *addGoodsButton;// 添加商品
+
+// 当前选中分类信息
+PropertyAssign NSInteger currentIndex;
+PropertyStrong UITableViewCell *selectCell;
+
+PropertyAssign NSInteger start;
+PropertyAssign NSInteger end;
+
+
+PropertyStrong NSMutableArray *categoryArray;
+PropertyStrong NSMutableArray *goodsListArray;
+
+// 当前选中
+PropertyStrong GoodsCategoryInfo *curCategoryInfo;
+PropertyStrong GoodsInfo *curGoodsInfo;
+PropertyAssign NSInteger curSegmentIndex;
+
+PropertyAssign NSInteger categoryCount;
+PropertyAssign NSInteger goodsCount;
+@end
+
+@implementation GoodsManageViewController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    self.title = @"商品管理";
+    
+    self.categoryArray = [NSMutableArray array];
+    self.goodsListArray = [NSMutableArray array];
+    
+    [self createSubViews];
+    
+    [self sendRequestToGetGoodsCategory];
+}
+
+- (void)createSubViews {
+    
+    // 分段控制
+    self.segmentView = [[ShopSegmentView alloc] initWithFrame:CGRectMake(0, Start_Height, Screen_Width, 48) titleArray:[NSArray arrayWithObjects:@"已上架", @"已下架", nil]];
+    _segmentView.delegate = self;
+    _curSegmentIndex = 0;
+    [self.view addSubview:_segmentView];
+    
+    self.BackView = [[UIView alloc] initWithFrame:CGRectMake(0, Start_Height + 48, Screen_Width, Height_Next - 48)];
+    _BackView.backgroundColor = ColorWithHexString(Color_BackgroundF2F2F2);
+    [self.view addSubview:_BackView];
+    
+    // 左右列表
+    self.leftCategoryTable = [[UITableView alloc] initWithFrame:CGRectMake(0, 0, Screen_Width/4, _BackView.frame.size.height - 49)];
+    _leftCategoryTable.delegate = self;
+    _leftCategoryTable.dataSource = self;
+    _leftCategoryTable.backgroundColor = ColorWithHexString(Color_BackgroundF2F2F2);
+    _leftCategoryTable.separatorStyle = UITableViewCellSeparatorStyleNone;
+    _leftCategoryTable.separatorColor = CLEAR_COLOR;
+    _currentIndex = 0;
+    [_BackView addSubview:_leftCategoryTable];
+    
+    self.rightGoodsTable = [[UITableView alloc] initWithFrame:CGRectMake(Screen_Width/4, 0, Screen_Width/4*3, _leftCategoryTable.frame.size.height)];
+    _rightGoodsTable.delegate = self;
+    _rightGoodsTable.dataSource = self;
+    _rightGoodsTable.backgroundColor = ColorWithHexString(Color_BackgroundF2F2F2);
+    _rightGoodsTable.separatorStyle = UITableViewCellSeparatorStyleNone;
+    _rightGoodsTable.separatorColor = CLEAR_COLOR;
+    [_BackView addSubview:_rightGoodsTable];
+    [_rightGoodsTable registerClass:[GoodsManageCell class] forCellReuseIdentifier:@"goodsManageCell"];
+    
+    
+    UIView *downBackView = [[UIView alloc] initWithFrame:CGRectMake(0, _BackView.frame.size.height - 49, Screen_Width, 49)];
+    downBackView.backgroundColor = WHITE_COLOR;
+    [_BackView addSubview:downBackView];
+    
+    // 分类设置按钮
+    self.categorySetButton = [[UIButton alloc] initWithFrame:CGRectMake(20, 3, Screen_Width/2 - 40, 43)];
+    _categorySetButton.layer.cornerRadius = 5;
+    _categorySetButton.layer.masksToBounds = YES;
+    [_categorySetButton setBackgroundColor:ColorWithHexString(Color_MainFFDA44)];
+    [_categorySetButton setTitleColor:ColorWithHexString(ColorText_333333) forState:(UIControlStateNormal)];
+    _categorySetButton.titleLabel.font = Font16;
+    [_categorySetButton setTitle:@"分类设置" forState:(UIControlStateNormal)];
+    [downBackView addSubview:_categorySetButton];
+    [_categorySetButton addTarget:self action:@selector(categorySetButtonAction:) forControlEvents:(UIControlEventTouchUpInside)];
+    
+    // 添加商品按钮
+    self.addGoodsButton = [[UIButton alloc] initWithFrame:CGRectMake(Screen_Width/2 + 20, 3, Screen_Width/2 - 40, 43)];
+    _addGoodsButton.layer.cornerRadius = 5;
+    _addGoodsButton.layer.masksToBounds = YES;
+    [_addGoodsButton setBackgroundColor:ColorWithHexString(Color_MainFFDA44)];
+    [_addGoodsButton setTitleColor:ColorWithHexString(ColorText_333333) forState:(UIControlStateNormal)];
+    _addGoodsButton.titleLabel.font = Font16;
+    [_addGoodsButton setTitle:@"添加商品" forState:(UIControlStateNormal)];
+    [downBackView addSubview:_addGoodsButton];
+    [_addGoodsButton addTarget:self action:@selector(addGoodsButtonAction:) forControlEvents:(UIControlEventTouchUpInside)];
+    
+    
+}
+// 分类设置按钮点击
+- (void)categorySetButtonAction:(UIButton *)sender {
+    
+}
+
+// 添加商品按钮点击
+- (void)addGoodsButtonAction:(UIButton *)sender {
+    
+    
+    
+}
+
+#pragma mark - ShopSegmentView代理方法
+
+- (void)shopSegmentView:(ShopSegmentView *)view selectIndex:(NSInteger)index {
+    
+    _start = 0;
+    _end = 10;
+    
+    if (index == 0) {
+        _curSegmentIndex = index;
+        
+        [self sendRequestToGetGoodsListWithTypeId:_curCategoryInfo.typeId isForSale:1];
+    }else if (index == 1) {
+        _curSegmentIndex = index;
+        
+        [self sendRequestToGetGoodsListWithTypeId:_curCategoryInfo.typeId isForSale:0];
+    }
+}
+
+#pragma mark - 改变当前选中cell的显示
+- (void)changeSelcetCellWithIndex:(NSInteger)index {
+    
+    UIView *oldLine = (UIView *)[_selectCell viewWithTag:888];
+    _selectCell.contentView.backgroundColor = ColorWithHexString(Color_BackgroundF2F2F2);
+    oldLine.hidden = YES;
+
+    UITableViewCell *cell = [_leftCategoryTable cellForRowAtIndexPath:[NSIndexPath indexPathForRow:index inSection:0]];
+    UIView *line = (UIView *)[cell viewWithTag:888];
+    cell.contentView.backgroundColor = WHITE_COLOR;
+    line.hidden = NO;
+    
+    _selectCell = cell;
+}
+
+#pragma mark - tableView代理方法
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+    
+    if (tableView == _leftCategoryTable) {
+        return _categoryArray.count;
+    }else {
+        return _goodsListArray.count;
+    }
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
+    if (tableView == _leftCategoryTable) {
+        return 48;
+    }else {
+        return 113;
+    }
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    
+    if (tableView == _leftCategoryTable) {
+        UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"cell"];
+        if (!cell) {
+            cell = [[UITableViewCell alloc] initWithStyle:(UITableViewCellStyleValue1) reuseIdentifier:@"cell"];
+            UIView *leftLine = [[UIView alloc] initWithFrame:CGRectMake(0, 17, 3, 14)];
+            leftLine.backgroundColor = ColorWithHexString(Color_MainFFDA44);
+            leftLine.layer.cornerRadius = 1.5;
+            leftLine.layer.masksToBounds = YES;
+            [cell.contentView addSubview:leftLine];
+            leftLine.tag = 888;
+            UIView *downLine = [[UIView alloc] initWithFrame:CGRectMake(0, 47.5, Screen_Width/4, 0.5)];
+            downLine.backgroundColor = WHITE_COLOR;
+        }
+        
+        UIView *line = [cell.contentView viewWithTag:888];
+        if (_currentIndex == indexPath.row) {
+            line.hidden = NO;
+            cell.contentView.backgroundColor = WHITE_COLOR;
+            self.selectCell = cell;
+        }else {
+            line.hidden = YES;
+            cell.contentView.backgroundColor = ColorWithHexString(Color_BackgroundF2F2F2);
+        }
+        GoodsCategoryInfo *info = _categoryArray[indexPath.row];
+        cell.textLabel.font = Font11;
+        cell.textLabel.text = info.name;
+        cell.selectionStyle = UITableViewCellSelectionStyleNone;
+        return cell;
+    
+    }else {
+        
+        GoodsManageCell *cell = [tableView dequeueReusableCellWithIdentifier:@"goodsManageCell" forIndexPath:indexPath];
+        
+        GoodsInfo *info = _goodsListArray[indexPath.row];
+        
+        [cell.picView sd_setImageWithURLStr:info.picture placeholderImage:DefaultImage2];
+        
+        cell.goodsnameLabel.text = info.name;
+        
+        cell.stockLabel.text = [NSString stringWithFormat:@"库存(%ld)", info.saleNum];
+        if (info.isWarning == 1) {
+            cell.stockLabel.textColor = ColorWithHexString(Color_PriceFF2622);
+        }else {
+            cell.stockLabel.textColor = ColorWithHexString(ColorText_999999);
+        }
+        cell.saleNumLabel.text = [NSString stringWithFormat:@"销量:%ld", info.saleNum];
+        
+        cell.priceLabel.text = [PriceUtil rmbPriceStrWithStr:info.price];
+        
+        if (info.isRecommend == 1) {
+            [cell.recommandBtn setTitle:@"取消推荐" forState:(UIControlStateNormal)];
+        }else {
+            [cell.recommandBtn setTitle:@"店长推荐" forState:(UIControlStateNormal)];
+        }
+        
+        if (info.isForSale == 1) {
+            cell.onSaleBtn.hidden = YES;
+            cell.offSaleBtn.hidden = NO;
+            cell.recommandBtn.hidden = NO;
+        }else {
+            cell.onSaleBtn.hidden = NO;
+            cell.offSaleBtn.hidden = YES;
+            cell.recommandBtn.hidden = YES;
+        }
+        
+        [cell.onSaleBtn addTarget:self action:@selector(onSaleBtnAction:) forControlEvents:(UIControlEventTouchUpInside)];
+        [cell.offSaleBtn addTarget:self action:@selector(offSaleBtnAction:) forControlEvents:(UIControlEventTouchUpInside)];
+        [cell.recommandBtn addTarget:self action:@selector(recommandBtnAction:) forControlEvents:(UIControlEventTouchUpInside)];
+        
+        cell.selectionStyle = UITableViewCellSelectionStyleNone;
+        return cell;
+    }
+    
+}
+// 推荐按钮
+- (void)recommandBtnAction:(UIButton *)sender {
+    
+    GoodsManageCell *cell = (GoodsManageCell *)sender.superview.superview;
+    
+    NSIndexPath *indexPath = [_rightGoodsTable indexPathForCell:cell];
+    
+    _curGoodsInfo = _goodsListArray[indexPath.row];
+    
+    if (_curGoodsInfo.isRecommend == 1) {
+        
+        [self sendRequestToRecommandGoodsOrNotWithGoodsId:_curGoodsInfo.goodsId isRecommand:0];
+    }else {
+        
+        [self sendRequestToRecommandGoodsOrNotWithGoodsId:_curGoodsInfo.goodsId isRecommand:1];
+    }
+    
+}
+// 上架商品
+- (void)onSaleBtnAction:(UIButton *)sender {
+    
+    GoodsManageCell *cell = (GoodsManageCell *)sender.superview.superview;
+    
+    NSIndexPath *indexPath = [_rightGoodsTable indexPathForCell:cell];
+    
+    _curGoodsInfo = _goodsListArray[indexPath.row];
+
+    [self sendRequestToOnOrOffSaleGoodsWithGoodsId:_curGoodsInfo.goodsId isForSale:1];
+}
+// 下架商品
+- (void)offSaleBtnAction:(UIButton *)sender {
+    
+    GoodsManageCell *cell = (GoodsManageCell *)sender.superview.superview;
+    
+    NSIndexPath *indexPath = [_rightGoodsTable indexPathForCell:cell];
+    
+    _curGoodsInfo = _goodsListArray[indexPath.row];
+    
+    [self sendRequestToOnOrOffSaleGoodsWithGoodsId:_curGoodsInfo.goodsId isForSale:0];
+}
+
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    
+    if (tableView == _leftCategoryTable) {
+        if (_currentIndex == indexPath.row) {
+            return;
+            
+        }else {
+            
+            _currentIndex = indexPath.row;
+            _curCategoryInfo = _categoryArray[indexPath.row];
+            [self changeSelcetCellWithIndex:_currentIndex];
+            
+            _start = 0;
+            _end = 10;
+            [self sendRequestToGetGoodsListWithTypeId:_curCategoryInfo.typeId isForSale:(_curSegmentIndex == 0? 1 : 0)];
+        }
+    }
+}
+
+
+#pragma mark - 网络请求
+- (void)sendRequestToGetGoodsCategory {
+    [self showProcessHud];
+    NSMutableDictionary *dic = [NSMutableDictionary dictionary];
+    [dic setValue:@"5B27F1D916674E01E053C208A8C0BEDF" forKey:@"shopId"];
+    
+    [RequestManager sendPostRequestWithURLString:ServerUrl_Read modular:Modular_goods requestName:RequestName_queryGoodsType parameters:dic completeBlock:^(NSString *resultCode, NSString *resultDesc, NSDictionary *dataDic) {
+        
+        [self hideProcessHud];
+        
+        if ([resultCode isEqualToString:@"0"]) {
+            [self.categoryArray removeAllObjects];
+            
+            NSArray *listArray = [dataDic objectForKey:@"list"];
+            for (NSDictionary *dictionary in listArray) {
+                _categoryCount = ((NSNumber *)[dataDic objectForKey:@"count"]).integerValue;
+                GoodsCategoryInfo *info = [[GoodsCategoryInfo alloc] init];
+                info.typeId = AvailableString([dictionary objectForKey:@"typeId"]);
+                info.name = AvailableString([dictionary objectForKey:@"name"]);
+                info.isDefault = ((NSNumber *)[dictionary objectForKey:@"isDefault"]).integerValue;
+                info.sort = ((NSNumber *)[dictionary objectForKey:@"sort"]).integerValue;
+                
+                [_categoryArray addObject:info];
+            }
+            [_leftCategoryTable reloadData];
+            
+            if (_categoryArray.count > 0) {
+                GoodsCategoryInfo *info = _categoryArray.firstObject;
+                _start = 0;
+                _end = 10;
+                [self sendRequestToGetGoodsListWithTypeId:info.typeId isForSale:1];
+            }
+            
+        }
+        
+
+        
+        
+        
+    } failedBlock:^(NSError *error) {
+        [self hideProcessHud];
+    }];
+}
+
+- (void)sendRequestToGetGoodsListWithTypeId:(NSString *)typeId isForSale:(NSInteger)isForSale{
+    
+    [self showProcessHud];
+    NSMutableDictionary *dic = [NSMutableDictionary dictionary];
+    [dic setValue:@"5B27F1D916674E01E053C208A8C0BEDF" forKey:@"shopId"];
+    [dic setValue:typeId forKey:@"typeId"];
+    [dic setValue:@"1" forKey:@"custId"];
+    [dic setValue:[NSString stringWithFormat:@"%ld", isForSale] forKey:@"isForSale"];
+    [dic setValue:[NSString stringWithFormat:@"%ld", _start] forKey:@"start"];
+    [dic setValue:[NSString stringWithFormat:@"%ld", _end] forKey:@"end"];
+    
+    [RequestManager sendPostRequestWithURLString:ServerUrl_Read modular:Modular_goods requestName:RequestName_sh_queryGoodsList parameters:dic completeBlock:^(NSString *resultCode, NSString *resultDesc, NSDictionary *dataDic) {
+        [self hideProcessHud];
+        if ([resultCode isEqualToString:@"0"]) {
+            NSLog(@"%@", dataDic);
+            [_goodsListArray removeAllObjects];
+            _goodsCount = ((NSNumber *)[dataDic objectForKey:@"count"]).integerValue;
+            
+            NSArray *listArray = [dataDic objectForKey:@"list"];
+            for (NSDictionary *dictionary in listArray) {
+                GoodsInfo *info = [[GoodsInfo alloc] init];
+                info.goodsId = AvailableString([dictionary objectForKey:@"goodsId"]);
+                info.isForSale = ((NSNumber *)[dictionary objectForKey:@"isForSale"]).integerValue;
+                info.isRecommend = ((NSNumber *)[dictionary objectForKey:@"isRecommend"]).integerValue;
+                info.isWarning = ((NSNumber *)[dictionary objectForKey:@"isWarning"]).integerValue;
+                info.name = AvailableString([dictionary objectForKey:@"name"]);
+                info.picture = AvailableString([dictionary objectForKey:@"picture"]);
+                info.price = AvailableString([dictionary objectForKey:@"price"]);
+                info.qty = ((NSNumber *)[dictionary objectForKey:@"qty"]).integerValue;
+                info.saleNum = ((NSNumber *)[dictionary objectForKey:@"saleNum"]).integerValue;
+                [_goodsListArray addObject:info];
+            }
+            
+            [_rightGoodsTable reloadData];
+            
+        }
+        
+    } failedBlock:^(NSError *error) {
+        [self hideProcessHud];
+    }];
+    
+}
+
+// 推荐/取消推荐
+- (void)sendRequestToRecommandGoodsOrNotWithGoodsId:(NSString *)goodsId isRecommand:(NSInteger)isRecommand {
+    
+    NSMutableDictionary *dic = [NSMutableDictionary dictionary];
+    [dic setValue:@"5B27F1D916674E01E053C208A8C0BEDF" forKey:@"shopId"];
+    [dic setValue:goodsId forKey:@"goodsId"];
+    [dic setValue:[NSString stringWithFormat:@"%ld", isRecommand] forKey:@"isRecommend"];
+    
+    [RequestManager sendPostRequestWithURLString:ServerUrl_Write modular:Modular_goods requestName:RequestName_updateGoodsRecomm parameters:dic completeBlock:^(NSString *resultCode, NSString *resultDesc, NSDictionary *dataDic) {
+        
+        if ([resultCode isEqualToString:@"0"]) {
+            if (isRecommand == 1) {
+                
+                [self showToast:@"推荐成功"];
+                
+                [self sendRequestToGetGoodsListWithTypeId:_curCategoryInfo.typeId isForSale:(_curSegmentIndex == 0 ? 1 : 0)];
+            }else {
+                [self showToast:@"已取消推荐"];
+                
+                [self sendRequestToGetGoodsListWithTypeId:_curCategoryInfo.typeId isForSale:(_curSegmentIndex == 0 ? 1 : 0)];
+            }
+        }
+        
+    } failedBlock:^(NSError *error) {
+        
+    }];
+    
+}
+
+// 商品上下架
+- (void)sendRequestToOnOrOffSaleGoodsWithGoodsId:(NSString *)goodsId isForSale:(NSInteger)isForsale {
+    
+    NSMutableDictionary *dic = [NSMutableDictionary dictionary];
+    [dic setValue:@"5B27F1D916674E01E053C208A8C0BEDF" forKey:@"shopId"];
+    [dic setValue:goodsId forKey:@"goodsId"];
+    [dic setValue:[NSString stringWithFormat:@"%ld", isForsale] forKey:@"isForSale"];
+    
+    [RequestManager sendPostRequestWithURLString:ServerUrl_Write modular:Modular_goods requestName:RequestName_updateForSale parameters:dic completeBlock:^(NSString *resultCode, NSString *resultDesc, NSDictionary *dataDic) {
+        
+        if ([resultCode isEqualToString:@"0"]) {
+            if (isForsale == 1) {
+                [self showToast:@"商品上架成功"];
+                [self sendRequestToGetGoodsListWithTypeId:_curCategoryInfo.typeId isForSale:(_curSegmentIndex == 0 ? 1 : 0)];
+            }else {
+                [self showToast:@"商品下架成功"];
+                [self sendRequestToGetGoodsListWithTypeId:_curCategoryInfo.typeId isForSale:(_curSegmentIndex == 0 ? 1 : 0)];
+            }
+        }
+        
+    } failedBlock:^(NSError *error) {
+        
+    }];
+}
+
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+/*
+#pragma mark - Navigation
+
+// In a storyboard-based application, you will often want to do a little preparation before navigation
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    // Get the new view controller using [segue destinationViewController].
+    // Pass the selected object to the new view controller.
+}
+*/
+
+@end

@@ -1,0 +1,271 @@
+//
+//  ShopTypeViewController.m
+//  XTWL_IOS_SHOP
+//
+//  Created by Zhaoyang on 2017/10/14.
+//  Copyright © 2017年 XTWL. All rights reserved.
+//
+
+#import "ShopTypeViewController.h"
+#import "ShopInfoViewController.h"
+#import "OpenShopInfo.h"
+#import "UserInfo.h"
+@interface ShopTypeViewController ()<UITableViewDelegate,UITableViewDataSource> {
+    NSArray *imagearr;
+    NSArray *titlearr;
+    NSArray *subtitlearr;
+    NSArray *xiaotitlearr;
+    NSArray *hadStorArr;
+}
+PropertyStrong UITableView *shoptypeTableview;
+@end
+
+@implementation ShopTypeViewController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+
+    self.navigationItem.title = ChooseShopType;
+    imagearr = @[@"sj_bj01",@"sj_bj02",@"sj_bj03"];
+    titlearr = @[TakeAwayShopType,GroupShopType,MallShopType];
+    subtitlearr = @[TakeAwayShopService,GroupShopService,MallShopService];
+    xiaotitlearr = @[JoinTakeAwayShop,JoinGroupShop,JoinMallShop];
+    hadStorArr = @[HadJoinTakeAwayShop,HadJoinGroupShop,HadJoinMallShop];
+
+    [self initShopTypeView];
+}
+
+- (void)initShopTypeView {
+    self.shoptypeTableview = [[UITableView alloc]initWithFrame:CGRectMake(0, Start_Height, Screen_Width, Show_Height_Next) style:UITableViewStylePlain];
+    self.shoptypeTableview.delegate = self;
+    self.shoptypeTableview.dataSource = self;
+    [self.view addSubview:self.shoptypeTableview];
+}
+
+#pragma TableviewDelegate&&TableviewDatasource
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
+    return 3;
+}
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+    return 1;
+}
+- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section {
+    return 0.1;
+}
+- (CGFloat)tableView:(UITableView *)tableView heightForFooterInSection:(NSInteger)section {
+    if (section == 2) {
+        return 0.1;
+    }
+    return 15;
+}
+
+-(CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
+    
+    return  (Show_Height_Next - 30)/3;
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"cell"];
+    if (!cell) {
+        cell = [[UITableViewCell alloc]initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@"cell"];
+        UIImageView  *shoptypeImageview = [[UIImageView alloc]initWithFrame:CGRectMake(0, 0, Screen_Width, (Show_Height_Next - 30)/3)];
+        
+        shoptypeImageview.tag = 150;
+        [cell.contentView addSubview:shoptypeImageview];
+        
+        UILabel *titleLabel = [[UILabel alloc]initWithFrame:CGRectMake(0, (Show_Height_Next - 30)/3/2-30, Screen_Width, 30)];
+        titleLabel.tag = 100;
+        titleLabel.textAlignment = NSTextAlignmentCenter;
+        titleLabel.font = Font(18);
+        titleLabel.textColor = ColorWithHexString(Color_CodeBtnFFFFFF);
+        [cell.contentView addSubview:titleLabel];
+        
+        
+        UILabel *subtitleLabel = [[UILabel alloc]initWithFrame:CGRectMake(0, CGRectGetMaxY(titleLabel.frame)+10, Screen_Width, 30)];
+        subtitleLabel.tag = 101;
+        subtitleLabel.textAlignment = NSTextAlignmentCenter;
+        subtitleLabel.font = Font14;
+        subtitleLabel.textColor = ColorWithHexString(Color_CodeBtnFFFFFF);
+        [cell.contentView addSubview:subtitleLabel];
+
+        UILabel *xiaotitleLabel = [[UILabel alloc]initWithFrame:CGRectMake(Screen_Width-140, (Show_Height_Next - 30)/3-10-15, 125, 15)];
+        xiaotitleLabel.tag = 102;
+        xiaotitleLabel.textAlignment = NSTextAlignmentRight;
+        xiaotitleLabel.font = Font14;
+        xiaotitleLabel.textColor = ColorWithHexString(Color_CodeBtnFFFFFF);
+        [cell.contentView addSubview:xiaotitleLabel];
+        
+        
+        
+        cell.selectionStyle = UITableViewCellSelectionStyleNone;
+    }
+
+    UILabel *titlelabel = (UILabel *)[cell.contentView viewWithTag:100];
+    UILabel *subtitlelabel = (UILabel *)[cell.contentView viewWithTag:101];
+    UILabel *xiaotitlelabel = (UILabel *)[cell.contentView viewWithTag:102];
+    UIImageView *iconimageView = (UIImageView *)[cell.contentView viewWithTag:150];
+    
+    titlelabel.text = titlearr[indexPath.section];
+    
+    iconimageView.image = ImageNamed(imagearr[indexPath.section]);
+    subtitlelabel.text = subtitlearr[indexPath.section];
+//
+//
+//
+    if (indexPath.section == 0) {
+        if ([OpenShopInfo shareInstance].isOpenW) {
+            //入住外卖
+          xiaotitlelabel.text = hadStorArr[indexPath.section];
+        }else{
+            //没有入住
+            xiaotitlelabel.text = xiaotitlearr[indexPath.section];
+        }
+    }else if (indexPath.section ==1) {
+        if ([OpenShopInfo shareInstance].isOpenT) {
+            //入住商城
+            xiaotitlelabel.text = hadStorArr[indexPath.section];
+        }else{
+            //没有团购
+            xiaotitlelabel.text = xiaotitlearr[indexPath.section];
+        }
+    }else {
+        if ([OpenShopInfo shareInstance].isOpenS) {
+            //入住商城
+            xiaotitlelabel.text = hadStorArr[indexPath.section];
+        }else{
+            //没有团购
+            xiaotitlelabel.text = xiaotitlearr[indexPath.section];
+        }
+    }
+    return cell;
+}
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    //跳转到下一页
+    
+    
+    
+//    [OpenShopInfo shareInstance].shopType = [NSString stringWithFormat:@"%ld",indexPath.section+1];
+//    ShopInfoViewController *shopinfo = [[ShopInfoViewController alloc]init];
+//    [self.navigationController pushViewController:shopinfo animated:YES];
+    if (indexPath.section == 0) {
+        if (![OpenShopInfo shareInstance].isOpenW) {
+            //没有入住外卖
+            //查看是否开通
+            [self saveshoptypearr:indexPath.section+1];
+            [self sendIndexToRequest:indexPath.section+1];
+    
+        }
+    }else if (indexPath.section == 1) {
+        if (![OpenShopInfo shareInstance].isOpenT) {
+            //没有入住团购
+            //查看是否开通
+            [self saveshoptypearr:indexPath.section+1];
+            [self sendIndexToRequest:indexPath.section+1];
+        }
+    }else {
+        if (![OpenShopInfo shareInstance].isOpenS) {
+            //没有入住团购
+            //查看是否开通
+            [self saveshoptypearr:indexPath.section+1];
+            [self sendIndexToRequest:indexPath.section+1];
+        }
+    }
+
+    
+    
+}
+//本地存放 创建了几个类型的数据
+- (void)saveshoptypearr:(NSInteger)index {
+    
+
+    NSMutableArray *mutableCopyArr = [[OpenShopInfo shareInstance].typeArray mutableCopy];
+    if (mutableCopyArr.count == 0) {
+        [mutableCopyArr addObject:[NSString stringWithFormat:@"%ld",index]];
+    }else {
+        if (![mutableCopyArr containsObject:[NSString stringWithFormat:@"%ld",index]]) {
+            [mutableCopyArr addObject:[NSString stringWithFormat:@"%ld",index]];
+        }
+    }
+    
+    
+    [OpenShopInfo shareInstance].typeArray =mutableCopyArr;
+    [[OpenShopInfo shareInstance] writeToDefaults];
+}
+
+//查询是否开通模块
+- (void)sendIndexToRequest:(NSInteger)index{
+    [OpenShopInfo shareInstance].shopType = [NSString stringWithFormat:@"%ld",index];
+    [self sendRequestToCheckWithshoptype:[OpenShopInfo shareInstance].shopType];
+}
+#pragma mark - 查看商家是否入住
+- (void)senrequestToCheckShop {
+    WeakSelf;
+    
+    NSMutableDictionary *dic = [[NSMutableDictionary alloc]init];
+    [dic setValue:ShopID  forKey:@"shopId"];
+    
+    
+    [RequestManager sendPostRequestWithURLString:ServerUrl_Read modular:Modular_readShop requestName:RequestName_queryShopTypeInfo parameters:dic completeBlock:^(NSString *resultCode, NSString *resultDesc, NSDictionary *dataDic)
+     {
+         
+         if ([resultCode isEqualToString:@"0"])
+         {
+             OpenShopInfo *shopinfo = [OpenShopInfo shareInstance];
+             shopinfo.isOpenW = [dataDic[@"isOpenW"] isEqualToString:@"1"]?YES:NO;
+             shopinfo.isOpenT = [dataDic[@"isOpenT"] isEqualToString:@"1"]?YES:NO;
+             shopinfo.isOpenS = [dataDic[@"isOpenS"] isEqualToString:@"1"]?YES:NO;
+             [shopinfo writeToDefaults];
+         }else {
+             [weakSelf showToast:resultDesc];
+         }
+         [weakSelf.shoptypeTableview reloadData];
+     } failedBlock:^(NSError *error) {
+         [weakSelf showToast:ToastMsg_NetworkFailed];
+     }];
+}
+#pragma mark - 查看模块是否开通
+- (void)sendRequestToCheckWithshoptype:(NSString *)shoptype {
+    WeakSelf;
+    
+    ShopInfoViewController *shopinfo = [[ShopInfoViewController alloc]initWithShopType:shoptype];
+    [self.navigationController pushViewController:shopinfo animated:YES];
+    
+//    NSMutableDictionary *dic = [[NSMutableDictionary alloc]init];
+//    [dic setValue:shoptype  forKey:@"type"];
+//
+//
+//    [RequestManager sendPostRequestWithURLString:ServerUrl_Read modular:Modular_readShop requestName:RequestName_queryByCustId parameters:dic completeBlock:^(NSString *resultCode, NSString *resultDesc, NSDictionary *dataDic)
+//     {
+//
+//         if ([resultCode isEqualToString:@"0"])
+//         {
+//             //跳转到下一页
+//             ShopInfoViewController *shopinfo = [[ShopInfoViewController alloc]initWithShopType:shoptype];
+//             [self.navigationController pushViewController:shopinfo animated:YES];
+//         }else {
+//
+//
+//             NSString *str;
+//             if ([shoptype isEqualToString:@"1"]) {
+//                 str = TakeAwayNoOpen;
+//             }else if ([shoptype isEqualToString:@"2"]) {
+//                 str = MallNoOpen;
+//             }else {
+//                 str = GroupNoOpen;
+//             }
+//
+//             UIAlertController *alert = [UIAlertController alertControllerWithTitle:str message:AlertMsg_NoService preferredStyle:UIAlertControllerStyleAlert];
+//             UIAlertAction *action = [UIAlertAction actionWithTitle:AlertBtn_Know style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+//
+//
+//             }];
+//             [alert addAction:action];
+//             [weakSelf presentViewController:alert animated:YES completion:nil];
+//         }
+//     } failedBlock:^(NSError *error) {
+//         [weakSelf showToast:ToastMsg_NetworkFailed];
+//     }];
+}
+
+@end

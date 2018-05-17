@@ -1,0 +1,15 @@
+//
+//  OtherString_Const.h
+//  XTWL_IOS_SHOP
+//
+//  Created by Cinna on 2017/9/27.
+//  Copyright © 2017年 XTWL. All rights reserved.
+//
+
+#ifndef OtherString_Const_h
+#define OtherString_Const_h
+
+#pragma mark - 其他页面文本文案
+static NSString *const Skip = @"跳过";
+
+#endif /* OtherString_Const_h */

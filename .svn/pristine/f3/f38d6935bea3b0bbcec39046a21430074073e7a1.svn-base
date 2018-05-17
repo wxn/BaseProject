@@ -1,0 +1,15 @@
+//
+//  PictureCell.h
+//  XTWL_IOS_SHOP
+//
+//  Created by Cinna on 2017/10/30.
+//  Copyright © 2017年 XTWL. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+
+@interface PictureCell : UICollectionViewCell
+
+PropertyStrong UIImageView *imageView;
+
+@end

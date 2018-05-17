@@ -1,0 +1,44 @@
+//
+//  OtherString_Const.h
+//  XTWL_IOS_SHOP
+//
+//  Created by Cinna on 2017/9/27.
+//  Copyright © 2017年 XTWL. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+
+#pragma mark - 其他页面文本文案
+UIKIT_EXTERN NSString *const Skip;
+UIKIT_EXTERN NSString *const ReadyOpen;
+UIKIT_EXTERN NSString *const PreInfo;
+UIKIT_EXTERN NSString *const ThreeImageInfo;
+UIKIT_EXTERN NSString *const StoreInfo;
+
+UIKIT_EXTERN NSString *const ShopGoodsTypeStr;
+UIKIT_EXTERN NSString *const ShopNameStr;
+UIKIT_EXTERN NSString *const ShopLaatStr;
+UIKIT_EXTERN NSString *const ShopAddressStr;
+UIKIT_EXTERN NSString *const ShopUserStr;
+UIKIT_EXTERN NSString *const ShopUserTelStr;
+UIKIT_EXTERN NSString *const ShopDevtypeStr;
+UIKIT_EXTERN NSString *const AddShopLatStr;
+
+UIKIT_EXTERN NSString *const InputShopName;
+UIKIT_EXTERN NSString *const InputShopAddress;
+UIKIT_EXTERN NSString *const InputShopUser;
+UIKIT_EXTERN NSString *const InputShopUserTel;
+UIKIT_EXTERN NSString *const DevtypeStr;
+UIKIT_EXTERN NSString *const OwnDevtypeStr;
+UIKIT_EXTERN NSString *const ChooseDevtypeStr;
+UIKIT_EXTERN NSString *const SaveSuccess;
+UIKIT_EXTERN NSString *const MoneyInfo;
+UIKIT_EXTERN NSString *const BankUser;
+UIKIT_EXTERN NSString *const BankCardNum;
+UIKIT_EXTERN NSString *const BankInfo;
+UIKIT_EXTERN NSString *const BankSecInfo;
+UIKIT_EXTERN NSString *const InputBankUserName;
+UIKIT_EXTERN NSString *const ChooseBankInfo;
+UIKIT_EXTERN NSString *const ChooseSecBankInfo;
+
+

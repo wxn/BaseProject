@@ -1,0 +1,143 @@
+//
+//  BaseViewController.m
+//  XTWL_IOS_SHOP
+//
+//  Created by Cinna on 2017/9/13.
+//  Copyright © 2017年 XTWL. All rights reserved.
+//
+
+#import "BaseViewController.h"
+#import "MBProgressHUD.h"
+#import "BaseNextViewController.h"
+
+@interface BaseViewController ()
+
+@end
+
+const NSTimeInterval ToastShowTimeInterval = 1.5;//toast显示时间
+const NSTimeInterval PushVCDelayTimeInterval = 0.5;//推出界面延迟时间
+
+@implementation BaseViewController
+
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    
+    
+}
+- (void)viewWillDisappear:(BOOL)animated
+{
+    [super viewWillDisappear:animated];
+    
+}
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    // Do any additional setup after loading the view.
+    
+    [self setNavigationBar];
+    
+    
+    
+//    UIButton *imageView = [[UIButton alloc] initWithFrame:CGRectMake(15, 64, 100, 100)];
+//    imageView.backgroundColor = ColorWithHexString(Color_Main);
+//    [imageView addTarget:self action:@selector(aaa) forControlEvents:UIControlEventTouchUpInside];
+//    [self.view addSubview:imageView];
+    
+    
+    self.view.backgroundColor = ColorWithHexString(Color_Background);
+}
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+- (void)aaa {
+    BaseNextViewController *vc = [[BaseNextViewController alloc] init];
+    [self.navigationController pushViewController:vc animated:YES];
+}
+
+- (void)setNavigationBar {
+    
+    [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent animated:NO];
+    self.automaticallyAdjustsScrollViewInsets = NO;
+    
+    UIFont *font = Font(FontSize_16);
+    NSDictionary *fontDict = [NSDictionary dictionaryWithObject:font forKey:NSFontAttributeName];
+    self.navigationController.navigationBar.titleTextAttributes = fontDict;
+    
+    [self.navigationController.navigationBar setBackIndicatorImage:[UIImage imageNamed:@"navi_back"]];
+    [self.navigationController.navigationBar setBackIndicatorTransitionMaskImage:[UIImage imageNamed:@"navi_back"]];
+    
+    self.navigationItem.backBarButtonItem = [[UIBarButtonItem alloc]
+                                             initWithTitle:@""
+                                             style:UIBarButtonItemStylePlain
+                                             target:self
+                                             action:nil];
+    
+    [self.navigationController.navigationBar setTintColor:ColorWithHexString(ColorText_333333)];
+    
+}
+
+#pragma mark - MBHud相关
+//显示进度提示框
+- (void)showProcessHudWithMessage:(NSString*)text {
+    
+    MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.view animated:YES];
+    hud.label.text = text;
+}
+
+//隐藏进度提示框
+- (void)hideProcessHud {
+    
+    [MBProgressHUD hideHUDForView:self.view animated:YES];
+}
+
+//显示提示信息
+- (void)showToast:(NSString *)text {
+    
+    MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
+    [self.view addSubview:hud];
+    hud.detailsLabel.text = [NSString stringWithFormat:@"  %@  ",text];
+    hud.contentColor = WHITE_COLOR;
+    hud.bezelView.color = [[UIColor blackColor] colorWithAlphaComponent:1.0f];
+    hud.bezelView.layer.cornerRadius = 23;
+    hud.margin = 15.0;
+    hud.offset = CGPointMake(0, Screen_Height/2.0 - 128);
+    hud.mode = MBProgressHUDModeText;
+    [hud showAnimated:YES];
+    [hud hideAnimated:YES afterDelay:ToastShowTimeInterval];
+}
+
+//在window上显示进度提示框
+- (void)showProcessHudInWindow {
+    
+    UIWindow *window = [UIApplication sharedApplication].keyWindow;
+    [MBProgressHUD showHUDAddedTo:window animated:YES];
+}
+
+//隐藏window进度提示框
+- (void)hideProcessHudInWindow {
+    
+    UIWindow *window = [UIApplication sharedApplication].keyWindow;
+    [MBProgressHUD hideHUDForView:window animated:YES];
+}
+
+//在window上显示提示信息
+- (void)showToastInWindow:(NSString *)text {
+    
+    UIWindow *window = [UIApplication sharedApplication].keyWindow;
+    MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
+    hud.userInteractionEnabled = NO;
+    [window addSubview:hud];
+    hud.detailsLabel.text = [NSString stringWithFormat:@"  %@  ",text];
+    hud.contentColor = WHITE_COLOR;
+    hud.bezelView.color = [[UIColor blackColor] colorWithAlphaComponent:1.0f];
+    hud.bezelView.layer.cornerRadius = 23;
+    hud.margin = 15.0;
+    hud.offset = CGPointMake(0, Screen_Height/2.0 - 128);
+    hud.mode = MBProgressHUDModeText;
+    [hud showAnimated:YES];
+    [hud hideAnimated:YES afterDelay:ToastShowTimeInterval];
+}
+
+@end

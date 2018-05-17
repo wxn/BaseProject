@@ -1,0 +1,63 @@
+//
+//  ForthSting_Const.m
+//  XTWL_IOS_USER
+//
+//  Created by Cinna on 2017/10/23.
+//  Copyright © 2017年 XTWL. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+
+#pragma mark - 导航条文案
+NSString *const NaviTitle_UserCenter = @"我的";
+NSString *const NaviTitle_UserLogin = @"登录";
+NSString *const NaviTitle_UserRegist = @"免费注册";
+NSString *const NaviTitle_CodeChecking = @"手机验证";
+NSString *const NaviTitle_PswSetting = @"设置密码";
+NSString *const NaviTitle_FindPsw = @"找回密码";
+NSString *const NaviTitle_ResettingPsw = @"重置密码";
+NSString *const NaviTitle_SettingNewPsw = @"设置新密码";
+NSString *const NaviTitle_ShopRegist= @"商家注册";
+NSString *const NaviTitle_ChooseUserAddress = @"选择收货地址";
+NSString *const NaviTitle_ChangeUserAddress = @"修改收货地址";
+NSString *const NaviTitle_AddUserAddress = @"新增收货地址";
+NSString *const NaviTitle_SureUserAddress = @"确认收货地址";
+NSString *const NaviTitle_ShopAddress = @"商铺选址";
+NSString *const NaviTitle_IdeaBack = @"售后反馈";
+
+#pragma mark - 文本文案
+NSString *const UserResgit = @"免费注册";
+NSString *const UserForgetPsw = @"忘记密码？";
+NSString *const SubmitStr= @"提交";
+NSString *const GetCodeStr= @"获取验证码";
+NSString *const InputPsw = @"请输入密码";
+NSString *const ThirdLogin = @"使用合作账号登录";
+NSString *const QQLogin = @"QQ登录";
+NSString *const WeChatLogin = @"微信登录";
+NSString *const RegistPhonePlaceholder = @"请输入手机号";
+NSString *const Nocode = @"收不到验证码？";
+NSString *const ResendCode = @"重新发送验证码";
+NSString *const ExplainStr = @"我们需要验证你的手机号码,确保配送过程中能及时联系到你";
+NSString *const ChangePhone = @"修改手机号";
+NSString *const PhoneErrorToast = @"请输入正确的手机号";
+NSString *const RegistCodePlaceholder = @"请输入验证码";
+NSString *const UserRegistXieyi = @"同意《用户协议》";
+NSString *const PswLengthError = @"请输入6-16位密码";
+NSString *const CodeLengthError = @"请输入4位验证码";
+NSString *const SendAgainAfterSecond = @"重新发送验证码";
+NSString *const NewAddAddress = @"新增地址";
+NSString *const OutUserAddress = @"以下地址超出配送范围";
+NSString *const SureBtnStr = @"确认";
+NSString *const RegistNow = @"立即注册";
+NSString *const RegistXieyi = @"注册即代表阅读并同意注册协议";
+NSString *const NextStep = @"下一步";
+NSString *const InputNewPsw = @"请输入新密码";
+NSString *const NameLengthError = @"法人姓名不能为空";
+NSString *const NameCodeLengthError = @"请输入正确的身份证号";
+NSString *const SfzimageError = @"请添加身份证正面照";
+NSString *const SfzBackimageError = @"请添加身份证反面照";
+NSString *const JoinNow = @"立即入住";
+NSString *const SubmitRequest = @"提交审核";
+NSString *const LocationNoStop = @"定位还没结束，请稍等";
+
+

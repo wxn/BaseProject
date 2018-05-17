@@ -1,0 +1,46 @@
+//
+//  GoodsPropertyCell.m
+//  XTWL_IOS_SHOP
+//
+//  Created by Cinna on 2017/10/25.
+//  Copyright © 2017年 XTWL. All rights reserved.
+//
+
+#import "GoodsPropertyCell.h"
+
+@implementation GoodsPropertyCell
+
+- (instancetype)initWithFrame:(CGRect)frame
+{
+    self = [super initWithFrame:frame];
+    if (self) {
+        [self initSubviews];
+    }
+    return self;
+}
+
+- (void)initSubviews {
+    
+    _titleLabel = [CreateView createLabelWithFrame:CGRectMake(SpaceLeftRight, SpaceLeftRight, self.frame.size.width - SpaceLeftRight * 2, self.frame.size.height - SpaceLeftRight) text:@"" fontSize:FontSize_11 textColorStr:ColorText_606060 superView:self.contentView];
+    _titleLabel.textAlignment = NSTextAlignmentCenter;
+    SetViewCorner(_titleLabel, CornerRadius_3);
+    _titleLabel.layer.borderColor = [ColorWithHexString(ColorLine_ededed) CGColor];
+    _titleLabel.layer.borderWidth = 0.5;
+    
+    _deleteBtn = [CreateView createCustomBtnWithFrame:CGRectMake(_titleLabel.frame.origin.x + _titleLabel.frame.size.width - 15, _titleLabel.frame.origin.y - 15, 30, 30) title:nil image:ImageWithContentFile(@"sc") titleColorStr:nil fontSize:0 superView:self.contentView];
+    _deleteBtn.hidden = YES;
+//    _deleteBtn.backgroundColor = GREEN_COLOR;
+}
+
+- (void)setIsSelected:(BOOL)isSelected {
+    _isSelected = isSelected;
+    if (isSelected) {
+        _titleLabel.backgroundColor = ColorWithHexString(Color_MainFFDA44);
+        _titleLabel.layer.borderColor = [ColorWithHexString(ColorLine_ededed) CGColor];
+    }else {
+        _titleLabel.backgroundColor = WHITE_COLOR;
+        _titleLabel.layer.borderColor = [ColorWithHexString(ColorLine_ededed) CGColor];
+    }
+}
+
+@end

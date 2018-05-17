@@ -1,0 +1,50 @@
+//
+//  UserInfo.m
+//  XTWL_IOS_SHOP
+//
+//  Created by Cinna on 2017/9/26.
+//  Copyright © 2017年 XTWL. All rights reserved.
+//
+
+#import "UserInfo.h"
+
+@implementation UserInfo
+
++(instancetype)shareInstance
+{
+    static UserInfo *info;
+    static dispatch_once_t onceToken=0;
+    dispatch_once(&onceToken, ^{
+        info = [[UserInfo alloc] init];
+        [info getUserInfoFromDefaults];
+    });
+    return info;
+}
+//获取本地用户信息
+- (void)getUserInfoFromDefaults
+{
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    self.userAccount = [defaults objectForKey:@"userAcount"];
+    self.userMd5Psw = [defaults objectForKey:@"user_pswMd5"];
+    self.shopId = [defaults objectForKey:@"shopId"];
+    self.shopId = @"5B27F1D916694E000000C208A8C0BEDF";//调试用
+    self.isAutoLogin = [defaults boolForKey:@"autologin"];
+    self.userKey = [defaults objectForKey:@"userKey"];
+}
+
+//保存用户信息至本地
+- (void)writeToDefaults
+{
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    
+    [defaults setValue:self.userAccount forKey:@"userAcount"];
+    [defaults setValue:self.userMd5Psw forKey:@"user_pswMd5"];
+
+    [defaults setBool:self.isAutoLogin forKey:@"autologin"];
+    [defaults setValue:self.shopId forKey:@"shopId"];
+    [defaults setValue:self.userKey forKey:@"userKey"];
+
+    
+    [defaults synchronize];
+}
+@end

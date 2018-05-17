@@ -1,0 +1,13 @@
+//
+//  ActivityFullFeduceViewController.h
+//  XTWL_IOS_SHOP
+//
+//  Created by Zhaoyang on 2017/10/26.
+//  Copyright © 2017年 XTWL. All rights reserved.
+//
+
+#import "BaseNextViewController.h"
+
+@interface ActivityFullFeduceViewController : BaseNextViewController
+- (instancetype)initWithActivityIsExist:(BOOL)isexist activityid:(NSString *)activityid shopactivityId:(NSString *)shopactivityid;
+@end

@@ -1,0 +1,20 @@
+//
+//  NewOldPriceView.h
+//  XTWL_XFJY
+//
+//  Created by Cinna on 16/9/6.
+//  Copyright © 2016年 xuntiangwangluo. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+
+@interface NewOldPriceView : UIView
+
+- (instancetype)initWithFrame:(CGRect)frame;
+
+//显示折扣价
+-(void)setNewPrice:(double)newPrice oldPrice:(double)oldPrice;
+//显示价格区间
+- (void)showPriceRangeWithFirstPrice:(double)first secondPrice:(double)second;
+
+@end

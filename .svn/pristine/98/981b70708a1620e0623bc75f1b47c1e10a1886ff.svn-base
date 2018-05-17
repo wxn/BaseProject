@@ -1,0 +1,176 @@
+//
+//  ActivityNewOrNoDispatchViewController.m
+//  XTWL_IOS_SHOP
+//
+//  Created by Zhaoyang on 2017/10/26.
+//  Copyright © 2017年 XTWL. All rights reserved.
+//
+
+#import "ActivityNewOrNoDispatchViewController.h"
+
+@interface ActivityNewOrNoDispatchViewController ()<UITableViewDelegate,UITableViewDataSource> {
+    NSString *shopactivityId;//商家活动id
+    NSString *activityType;
+    NSString *descStr;//活动说明
+    NSString *ruleStr;//活动规则
+    NSString *starttimeStr;//活动开始时间
+    NSString *endtimeStr;//活动结束时间
+    NSString *discountDetailStr;//优惠规则明细
+    CGFloat height;
+    NSArray *titlearr;
+}
+PropertyStrong UITableView *infotableview;
+@end
+
+@implementation ActivityNewOrNoDispatchViewController
+- (instancetype)initWithActivityType:(NSString *)type shopactivityId:(NSString *)shopactivityid{
+    self = [super init];
+    if (self) {
+        activityType = type;
+        shopactivityId = shopactivityid;
+    }
+    return self;
+}
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    height = 48;
+    if ([activityType isEqualToString:@"1"]) {
+        self.navigationItem.title = @"新用户立减";
+    }else {
+        self.navigationItem.title = @"满额免运费";
+    }
+    titlearr = @[@[@"开始时间"],@[@"结束时间"],@[@"活动内容"],@[@"活动说明"],@[@"活动规则"]];
+    [self iniInfoTableView];
+    [self sendRequestToGetInfo];
+}
+
+- (void)iniInfoTableView {
+    self.infotableview = [[UITableView alloc]initWithFrame:CGRectMake(0, Start_Height, Screen_Width, 339) style:UITableViewStyleGrouped];
+    self.infotableview.delegate = self;
+    self.infotableview.dataSource = self;
+    [self.view addSubview:self.infotableview];
+}
+
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
+    return titlearr.count;
+}
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+    return 1;
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
+    if (indexPath.section == 3 ) {
+        return 60;
+    }else if (indexPath.section == 4){
+        return height;
+    }
+    return 48;
+}
+- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section {
+    return 15;
+}
+- (CGFloat)tableView:(UITableView *)tableView heightForFooterInSection:(NSInteger)section {
+    return 0.1;
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"cell"];
+    if (!cell) {
+        cell = [[UITableViewCell alloc]initWithStyle:UITableViewCellStyleValue1 reuseIdentifier:@"cell"];
+        
+        UILabel *label = [[UILabel alloc]initWithFrame:CGRectMake(SpaceLeftRight, 0, 60, 48)];
+        label.font = Font14;
+        label.textColor = ColorWithHexString(ColorText_333333);
+        label.tag = 100;
+        [cell.contentView addSubview:label];
+        if (indexPath.section == 3 ) {
+            UILabel *subtitleLabel = [[UILabel alloc]initWithFrame:CGRectMake(SpaceLeftRight+60+10, 0, Screen_Width-(SpaceLeftRight+60+10), 60)];
+            subtitleLabel.numberOfLines = 2;
+            subtitleLabel.font = Font14;
+            subtitleLabel.textColor = ColorWithHexString(ColorText_606060);
+            subtitleLabel.tag = 101;
+            [cell.contentView addSubview:subtitleLabel];
+        }else if (indexPath.section == 4) {
+            UILabel *ruleLabel = [[UILabel alloc]initWithFrame:CGRectMake(SpaceLeftRight+60+10, 0, Screen_Width-(SpaceLeftRight+60+10), height)];
+            ruleLabel.lineBreakMode = NSLineBreakByWordWrapping;
+            ruleLabel.numberOfLines = 0;
+            ruleLabel.font = Font14;
+            ruleLabel.textColor = ColorWithHexString(ColorText_606060);
+            ruleLabel.tag = 102;
+            [cell.contentView addSubview:ruleLabel];
+        }else {
+            UILabel *descLabel = [[UILabel alloc]initWithFrame:CGRectMake(SpaceLeftRight+60+10, 0, Screen_Width-(SpaceLeftRight+60+10), 48)];
+            
+            descLabel.font = Font14;
+            descLabel.textColor = ColorWithHexString(ColorText_606060);
+            descLabel.tag = 103;
+            [cell.contentView addSubview:descLabel];
+        }
+        cell.selectionStyle = UITableViewCellSelectionStyleNone;
+    }
+    UILabel *titleLabel = (UILabel *)[cell.contentView viewWithTag:100];
+    UILabel *subtitleLabel = (UILabel *)[cell.contentView viewWithTag:101];
+    UILabel *ruleLabel = (UILabel *)[cell.contentView viewWithTag:102];
+    UILabel *descLabel = (UILabel *)[cell.contentView viewWithTag:103];
+
+    NSArray *titleArr = titlearr[indexPath.section];
+    titleLabel.text = AvailableString(titleArr[indexPath.row]);
+    if (indexPath.section == 0) {
+        descLabel.text = AvailableString(starttimeStr);
+    }else if (indexPath.section == 1) {
+        descLabel.text = AvailableString(endtimeStr);
+    }else if (indexPath.section == 2) {
+        descLabel.text = AvailableString(discountDetailStr);
+    }else if (indexPath.section == 3) {
+        subtitleLabel.text = AvailableString(descStr);
+    }else {
+        ruleLabel.text = AvailableString(ruleStr);
+    }
+    
+    return cell;
+}
+
+
+
+
+
+
+- (void)sendRequestToGetInfo {
+
+    WeakSelf;
+    
+    NSMutableDictionary *dic = [[NSMutableDictionary alloc]init];
+    [dic setValue:AvailableString(shopactivityId)  forKey:@"shopActId"];
+    [RequestManager sendPostRequestWithURLString:ServerUrl_Read modular:Modular_ractivity requestName:RequestName_queryAppActivityDetail parameters:dic completeBlock:^(NSString *resultCode, NSString *resultDesc, NSDictionary *dataDic)
+     {
+         if ([resultCode isEqualToString:@"0"])
+         {
+             descStr = dataDic[@"description"];
+             ruleStr = dataDic[@"rules"];
+             starttimeStr = dataDic[@"startTime"];
+             endtimeStr = dataDic[@"endTime"];
+             if ([activityType isEqualToString:@"1"]) {
+                 discountDetailStr = [NSString stringWithFormat:@"新用户立减%@元",dataDic[@"discountDetail"]];
+             }else {
+                 discountDetailStr = [NSString stringWithFormat:@"满%@免配送费",dataDic[@"discountDetail"]];
+             }
+             height = [CommonUtil heightForString:ruleStr stringWidth:Screen_Width-(SpaceLeftRight+60+10) fontSize:FontSize_14];
+             if (height<48) {
+                 height = 48;
+             }
+             
+         }else {
+             [weakSelf showToast:resultDesc];
+         }
+         [self.infotableview reloadData];
+     } failedBlock:^(NSError *error) {
+         [weakSelf showToast:ToastMsg_NetworkFailed];
+     }];
+
+
+}
+
+
+
+@end

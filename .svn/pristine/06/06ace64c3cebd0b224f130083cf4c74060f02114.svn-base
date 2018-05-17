@@ -1,0 +1,16 @@
+//
+//  ChooseSecBankInfoViewController.h
+//  XTWL_IOS_SHOP
+//
+//  Created by Zhaoyang on 2017/10/20.
+//  Copyright © 2017年 XTWL. All rights reserved.
+//
+
+#import "BaseNextViewController.h"
+typedef void (^SelectSecBank)(NSString *secbankName);
+
+
+@interface ChooseSecBankInfoViewController : BaseNextViewController
+@property (copy, nonatomic) SelectSecBank selectsecBank;
+-(instancetype)initWithCity:(NSString *)city Province:(NSString *)province Area:(NSString *)area BankName:(NSString *)bankname;
+@end

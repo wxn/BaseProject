@@ -1,0 +1,88 @@
+//
+//  OtherString_Const.h
+//  XTWL_IOS_SHOP
+//
+//  Created by Cinna on 2017/9/27.
+//  Copyright © 2017年 XTWL. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+
+#pragma mark - 其他页面文本文案
+UIKIT_EXTERN NSString *const Skip;
+UIKIT_EXTERN NSString *const ReadyOpen;
+UIKIT_EXTERN NSString *const PreInfo;
+UIKIT_EXTERN NSString *const ThreeImageInfo;
+UIKIT_EXTERN NSString *const StoreInfo;
+
+UIKIT_EXTERN NSString *const ShopGoodsTypeStr;
+UIKIT_EXTERN NSString *const ShopNameStr;
+UIKIT_EXTERN NSString *const ShopLaatStr;
+UIKIT_EXTERN NSString *const ShopAddressStr;
+UIKIT_EXTERN NSString *const ShopUserStr;
+UIKIT_EXTERN NSString *const ShopUserTelStr;
+UIKIT_EXTERN NSString *const ShopDevtypeStr;
+UIKIT_EXTERN NSString *const AddShopLatStr;
+
+UIKIT_EXTERN NSString *const InputShopName;
+UIKIT_EXTERN NSString *const InputShopAddress;
+UIKIT_EXTERN NSString *const InputShopUser;
+UIKIT_EXTERN NSString *const InputShopUserTel;
+UIKIT_EXTERN NSString *const DevtypeStr;
+UIKIT_EXTERN NSString *const OwnDevtypeStr;
+UIKIT_EXTERN NSString *const ChooseDevtypeStr;
+UIKIT_EXTERN NSString *const SaveSuccess;
+UIKIT_EXTERN NSString *const MoneyInfo;
+UIKIT_EXTERN NSString *const BankUser;
+UIKIT_EXTERN NSString *const BankCardNum;
+UIKIT_EXTERN NSString *const BankInfo;
+UIKIT_EXTERN NSString *const BankSecInfo;
+UIKIT_EXTERN NSString *const InputBankUserName;
+UIKIT_EXTERN NSString *const ChooseBankInfo;
+UIKIT_EXTERN NSString *const ChooseSecBankInfo;
+UIKIT_EXTERN NSString *const FarenSFZ;
+UIKIT_EXTERN NSString *const Salezhizhao;
+UIKIT_EXTERN NSString *const Foodzhizhao;
+UIKIT_EXTERN NSString *const AdviceOne;
+UIKIT_EXTERN NSString *const AdviceTwo;
+UIKIT_EXTERN NSString *const AdviceThree;
+UIKIT_EXTERN NSString *const ChooseShopType;
+
+
+UIKIT_EXTERN NSString *const TakeAwayShopType;
+UIKIT_EXTERN NSString *const GroupShopType;
+UIKIT_EXTERN NSString *const MallShopType;
+UIKIT_EXTERN NSString *const TakeAwayShopService;
+UIKIT_EXTERN NSString *const GroupShopService;
+UIKIT_EXTERN NSString *const MallShopService;
+UIKIT_EXTERN NSString *const JoinTakeAwayShop;
+UIKIT_EXTERN NSString *const JoinGroupShop;
+UIKIT_EXTERN NSString *const JoinMallShop;
+UIKIT_EXTERN NSString *const TakeAwayNoOpen;
+UIKIT_EXTERN NSString *const GroupNoOpen;
+UIKIT_EXTERN NSString *const MallNoOpen;
+UIKIT_EXTERN NSString *const ShopGoodsTypeSt;
+UIKIT_EXTERN NSString *const ShopQuality;
+UIKIT_EXTERN NSString *const SaleCard;
+UIKIT_EXTERN NSString *const FarenAdviceOne;
+UIKIT_EXTERN NSString *const FarenAdviceTwo;
+UIKIT_EXTERN NSString *const SendNo;
+UIKIT_EXTERN NSString *const SendYes;
+UIKIT_EXTERN NSString *const Farensfz;
+UIKIT_EXTERN NSString *const FarenName;
+UIKIT_EXTERN NSString *const Farensfzz;
+UIKIT_EXTERN NSString *const InpuName;
+UIKIT_EXTERN NSString *const InpuSfz;
+UIKIT_EXTERN NSString *const FoodNum;
+UIKIT_EXTERN NSString *const FoodArea;
+UIKIT_EXTERN NSString *const SaleCardNum;
+UIKIT_EXTERN NSString *const SaleArea;
+UIKIT_EXTERN NSString *const InputSaleNum;
+UIKIT_EXTERN NSString *const InputArea;
+UIKIT_EXTERN NSString *const HadJoinTakeAwayShop;
+UIKIT_EXTERN NSString *const HadJoinGroupShop;
+UIKIT_EXTERN NSString *const HadJoinMallShop;
+UIKIT_EXTERN NSString *const FarenCard;
+
+
+

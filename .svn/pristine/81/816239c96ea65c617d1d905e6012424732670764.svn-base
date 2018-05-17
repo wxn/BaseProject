@@ -1,0 +1,21 @@
+//
+//  GoodsEditPropertyCell.h
+//  XTWL_IOS_SHOP
+//
+//  Created by 开发003 on 2017/10/26.
+//  Copyright © 2017年 XTWL. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+
+@interface GoodsEditPropertyCell : UITableViewCell
+
+PropertyStrong UILabel *propertyNumLabel;// 属性编号
+PropertyStrong UIButton *addButton;// 添加属性button
+PropertyStrong UIView *lineView;// 线
+PropertyStrong UIView *downBackView;// 下方视图部分
+PropertyStrong UILabel *propertyNameLabel;// 属性名称
+PropertyStrong UILabel *contentLabel;// 选择属性显示
+PropertyStrong UIButton *deleteButton;// 删除按钮
+
+@end

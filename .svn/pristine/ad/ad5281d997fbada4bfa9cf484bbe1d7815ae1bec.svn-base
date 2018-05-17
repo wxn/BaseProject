@@ -1,0 +1,13 @@
+//
+//  GoodsPropertyDescModel.m
+//  XTWL_IOS_SHOP
+//
+//  Created by 开发003 on 2017/10/27.
+//  Copyright © 2017年 XTWL. All rights reserved.
+//
+
+#import "GoodsPropertyDescModel.h"
+
+@implementation GoodsPropertyDescModel
+
+@end

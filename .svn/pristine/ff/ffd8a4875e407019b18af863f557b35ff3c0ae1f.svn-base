@@ -1,0 +1,23 @@
+//
+//  FirstString_Const.h
+//  XTWL_IOS_SHOP
+//
+//  Created by Cinna on 2017/9/18.
+//  Copyright © 2017年 XTWL. All rights reserved.
+//
+
+#ifndef FirstString_Const_h
+#define FirstString_Const_h
+
+#pragma mark - 导航条文案
+static NSString *const NaviTitle_HomePage = @"首页";
+
+#pragma mark - 文本文案
+static NSString *const TouXiang = @"头像";
+
+
+
+
+
+
+#endif /* FirstString_Const_h */

@@ -1,0 +1,21 @@
+//
+//  SelectGuigeViewController.h
+//  XTWL_IOS_SHOP
+//
+//  Created by Cinna on 2017/10/26.
+//  Copyright © 2017年 XTWL. All rights reserved.
+//
+
+#import "BaseNextViewController.h"
+#import "CategoryModel.h"
+typedef void(^CompleteEditBlock)(NSArray<GoodsPropertyModel *> *array, CategoryModel *model);
+typedef enum : NSUInteger {
+    ViewTypeGuige,
+    ViewTypeShuxing,
+} ViewType;
+
+@interface SelectGuigeViewController : BaseNextViewController
+
+- (instancetype)initWithType:(ViewType)type dataArray:(NSArray<GoodsPropertyModel *> *)array CompleteBlock:(CompleteEditBlock)block;
+
+@end

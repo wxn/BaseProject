@@ -1,0 +1,48 @@
+//
+//  IdeaBackCell.m
+//  XTWL_IOS_SHOP
+//
+//  Created by Cinna on 2017/10/24.
+//  Copyright © 2017年 XTWL. All rights reserved.
+//
+
+#import "IdeaBackCell.h"
+
+@implementation IdeaBackCell
+
+- (instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier {
+    if ([super initWithStyle:style reuseIdentifier:reuseIdentifier]) {
+        [self initSubviews];
+    }
+    return self;
+}
+
+- (void)initSubviews {
+    _iconImageView = [CreateView createImageViewWithFrame:CGRectMake(SpaceLeftRight, SpaceLeftRight, 50, 50) image:nil superView:self.contentView];
+    SetViewCorner(_iconImageView, 25);
+    _userNameLabel = [CreateView createLabelWithFrame:CGRectMake(_iconImageView.frame.origin.x + _iconImageView.frame.size.width + SpaceLeftRight, 20, Screen_Width - _iconImageView.frame.size.width - SpaceLeftRight * 3, 15) text:@"这是昵称" fontSize:FontSize_11 textColorStr:ColorText_606060 superView:self.contentView];
+    
+    _dateLabel = [CreateView createLabelWithFrame:CGRectMake(_userNameLabel.frame.origin.x, _userNameLabel.frame.origin.y + _userNameLabel.frame.size.height + 10, _userNameLabel.frame.size.width, 15) text:@"这是日期" fontSize:FontSize_11 textColorStr:ColorText_606060 superView:self.contentView];
+    
+    [CreateView createLabelWithFrame:CGRectMake(SpaceLeftRight, _iconImageView.frame.origin.y + _iconImageView.frame.size.height + 10, 80, 15) text:@"购买商品：" fontSize:FontSize_11 textColorStr:ColorText_999999 superView:self.contentView];
+    _goodsNameLabel = [CreateView createLabelWithFrame:CGRectMake(SpaceLeftRight + 80, _iconImageView.frame.origin.y + _iconImageView.frame.size.height + 10, Screen_Width - 80 - SpaceLeftRight * 2, 15) text:@"这是商品名称" fontSize:FontSize_11 textColorStr:ColorText_606060 superView:self.contentView];
+    
+    [CreateView createLabelWithFrame:CGRectMake(SpaceLeftRight, _iconImageView.frame.origin.y + _iconImageView.frame.size.height + 10 + 20, 80, 15) text:@"赔付原因：" fontSize:FontSize_11 textColorStr:ColorText_999999 superView:self.contentView];
+    _reasonLabel = [CreateView createLabelWithFrame:CGRectMake(SpaceLeftRight + 80, _iconImageView.frame.origin.y + _iconImageView.frame.size.height + 10 + 20, Screen_Width - 80 - SpaceLeftRight * 2, 15) text:@"这是赔付原因" fontSize:FontSize_11 textColorStr:ColorText_606060 superView:self.contentView];
+    
+    _redDotView = [[UIView alloc] initWithFrame:CGRectMake(Screen_Width - 18, 5, 8, 8)];
+    _redDotView.backgroundColor = RED_COLOR;
+    SetViewCorner(_redDotView, 4);
+    [self.contentView addSubview:_redDotView];
+    
+    [CreateView createSeparateViewWithOrignY:_reasonLabel.frame.origin.y + _reasonLabel.frame.size.height + 5 superView:self.contentView];
+}
+
+- (void)awakeFromNib {
+    [super awakeFromNib];
+    // Initialization code
+}
+
+
+
+@end

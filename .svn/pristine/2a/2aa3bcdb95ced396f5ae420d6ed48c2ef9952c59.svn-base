@@ -1,0 +1,14 @@
+//
+//Created by ESJsonFormatForMac on 17/10/30.
+//
+
+#import "PictureCategoryModel.h"
+@implementation PictureCategoryModel
+
+
++ (NSDictionary<NSString *,id> *)modelCustomPropertyMapper{
+    return @{@"ID":@"id"};
+}
+
+@end
+

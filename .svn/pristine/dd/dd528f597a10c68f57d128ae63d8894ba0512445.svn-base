@@ -1,0 +1,42 @@
+//
+//  OtherString_Const.m
+//  XTWL_IOS_USER
+//
+//  Created by Cinna on 2017/10/23.
+//  Copyright © 2017年 XTWL. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+
+#pragma mark - 其他页面文本文案
+NSString *const Skip = @"跳过";
+NSString *const ReadyOpen = @"准备开店";
+NSString *const PreInfo = @"请准备好以下";
+NSString *const ThreeImageInfo = @"3种图片资料";
+NSString *const StoreInfo = @"店铺信息";
+
+NSString *const ShopGoodsTypeStr = @"请选择经营品类";
+NSString *const ShopNameStr = @"店铺名称";
+NSString *const ShopLaatStr = @"店铺坐标";
+NSString *const ShopAddressStr = @"店铺地址";
+NSString *const ShopUserStr = @"联系人";
+NSString *const ShopUserTelStr = @"联系人电话";
+NSString *const ShopDevtypeStr = @"配送方式";
+NSString *const AddShopLatStr = @"添加地图坐标";
+
+NSString *const InputShopName = @"请输入店铺名称";
+NSString *const InputShopAddress = @"请输入店铺地址";
+NSString *const InputShopUser = @"请输入联系人";
+NSString *const InputShopUserTel = @"请输入联系人电话";
+NSString *const DevtypeStr = @"平台配送";
+NSString *const OwnDevtypeStr = @"自行配送";
+NSString *const ChooseDevtypeStr = @"请选择配送方式";
+NSString *const SaveSuccess = @"保存成功";
+NSString *const MoneyInfo = @"收款信息";
+NSString *const BankUser = @"开户人";
+NSString *const BankCardNum = @"银行卡号";
+NSString *const BankInfo = @"开户行";
+NSString *const BankSecInfo = @"支行";
+NSString *const InputBankUserName = @"填写开户人姓名";
+NSString *const ChooseBankInfo = @"请选择开户行";
+NSString *const ChooseSecBankInfo = @"请选择开户支行";

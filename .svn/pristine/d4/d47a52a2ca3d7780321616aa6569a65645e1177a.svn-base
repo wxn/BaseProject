@@ -1,0 +1,59 @@
+//
+//  Layout_Const.h
+//  XTWL_IOS_SHOP
+//
+//  Created by Cinna on 2017/9/13.
+//  Copyright © 2017年 XTWL. All rights reserved.
+//
+
+#ifndef Layout_Const_h
+#define Layout_Const_h
+
+#pragma mark - 普通色值
+static NSString *const Color_Main = @"#ffda44";//导航条颜色，主色
+static NSString *const Color_Background = @"#f2f2f2";//页面背景色
+static NSString *const Color_Price = @"#ff2422";//价格颜色
+
+static NSString *const Color_Login = @"#f9e69b";//登录按钮置灰颜色
+static NSString *const Color_UserXieyi = @"#34aeff";//登录按钮置灰颜色
+static NSString *const Color_CodeBtnColor = @"#ffffff";//发送验证码按钮置灰颜色
+static NSString *const Color_SexBtnSelectedColor = @"#fff9e3";//发送验证码按钮置灰颜色
+
+#pragma mark - 线的颜色
+static NSString *const ColorLine_ededed = @"#ededed";//浅
+static NSString *const ColorLine_e0e0e0 = @"#e0e0e0";//深
+
+#pragma mark - 字体色
+static NSString *const ColorText_dadada = @"#dadada";//最浅，一般用于输入框中提示信息
+static NSString *const ColorText_999999 = @"#999999";//偏浅，一般用于次要文字信息
+static NSString *const ColorText_606060 = @"#606060";//偏深，一般用于普通文字信息
+static NSString *const ColorText_333333 = @"#333333";//最深，一般用于重要文字信息
+
+#pragma mark - 字体大小
+static const CGFloat FontSize_16 = 16.0;//最大，一般用于着重、导航条文字
+static const CGFloat FontSize_14 = 14.0;//最大，一般用于标题、重要文字
+static const CGFloat FontSize_11 = 11.0;//最大，一般用于普通文字
+static const CGFloat FontSize_9 = 9.0;//最大，一般用于次要文字
+
+#pragma mark - 圆角
+static const CGFloat CornerRadius_5 = 5.0;//最大，一般圆角
+static const CGFloat CornerRadius_3 = 3.0;//最大，辅助圆角
+
+#pragma mark - 尺寸
+static const CGFloat SpaceLeftRight = 15.0;//距离左边缘、右边缘的宽度
+static const CGFloat CellHeight = 48.0;//普通cell的高度
+static const CGFloat LineHeight = 0.5;//分割线的高度
+
+
+#pragma mark - 文字限制
+static const int MAX_LoginAndRegistUSERNAME_LENGTH = 16;//分割线的高度
+static const int MAX_AddressName_LENGTH = 6;//创建地址联系人长度
+static const int MAX_AddressCode_LENGTH = 12;//门牌号长度 //店铺名称
+
+
+static const int MAX_ShopAddress_LENGTH = 100;//店铺地址 餐饮许可证所在地 营业执照所在地
+static const int MAX_ShopUser_LENGTH = 4;//联系人
+static const int MAX_Shenfenzheng_LENGTH = 18;//联系人
+static const int MAX_FoodNum_LENGTH = 15;//餐饮许可证号 营业执照注册号
+
+#endif /* Color_Macro_h */

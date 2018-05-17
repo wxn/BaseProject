@@ -1,0 +1,115 @@
+//
+//  GoodsAddOrEditViewController.m
+//  XTWL_IOS_SHOP
+//
+//  Created by 开发003 on 2017/10/25.
+//  Copyright © 2017年 XTWL. All rights reserved.
+//
+
+#import "GoodsAddOrEditViewController.h"
+#import "GoodsInfo.h"
+
+
+@interface GoodsAddOrEditViewController ()<UITableViewDelegate, UITableViewDataSource>
+
+PropertyAssign GoodsChangeType myType; // 上传商品或者编辑商品
+
+PropertyStrong UITableView *goodsInfoTable;// 商品信息列表展示
+
+// 商品相关信息
+PropertyStrong GoodsCategoryInfo *categoryInfo;// 商品分类信息
+PropertyCopy NSString *goodsName;// 商品名称
+PropertyCopy NSString *goodsPrice;// 价格
+PropertyCopy NSString *goodsStock;// 库存
+PropertyStrong NSMutableArray *goodsSkuArray;// 商品规格
+PropertyStrong NSMutableArray *goodsPropertyArray;// 商品属性
+PropertyCopy NSString *boxPrice;// 打包盒价格
+PropertyCopy NSString *goodsDesc;// 商品说明
+
+@end
+
+@implementation GoodsAddOrEditViewController
+
+- (instancetype)initWithGoodsChangeType:(GoodsChangeType)type
+{
+    self = [super init];
+    if (self) {
+        _myType = type;
+    }
+    return self;
+}
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    
+    if (_myType == GoodsChangeTypeAdd) {
+        self.title = @"上传商品";
+    }else {
+        self.title = @"";
+    }
+    
+    // Do any additional setup after loading the view.
+}
+
+- (void)createSubViews {
+    
+    self.goodsInfoTable = [[UITableView alloc] initWithFrame:CGRectMake(0, Start_Height, Screen_Width, Show_Height_Next)];
+    [self.view addSubview:_goodsInfoTable];
+    
+}
+
+#pragma mark - tableView的代理方法
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
+    
+    return 5;
+}
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+    if (section == 0) {
+        return 2;
+    }else if (section == 1){
+        if (_goodsSkuArray.count == 0) {
+            return 2;
+        }else {
+            return _goodsSkuArray.count;
+        }
+    }else if (section == 2) {
+        if (_goodsPropertyArray.count <= 2) {
+            return 2;
+        }else {
+            return _goodsPropertyArray.count;
+        }
+    }else {
+        return 1;
+    }
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
+    return 10;
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    
+//    if (<#condition#>) {
+//        <#statements#>
+//    }
+    
+    return nil;
+}
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+/*
+#pragma mark - Navigation
+
+// In a storyboard-based application, you will often want to do a little preparation before navigation
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    // Get the new view controller using [segue destinationViewController].
+    // Pass the selected object to the new view controller.
+}
+*/
+
+@end

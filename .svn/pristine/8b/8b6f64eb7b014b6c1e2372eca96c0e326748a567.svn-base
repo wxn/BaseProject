@@ -1,0 +1,134 @@
+//
+//  GoodsPropertyViewController.m
+//  XTWL_IOS_SHOP
+//
+//  Created by Cinna on 2017/10/25.
+//  Copyright © 2017年 XTWL. All rights reserved.
+//
+
+#import "GoodsPropertyViewController.h"
+#import "GoodsPropertyCell.h"
+#import "GoodsPropertyModel.h"
+
+
+#define CollectionViewNum 2
+
+@interface GoodsPropertyViewController () <UICollectionViewDelegate, UICollectionViewDataSource>
+
+@end
+
+@implementation GoodsPropertyViewController {
+    UICollectionView *collectionView;
+    NSMutableArray *propertyArray;
+    BOOL isEditMode;//当前是否为编辑模式
+}
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    // Do any additional setup after loading the view.
+    
+    self.navigationItem.title = NaviTitle_GoodsProperty;
+    [self sendRequestToGetGoodsProperty];
+    
+    [self initSubviews];
+}
+
+- (void)initSaveBtn {
+    
+    UIButton *btn = [CreateView createCustomBtnWithFrame:CGRectMake(0, 0, 40, 44) title:@"编辑" image:nil titleColorStr:ColorText_606060 fontSize:FontSize_14 superView:nil];
+    [btn setTitleColor:ColorWithHexString(ColorText_606060) forState:UIControlStateNormal];
+    btn.titleLabel.font = Font14;
+    [btn addTarget:self action:@selector(saveBtnClicked) forControlEvents:UIControlEventTouchUpInside];
+    UIBarButtonItem *right = [[UIBarButtonItem alloc] initWithCustomView:btn];
+    self.navigationItem.rightBarButtonItem = right;
+}
+
+- (void)initSubviews {
+    [self initSaveBtn];
+    UICollectionViewFlowLayout *layout = [[UICollectionViewFlowLayout alloc] init];
+    layout.itemSize = CGSizeMake(Screen_Width/CollectionViewNum, 30 + SpaceLeftRight );
+    layout.minimumInteritemSpacing = 0;
+    layout.minimumLineSpacing = 0;
+    collectionView = [[UICollectionView alloc] initWithFrame:CGRectMake(0, Start_Height, Screen_Width, Show_Height_Next - 80) collectionViewLayout:layout];
+    [collectionView registerClass:[GoodsPropertyCell class] forCellWithReuseIdentifier:@"GoodsPropertyCell"];
+    collectionView.backgroundColor = WHITE_COLOR;
+    collectionView.delegate = self;
+    collectionView.dataSource = self;
+    [self.view addSubview:collectionView];
+}
+
+- (void)saveBtnClicked {
+    isEditMode = !isEditMode;
+    UIButton *btn = self.navigationItem.rightBarButtonItem.customView;
+    if (isEditMode) {
+        isEditMode = YES;
+        [btn setTitle:@"保存" forState:UIControlStateNormal];
+        [collectionView reloadData];
+    }else {
+        isEditMode = NO;
+        [btn setTitle:@"编辑" forState:UIControlStateNormal];
+        [collectionView reloadData];
+    }
+}
+
+#pragma mark - UICollectionViewDelegate && DataSource
+- (NSInteger)numberOfSectionsInCollectionView:(UICollectionView *)collectionView {
+    return ceilf(propertyArray.count/CollectionViewNum);
+}
+
+- (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {
+    if (section == ceilf(propertyArray.count/CollectionViewNum) - 1)
+        return propertyArray.count - section * CollectionViewNum;
+    return CollectionViewNum;
+}
+
+- (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
+    
+    GoodsPropertyCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"GoodsPropertyCell" forIndexPath:indexPath];
+    GoodsPropertyModel *model = propertyArray[indexPath.section * CollectionViewNum + indexPath.row];
+    cell.titleLabel.text = model.name;
+    cell.deleteBtn.hidden = !isEditMode;
+    cell.isSelected = model.isSelect;
+    return cell;
+    
+}
+
+- (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath {
+    GoodsPropertyCell *cell = (GoodsPropertyCell *)[collectionView cellForItemAtIndexPath:indexPath];
+    GoodsPropertyModel *model = propertyArray[indexPath.section * CollectionViewNum + indexPath.row];
+    model.isSelect = !model.isSelect;
+    cell.isSelected = model.isSelect;
+}
+
+#pragma mark -
+- (void)sendRequestToGetGoodsProperty {
+    ShowProcessHud;
+    WeakSelf;
+    NSMutableDictionary *dic = [NSMutableDictionary dictionary];
+    [dic setValue:@"5BE12134CBFF1D23E053C208A8C07C93" forKey:@"proId"];
+    [RequestManager sendPostRequestWithURLString:ServerUrl_Read modular:Modular_goods requestName:RequestName_querySonProList parameters:dic completeBlock:^(NSString *resultCode, NSString *resultDesc, NSDictionary *dataDic) {
+        HideProcessHud;
+        if ([resultCode isEqualToString:@"0"]) {
+            propertyArray = [NSMutableArray array];
+            NSArray *listArray = [dataDic objectForKey:@"list"];
+            for (NSDictionary *dictionary in listArray) {
+                GoodsPropertyModel *model = [GoodsPropertyModel mj_objectWithKeyValues:dictionary];
+                [propertyArray addObject:model];
+            }
+            [collectionView reloadData];
+        }else {
+            [weakSelf showToast:resultDesc];
+        }
+    } failedBlock:^(NSError *error) {
+        HideProcessHud;
+        [weakSelf showToast:ToastMsg_NetworkFailed];
+    }];
+    
+}
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+@end

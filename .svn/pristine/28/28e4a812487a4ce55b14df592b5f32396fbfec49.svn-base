@@ -1,0 +1,128 @@
+//
+//  AppDelegate.m
+//  XTWL_IOS_SHOP
+//
+//  Created by Cinna on 2017/9/5.
+//  Copyright © 2017年 XTWL. All rights reserved.
+//
+
+#import "AppDelegate.h"
+#import <Bugly/Bugly.h>
+#import "AppInfo.h"
+#import "LaunchViewController.h"
+#import <AMapFoundationKit/AMapFoundationKit.h>
+
+@interface AppDelegate ()
+PropertyStrong NSTimer *mTimer;
+PropertyAssign UIBackgroundTaskIdentifier backIden;
+@end
+
+@implementation AppDelegate
+
+
+- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+    
+    UIUserNotificationSettings *notiSettings = [UIUserNotificationSettings settingsForTypes:(UIUserNotificationTypeBadge | UIUserNotificationTypeAlert | UIUserNotificationTypeSound) categories:nil];
+    [application registerUserNotificationSettings:notiSettings];
+    [application registerForRemoteNotifications];
+    
+    // Override point for customization after application launch.
+    self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+    // Override point for customization after application launch.
+    self.window.backgroundColor = [UIColor whiteColor];
+    [self.window makeKeyAndVisible];
+   
+    LaunchViewController *vc = [[LaunchViewController alloc] init];
+    self.window.rootViewController = vc;
+    
+    //暂时写在项目里
+    //高德地图key
+    [AMapServices sharedServices].apiKey = @"bcbb04a3cdc2ebe64da882a47f7cd6a9";
+    [Bugly startWithAppId:@"BUGLY_APP_ID"];
+    
+    
+    
+    return YES;
+}
+
+#pragma mark 推送
+- (void)application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken {
+    
+    NSString *tokenString = [NSString stringWithFormat:@"%@",deviceToken];
+    [AppInfo shareInstance].deviceToken = [[[tokenString stringByReplacingOccurrencesOfString:@" " withString:@""] stringByReplacingOccurrencesOfString:@"<" withString:@""] stringByReplacingOccurrencesOfString:@">" withString:@""];
+}
+
+- (void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo
+{
+    
+    // Required
+}
+
+- (void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo fetchCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler
+{
+    
+    
+    
+}
+
+
+- (void)applicationDidEnterBackground:(UIApplication *)application
+{//进入后台
+    
+    [[UIApplication sharedApplication] setApplicationIconBadgeNumber:0];
+    _mTimer = [NSTimer scheduledTimerWithTimeInterval:1 target:self selector:@selector(countAction) userInfo:nil repeats:YES];
+    [[NSRunLoop currentRunLoop] addTimer:_mTimer forMode:NSRunLoopCommonModes];
+    [self beginTask];
+}
+
+- (void)applicationWillEnterForeground:(UIApplication *)application
+{
+    [application setApplicationIconBadgeNumber:0];
+    [application cancelAllLocalNotifications];
+    [self endBack];
+}
+//计时
+-(void)countAction{
+    
+}
+//申请后台
+-(void)beginTask
+{
+    
+    _backIden = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{
+        //在时间到之前会进入这个block，一般是iOS7及以上是3分钟。按照规范，在这里要手动结束后台，你不写也是会结束的（据说会crash）
+        
+        [self endBack];
+    }];
+}
+//注销后台
+-(void)endBack
+{
+    
+    [[UIApplication sharedApplication] endBackgroundTask:_backIden];
+    _backIden = UIBackgroundTaskInvalid;
+}
+
+
+
+- (void)applicationWillResignActive:(UIApplication *)application {
+    // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.
+    // Use this method to pause ongoing tasks, disable timers, and invalidate graphics rendering callbacks. Games should use this method to pause the game.
+}
+
+
+
+
+
+
+- (void)applicationDidBecomeActive:(UIApplication *)application {
+    // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
+}
+
+
+- (void)applicationWillTerminate:(UIApplication *)application {
+    // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
+}
+
+
+@end

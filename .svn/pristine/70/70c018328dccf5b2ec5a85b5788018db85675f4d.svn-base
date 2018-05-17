@@ -1,0 +1,272 @@
+//
+//  MapSearchViewController.m
+//  XTWL_IOS_SHOP
+//
+//  Created by Zhaoyang on 2017/10/23.
+//  Copyright © 2017年 XTWL. All rights reserved.
+//
+
+#import "MapSearchViewController.h"
+#import <AMapSearchKit/AMapSearchKit.h>
+#import <MJRefresh.h>
+#import "ShopInfoViewController.h"
+#import "OpenShopInfo.h"
+@interface MapSearchViewController ()<UISearchBarDelegate,AMapSearchDelegate,UITableViewDelegate,UITableViewDataSource> {
+    NSString *infostr;
+    int startNum;
+    int count;
+}
+PropertyStrong UITableView *infotable;
+PropertyStrong AMapSearchAPI *search;
+PropertyStrong UISearchBar *infosearch;
+PropertyStrong NSMutableArray *addressArr;
+@end
+
+@implementation MapSearchViewController
+
+- (void)viewWillDisappear:(BOOL)animated {
+    [super viewWillDisappear:animated];
+    HideKeyBoard;
+}
+
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
+
+    count = 1;
+    startNum = 1;
+
+    self.search = [[AMapSearchAPI alloc] init];
+    self.search.delegate = self;
+
+    
+    
+    [self createInfoTable];
+    [self uiSearchBar];
+}
+
+- (void)createInfoTable {
+    self.infotable = [[UITableView alloc]initWithFrame:CGRectMake(0, Start_Height, Screen_Width, Show_Height_Next)];
+    self.infotable.delegate = self;
+    self.infotable.dataSource = self;
+    [self.view addSubview:self.infotable];
+    self.infotable.tableFooterView = [[UIView alloc]init];
+    
+    WeakSelf;
+    //上拉
+    self.infotable.mj_footer = [MJRefreshAutoNormalFooter footerWithRefreshingBlock:^{
+        [weakSelf pullTableViewDidTriggerLoadMore:nil];
+    }];
+    
+    
+    
+}
+
+#pragma mark - 创建SearchBar
+-(void)uiSearchBar
+{
+    
+    //搜索框
+    self.infosearch = [[UISearchBar alloc]initWithFrame:CGRectMake(0, 0,30, 30)];
+    self.infosearch.delegate = self;
+    self.infosearch.placeholder = @"搜索";
+    self.infosearch.backgroundColor = [UIColor clearColor];
+    self.infosearch.showsCancelButton = YES;
+    self.navigationItem.titleView = self.infosearch;
+    
+    
+    UITextField * searchField = [self.infosearch valueForKey:@"_searchField"];
+    [searchField setValue:ColorWithHexString(ColorText_606060) forKeyPath:@"_placeholderLabel.textColor"];
+    [searchField setValue:[UIFont boldSystemFontOfSize:11] forKeyPath:@"_placeholderLabel.font"];
+    searchField.textColor = ColorWithHexString(ColorText_333333);
+    searchField.font = Font11;
+    searchField.backgroundColor = [UIColor colorWithRed:240/255.0 green:240/255.0 blue:240/255.0 alpha:1];
+    SetViewCorner(searchField, 10);
+    
+    UIButton * cancleBtn = [self.infosearch valueForKey:@"_cancelButton"];
+    [cancleBtn setTitle:@"搜索" forState:UIControlStateNormal];
+    cancleBtn.titleLabel.font = Font14;
+    [cancleBtn setTitleColor:ColorWithHexString(ColorText_999999) forState:UIControlStateNormal];
+    
+}
+
+#pragma mark 上拉
+-(void)pullTableViewDidTriggerLoadMore:(UITableView *)pullTableView
+{
+    
+
+        count++;
+        startNum += Page_Size_Twenty;
+        [self searchKeywords:AvailableString(infostr)];
+
+    
+    
+}
+#pragma mark - UITableViewDelegate&UITableViewDatasource
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+
+    return  self.addressArr.count;
+    
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath{
+
+        return 48;
+    
+
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    
+
+        UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"searchcell"];
+        if (!cell) {
+            cell = [[UITableViewCell alloc]initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@"searchcell"];
+            
+            
+            UILabel *titleLabel = [[UILabel alloc]initWithFrame:CGRectMake(10, 0, Screen_Width-10, 30)];
+            titleLabel.tag = 101;
+            titleLabel.font = Font14;
+            titleLabel.textColor = ColorWithHexString(ColorText_333333);
+            [cell.contentView addSubview:titleLabel];
+            
+            UILabel *subtitleLabel = [[UILabel alloc]initWithFrame:CGRectMake(10, 30, Screen_Width-10, 25)];
+            subtitleLabel.tag = 102;
+            subtitleLabel.font = Font11;
+            subtitleLabel.textColor = ColorWithHexString(ColorText_999999);
+            [cell.contentView addSubview:subtitleLabel];
+            
+            cell.selectionStyle = UITableViewCellSelectionStyleNone;
+            
+        }
+        
+        UILabel *titleLabel = (UILabel *)[cell.contentView viewWithTag:101];
+        UILabel *subTitleLabel = (UILabel *)[cell.contentView viewWithTag:102];
+        
+        
+        AMapPOI *poi = self.addressArr[indexPath.row];
+        NSRange range = [poi.name rangeOfString:infostr];
+        NSMutableAttributedString *attributedStr= [[NSMutableAttributedString alloc] initWithString:AvailableString(poi.name)];
+        [attributedStr addAttribute:NSForegroundColorAttributeName value:ColorWithHexString(Color_MainFFDA44) range:NSMakeRange(range.location, range.length)];
+        titleLabel.attributedText = attributedStr;
+        subTitleLabel.text = poi.address;
+        return cell;
+
+}
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    //无定位状态下点击则定位 有数据状态下返回想要的地址
+
+    HideKeyBoard;
+    
+    AMapPOI *poi = self.addressArr[indexPath.row];
+    
+    
+    [OpenShopInfo shareInstance].shopLat = [NSString stringWithFormat:@"%f",poi.location.latitude];
+    [OpenShopInfo shareInstance].shopLong = [NSString stringWithFormat:@"%f",poi.location.longitude];
+    [OpenShopInfo shareInstance].shopAddress = AvailableString(poi.address);
+    [[OpenShopInfo shareInstance] writeToDefaults];
+    [self showToast:SaveSuccess];
+    [self performSelector:@selector(returnback) withObject:nil afterDelay:1.5];
+
+    
+
+    
+}
+
+- (void)returnback {
+    for (UIViewController * controller in self.navigationController.viewControllers) { //遍历
+        if ([controller isKindOfClass:[ShopInfoViewController class]]) { //这里判断是否为你想要跳转的页面
+            
+            [self.navigationController popToViewController:controller animated:YES];
+        }
+    }
+}
+
+
+#pragma mark - UISearchBarDelegate
+//搜索框上的搜索按钮
+- (void)searchBarCancelButtonClicked:(UISearchBar *)searchBar
+{
+    
+    [self.infosearch resignFirstResponder];
+    
+}
+-(void)searchBar:(UISearchBar *)searchBar textDidChange:(NSString *)searchText
+{
+    infostr = searchText ;
+
+        startNum = 1;
+        [self searchKeywords:AvailableString(infostr)];
+    
+    
+}
+
+//键盘上的搜索按钮
+-(void)searchBarSearchButtonClicked:(UISearchBar *)searchBar
+{
+    [self.infosearch resignFirstResponder];
+    
+}
+
+- (void)searchKeywords:(NSString *)keywords
+{
+
+    AMapPOIKeywordsSearchRequest *request = [[AMapPOIKeywordsSearchRequest alloc] init];
+    
+    request.keywords            = keywords;
+    request.page = startNum;
+    request.offset = Page_Size_Twenty;
+    request.requireExtension    = YES;
+    request.city = @"无锡";
+    [self.search AMapPOIKeywordsSearch:request];
+}
+#pragma mark 刷新完毕
+-(void)finishRefresh
+{
+    [self.infotable reloadData];
+
+        if (count*Page_Size_Twenty> self.addressArr.count&&self.addressArr.count!=0)
+        {
+            [self.infotable.mj_footer endRefreshingWithNoMoreData];
+        }else {
+            [self.infotable.mj_footer endRefreshing];
+        }
+        if (self.addressArr.count == 0) {
+            self.infotable.mj_footer.hidden = YES;
+        }
+
+    
+}
+
+
+
+
+/* POI 搜索回调. */
+- (void)onPOISearchDone:(AMapPOISearchBaseRequest *)request response:(AMapPOISearchResponse *)response
+{
+    
+    if (startNum == 1)
+    {
+        [self.addressArr removeAllObjects];
+    }
+    
+    if (response.pois.count != 0)
+    {
+        
+        for (int i=0; i<response.pois.count; i++)
+        {
+            AMapPOI *poi = [response.pois objectAtIndex:i];
+            [self.addressArr addObject:poi];
+        }
+        
+    }
+
+    //解析response获取POI信息，具体解析见 Demo
+    [self finishRefresh];
+}
+
+
+
+@end

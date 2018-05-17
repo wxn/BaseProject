@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Bucket
+   type = "0"
+   version = "2.0">
+   <Breakpoints>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "XTWL_IOS_USER/ViewControllers/ForthVCs/UserAddress/ChangeAndAddViewController.m"
+            timestampString = "528367423.465979"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "324"
+            endingLineNumber = "324"
+            landmarkName = "-textFieldChanged:"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "XTWL_IOS_USER/ViewControllers/Login&amp;RegistVCs/RegistViewController.m"
+            timestampString = "528367423.466076"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "173"
+            endingLineNumber = "173"
+            landmarkName = "-sendRequestToCheckAccount"
+            landmarkType = "7">
+            <Locations>
+               <Location
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "-[RegistViewController sendRequestToCheckAccount]"
+                  moduleName = "XTWL_IOS_USER"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/xuntiangwangluo/Documents/%E5%A4%A7%E5%B9%B3%E5%8F%B0/XTWL_IOS_USER/XTWL_IOS_USER/ViewControllers/Login&amp;RegistVCs/RegistViewController.m"
+                  timestampString = "528357370.692263"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "174"
+                  endingLineNumber = "174"
+                  offsetFromSymbolStart = "664">
+               </Location>
+               <Location
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "__49-[RegistViewController sendRequestToCheckAccount]_block_invoke"
+                  moduleName = "XTWL_IOS_USER"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/xuntiangwangluo/Documents/%E5%A4%A7%E5%B9%B3%E5%8F%B0/XTWL_IOS_USER/XTWL_IOS_USER/ViewControllers/Login&amp;RegistVCs/RegistViewController.m"
+                  timestampString = "528357370.694085"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "176"
+                  endingLineNumber = "176"
+                  offsetFromSymbolStart = "124">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "XTWL_IOS_USER/ViewControllers/Login&amp;RegistVCs/RegistViewController.m"
+            timestampString = "528367423.466145"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "176"
+            endingLineNumber = "176"
+            landmarkName = "-sendRequestToCheckAccount"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+   </Breakpoints>
+</Bucket>

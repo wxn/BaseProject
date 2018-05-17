@@ -1,0 +1,25 @@
+//
+//  ShopSecTypeModel.m
+//  XTWL_IOS_SHOP
+//
+//  Created by Zhaoyang on 2017/10/24.
+//  Copyright © 2017年 XTWL. All rights reserved.
+//
+
+#import "ShopSecTypeModel.h"
+
+
+@implementation ShopSecTypeModel
+
++ (NSDictionary *)objectClassInArray{
+    return @{@"list" : [SecshopModel class]};
+}
+
+@end
+
+@implementation SecshopModel
+
+
+
+@end
+

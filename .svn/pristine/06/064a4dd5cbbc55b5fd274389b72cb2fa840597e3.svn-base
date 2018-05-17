@@ -1,0 +1,27 @@
+//
+//  PictureCell.m
+//  XTWL_IOS_SHOP
+//
+//  Created by Cinna on 2017/10/30.
+//  Copyright © 2017年 XTWL. All rights reserved.
+//
+
+#import "PictureCell.h"
+
+@implementation PictureCell
+
+- (instancetype)initWithFrame:(CGRect)frame
+{
+    self = [super initWithFrame:frame];
+    if (self) {
+        [self initSubviews];
+    }
+    return self;
+}
+
+- (void)initSubviews {
+    
+    _imageView = [CreateView createImageViewWithFrame:CGRectMake(1, 1, self.bounds.size.width - 2, self.bounds.size.height - 2) image:nil superView:self.contentView];
+}
+
+@end

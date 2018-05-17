@@ -1,0 +1,109 @@
+//
+//  ShopSegmentView.m
+//  XTWL_IOS_SHOP
+//
+//  Created by 开发003 on 2017/10/24.
+//  Copyright © 2017年 XTWL. All rights reserved.
+//
+
+#import "ShopSegmentView.h"
+
+
+
+@interface ShopSegmentView ()
+
+PropertyStrong NSArray *titleArray;
+PropertyAssign NSInteger currentIndex;
+
+@end
+
+@implementation ShopSegmentView
+
+
+- (instancetype)initWithFrame:(CGRect)frame titleArray:(NSArray *)array
+{
+    self = [super initWithFrame:frame];
+    if (self) {
+        self.backgroundColor = [UIColor whiteColor];
+        self.titleArray = [NSArray arrayWithArray:array];
+        self.currentIndex = 0;
+        [self createSubViews];
+    }
+    return self;
+}
+
+- (void)createSubViews {
+    
+    CGFloat width = self.frame.size.width/self.titleArray.count;
+    CGFloat height = self.frame.size.height;
+    CGFloat lineHeight = 3;
+    CGFloat labelHeight = height - lineHeight;
+    
+    
+    
+    for (NSInteger i = 0; i < self.titleArray.count; i++) {
+        NSString *titleStr = self.titleArray[i];
+        UILabel *titleLabel = [CreateView createLabelWithFrame:CGRectMake(width*i, 0, width, labelHeight) text:titleStr fontSize:FontSize_14 textColorStr:ColorText_606060 superView:self];
+        titleLabel.textAlignment = NSTextAlignmentCenter;
+        UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tapAction:)];
+        titleLabel.userInteractionEnabled = YES;
+        [titleLabel addGestureRecognizer:tap];
+        titleLabel.tag = 1000 + i;
+        UIView *line = [[UIView alloc] initWithFrame:CGRectMake(i * width + width/2 - 8, height - lineHeight, 16, lineHeight - 0.5)];
+        line.backgroundColor = ColorWithHexString(Color_MainFFDA44);
+        line.tag = 2000 + i;
+        line.hidden = YES;
+        [self addSubview:line];
+
+    }
+    
+    UIView *bottomLine = [[UIView alloc] initWithFrame:CGRectMake(0, height - 0.5, Screen_Width, 0.5)];
+    bottomLine.backgroundColor = ColorWithHexString(ColorLine_ededed);
+    [self addSubview:bottomLine];
+    
+    [self changeSelectStateWithIndex:0];
+    
+}
+
+- (void)changeSelectStateWithIndex:(NSInteger)index {
+    
+    UILabel *oldTitleLabel = [self viewWithTag:_currentIndex + 1000];
+    UIView *oldView = [self viewWithTag:_currentIndex + 2000];
+    
+    UILabel *newTitleLabel = [self viewWithTag:index + 1000];
+    UIView *newView = [self viewWithTag:index + 2000];
+    
+    oldTitleLabel.textColor = ColorWithHexString(ColorText_606060);
+    oldView.hidden = YES;
+    
+    newTitleLabel.textColor = ColorWithHexString(Color_MainFFDA44);
+    newView.hidden = NO;
+    
+    _currentIndex = index;
+    
+}
+
+- (void)tapAction:(UITapGestureRecognizer *)tap {
+    
+    UILabel *titleLabel = (UILabel *)tap.view;
+    if (titleLabel.tag - 1000 == _currentIndex) {
+        return;
+    }
+    
+    NSInteger selectIndex = titleLabel.tag - 1000;
+    [self changeSelectStateWithIndex:selectIndex];
+    
+    if ([_delegate respondsToSelector:@selector(shopSegmentView:selectIndex:)]) {
+        [_delegate shopSegmentView:self selectIndex:_currentIndex];
+    }
+    
+}
+/*
+// Only override drawRect: if you perform custom drawing.
+// An empty implementation adversely affects performance during animation.
+- (void)drawRect:(CGRect)rect {
+    // Drawing code
+}
+*/
+
+@end

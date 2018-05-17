@@ -1,0 +1,20 @@
+//
+//Created by ESJsonFormatForMac on 17/10/26.
+//
+
+#import "GoodsDetailInfo.h"
+@implementation GoodsDetailInfo
+
++ (NSDictionary *)mj_objectClassInArray{
+    return @{@"list" : [GoodsSkuInfoModel class]};
+}
+
+
+@end
+
+@implementation GoodsSkuInfoModel
+
+
+@end
+
+

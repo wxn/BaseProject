@@ -1,0 +1,15 @@
+//
+//Created by ESJsonFormatForMac on 17/10/24.
+//
+
+#import "GoodsInfo.h"
+
+@implementation GoodsInfo
+
+
+@end
+
+@implementation GoodsCategoryInfo
+
+
+@end

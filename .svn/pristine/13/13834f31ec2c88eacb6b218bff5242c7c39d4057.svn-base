@@ -1,0 +1,71 @@
+//
+//  IdeaBackViewController.m
+//  XTWL_IOS_SHOP
+//
+//  Created by Cinna on 2017/10/24.
+//  Copyright © 2017年 XTWL. All rights reserved.
+//
+
+#import "IdeaBackViewController.h"
+#import "IdeaBackCell.h"
+
+@interface IdeaBackViewController () <UITableViewDelegate, UITableViewDataSource>
+
+@end
+
+@implementation IdeaBackViewController {
+    UITableView *ideaBackTable;
+    
+    NSMutableArray *ideaBackArray;
+}
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    // Do any additional setup after loading the view.
+    self.navigationItem.title = NaviTitle_IdeaBack;
+    
+    [self initTableView];
+}
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+- (void)initTableView {
+    
+    ideaBackTable = [[UITableView alloc] initWithFrame:CGRectMake(0, Start_Height, Screen_Width, Show_Height_Next) style:UITableViewStylePlain];
+    ideaBackTable.backgroundColor = WHITE_COLOR;
+    ideaBackTable.separatorStyle = UITableViewCellSeparatorStyleNone;
+    ideaBackTable.delegate = self;
+    ideaBackTable.dataSource = self;
+    ideaBackTable.scrollEnabled = NO;
+    [self.view addSubview:ideaBackTable];
+}
+
+#pragma mark - UITableViewDelegate&DataSource
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
+    
+    return 10;
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
+    
+    return 115;
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    
+    IdeaBackCell *cell = [tableView dequeueReusableCellWithIdentifier:@"IdeaBackCell"];
+    if (!cell) {
+        cell = [[IdeaBackCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@"IdeaBackCell"];
+    }
+    cell.iconImageView.backgroundColor = RED_COLOR;
+    return cell;
+}
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    [tableView deselectRowAtIndexPath:indexPath animated:YES];
+}
+
+@end

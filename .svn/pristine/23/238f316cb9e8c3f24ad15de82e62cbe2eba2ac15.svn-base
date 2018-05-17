@@ -1,0 +1,20 @@
+//
+//  SelectGuigeViewController.h
+//  XTWL_IOS_SHOP
+//
+//  Created by Cinna on 2017/10/26.
+//  Copyright © 2017年 XTWL. All rights reserved.
+//
+
+#import "BaseNextViewController.h"
+typedef void(^FinishEditBlock)();
+typedef enum : NSUInteger {
+    ViewTypeGuige,
+    ViewTypeShuxing,
+} ViewType;
+
+@interface SelectGuigeViewController : BaseNextViewController
+
+- (instancetype)initWithType:(ViewType)type finishBlock:(FinishEditBlock)block;
+
+@end

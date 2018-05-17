@@ -1,0 +1,13 @@
+//
+//  CategoryModel.m
+//  XTWL_IOS_SHOP
+//
+//  Created by Cinna on 2017/10/26.
+//  Copyright © 2017年 XTWL. All rights reserved.
+//
+
+#import "CategoryModel.h"
+
+@implementation CategoryModel
+
+@end

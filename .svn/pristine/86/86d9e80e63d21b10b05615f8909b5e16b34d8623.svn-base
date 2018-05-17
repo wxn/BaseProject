@@ -1,0 +1,79 @@
+//
+//  CreateView.m
+//  XTWL_IOS_SHOP
+//
+//  Created by Cinna on 2017/9/15.
+//  Copyright © 2017年 XTWL. All rights reserved.
+//
+
+#import "CreateView.h"
+
+@implementation CreateView
+
++ (UILabel *)createLabelWithFrame:(CGRect)frame
+                             text:(NSString *)text
+                         fontSize:(float)size
+                     textColorStr:(NSString *)colorStr
+                          superView:(UIView *)superView {
+    
+    UILabel *tempLab = [[UILabel alloc]init];
+    tempLab.font = Font(size);
+    tempLab.textColor = ColorWithHexString(colorStr);
+    tempLab.text = text;
+    tempLab.backgroundColor = CLEAR_COLOR;
+    tempLab.frame = frame;
+    [superView addSubview:tempLab];
+    
+    return tempLab;
+}
+
+//一般用于section的footerView
++ (UIView *)createSeparateViewWithOrignY:(float)originY superView:(UIView *)superView {
+    
+    UIView *view = [[UIView alloc] initWithFrame:CGRectMake(0, originY, Screen_Width, 5)];
+    view.backgroundColor = ColorWithHexString(Color_Background);
+    [superView addSubview:view];
+    return view;
+}
+
++ (UIButton *)createCustomBtnWithFrame:(CGRect)frame superView:(UIView *)superView {
+    UIButton *btn = [UIButton buttonWithType:UIButtonTypeCustom];
+    btn.frame = frame;
+    
+    return btn;
+}
+
++ (UIImageView *)createImageViewWithFrame:(CGRect)frame image:(UIImage *)image  superView:(UIView *)superView {
+    UIImageView *imgView = [[UIImageView alloc] initWithFrame:frame];
+    imgView.image = image;
+    [superView addSubview:imgView];
+    
+    return imgView;
+}
+
++ (UIView *)createLineViewWithFrame:(CGRect)frame superView:(UIView *)superView {
+    
+    UIView *view = [[UIView alloc] initWithFrame:frame];
+    view.backgroundColor = ColorWithHexString(ColorLine_ededed);
+    [superView addSubview:view];
+    return view;
+}
+
+
++ (UITextField *)createTextFieldWithFram: (CGRect)frame delegate: (id)delegate placeholder: (NSString *)placeholder textColor: (NSString *)textColor font: (CGFloat)font superView: (UIView *)superView
+{
+    UITextField *temp = [[UITextField alloc]initWithFrame:frame];
+    temp.delegate = delegate;
+    temp.placeholder = placeholder;
+    temp.textColor = ColorWithHexString(textColor);
+    temp.font = Font(font);
+    [superView addSubview:temp];
+    return temp;
+    
+}
+
+
+
+
+
+@end

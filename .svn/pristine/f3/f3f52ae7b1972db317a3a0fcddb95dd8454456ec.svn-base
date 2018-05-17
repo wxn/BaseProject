@@ -1,0 +1,27 @@
+//
+//Created by ESJsonFormatForMac on 17/10/17.
+//
+
+#import "ShopTypeModel.h"
+@implementation ShopTypeModel
+
++ (NSDictionary *)objectClassInArray{
+    return @{@"list" : [FirstList class]};
+}
+
+@end
+
+@implementation FirstList
+
++ (NSDictionary *)objectClassInArray{
+    return @{@"typeList" : [SecTypeList class]};
+}
+
+@end
+
+
+@implementation SecTypeList
+
+@end
+
+

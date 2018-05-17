@@ -1,0 +1,18 @@
+//
+//Created by ESJsonFormatForMac on 17/10/25.
+//
+
+#import "ShopActivityModel.h"
+@implementation ShopActivityModel
+
++ (NSDictionary *)objectClassInArray{
+    return @{@"list" : [ActivityInfo class]};
+}
+
+@end
+
+@implementation ActivityInfo
+
+@end
+
+

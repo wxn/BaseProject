@@ -1,0 +1,19 @@
+//
+//  GoodsPropertyViewController.h
+//  XTWL_IOS_SHOP
+//
+//  Created by Cinna on 2017/10/25.
+//  Copyright © 2017年 XTWL. All rights reserved.
+//
+
+#import "BaseNextViewController.h"
+#import "GoodsPropertyModel.h"
+#import "SelectGuigeViewController.h"
+
+typedef void(^CompleteBlock)(NSArray<GoodsPropertyModel *> *array, CategoryModel *model);
+
+@interface GoodsPropertyViewController : BaseNextViewController
+
+- (instancetype)initWithCategoryModel:(CategoryModel *)model viewType:(ViewType)type dataArray:(NSArray *)array completeBlock:(CompleteBlock)block;
+
+@end

@@ -1,0 +1,147 @@
+//
+//  SegmentView.m
+//  XTWL_IOS_SHOP
+//
+//  Created by Cinna on 2017/9/18.
+//  Copyright © 2017年 XTWL. All rights reserved.
+//
+
+#import "SegmentView.h"
+
+@interface SegmentView ()
+
+@end
+
+const NSInteger MaxNum = 5;//超过五个变成可滑动
+static NSString *const BlackTextColor = @"#323232";
+
+@implementation SegmentView {
+    UIScrollView *scrollView;
+    UILabel *lineLab;
+    NSArray *titleArray;
+    SegmentViewMode segmentViewMode;
+}
+
+- (instancetype)initWithFrame:(CGRect)frame
+                   titleArray:(NSArray *)titleArr
+              segmentViewMode:(SegmentViewMode)mode {
+    self = [super initWithFrame:frame];
+    
+    if (self) {
+        
+        titleArray = [NSArray arrayWithArray:titleArr];
+        [self initScrollView];
+        [self initSegViewSubViewsWithFrame:frame];
+    }
+    
+    return self;
+}
+
+-(void)initScrollView {
+    scrollView = [[UIScrollView alloc] initWithFrame:CGRectMake(0, 0, self.frame.size.width, self.frame.size.height)];
+    scrollView.contentSize = CGSizeMake(self.frame.size.width, self.frame.size.height);
+    scrollView.scrollEnabled = NO;
+    scrollView.showsVerticalScrollIndicator = NO;
+    scrollView.showsHorizontalScrollIndicator = NO;
+    if (titleArray.count > MaxNum) {
+        float itemWidth = self.frame.size.width/MaxNum;
+        scrollView.contentSize = CGSizeMake(itemWidth * titleArray.count, self.frame.size.height);
+        scrollView.scrollEnabled = YES;
+    }
+    
+    [self addSubview:scrollView];
+}
+
+- (void)initSegViewSubViewsWithFrame:(CGRect)frame {
+    CGFloat width = self.frame.size.width/[titleArray count];
+    if(titleArray.count > MaxNum)
+        width = self.frame.size.width/MaxNum;
+    
+    for (int i=0; i<[titleArray count]; i++) {
+        
+        UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tapAction:)];
+        UILabel *tempLab = [CreateView createLabelWithFrame:CGRectMake(i*width, 0, width, frame.size.height) text:AvailableString([titleArray objectAtIndex:i]) fontSize:FontSize_14 textColorStr:i==0?Color_MainFFDA44:BlackTextColor superView:scrollView];
+        tempLab.userInteractionEnabled = YES;
+        [tempLab addGestureRecognizer:tap];
+        tempLab.textAlignment = NSTextAlignmentCenter;
+        tempLab.tag = 100+i;
+        
+        UILabel *numLabel = [[UILabel alloc] initWithFrame:CGRectMake((i+1)*width - 10, 10, 6, 6)];
+        SetViewCorner(numLabel, 3);
+        numLabel.backgroundColor = ColorWithHexString(Color_MainFFDA44);
+        numLabel.font = Font(10);
+        numLabel.textColor = [UIColor whiteColor];
+        numLabel.textAlignment = NSTextAlignmentCenter;
+        numLabel.text = @"";
+        numLabel.hidden = YES;
+        numLabel.tag = i;
+        [scrollView addSubview:numLabel];
+        
+        UILabel *boardLineLab = [[UILabel alloc]initWithFrame:CGRectMake(i*width, 2, 0.5, frame.size.height-4)];
+        boardLineLab.backgroundColor = ColorWithHexString(Color_MainFFDA44);
+        [scrollView addSubview:boardLineLab];
+    }
+    if (segmentViewMode == SegmentViewModeLineAndHighlighted) {
+        lineLab = [[UILabel alloc]initWithFrame:CGRectMake(5, frame.size.height-2, width-10, 2)];
+        lineLab.backgroundColor = ColorWithHexString(Color_MainFFDA44);
+        [scrollView addSubview:lineLab];
+    }
+}
+
+-(void)setCurrentIndex:(NSInteger)index {
+    [self layoutViewWithIndex:index];
+}
+
+-(void)tapAction:(UITapGestureRecognizer *)tap {
+    UILabel *lab = (UILabel *)tap.view;
+    NSInteger index = lab.tag - 100;
+    [self layoutViewWithIndex:index];
+}
+
+- (void)layoutViewWithIndex:(NSInteger)index {
+    
+    if ([self.delegate respondsToSelector:@selector(segmentView:selectIndex:)]) {
+        
+        [self.delegate segmentView:self selectIndex:index];
+    }
+    if(segmentViewMode == SegmentViewModeNone)
+        return;
+    for (NSInteger i = 0;i < titleArray.count;i ++) {
+        UILabel *label = [scrollView viewWithTag:i+100];
+        
+        switch (segmentViewMode) {
+            case SegmentViewModeHighlighted:
+                if (label.tag == index+100) {
+                    
+                    label.textColor = ColorWithHexString(Color_MainFFDA44);
+                }else{
+                    
+                    label.textColor = ColorWithHexString(BlackTextColor);
+                }
+                break;
+            case SegmentViewModeLineAndHighlighted: {
+                if (label.tag == index+100) {
+                    
+                    label.textColor = ColorWithHexString(Color_MainFFDA44);
+                }else{
+                    
+                    label.textColor = ColorWithHexString(BlackTextColor);
+                }
+                CGFloat width = self.frame.size.width/[titleArray count];
+                if(titleArray.count > MaxNum)
+                    width = self.frame.size.width/MaxNum;
+                [UIView animateWithDuration:0.3 animations:^{
+                    
+                    lineLab.frame = CGRectMake(index*width + 5, self.frame.size.height-2, width-10, 2);
+                }];
+                break;
+            }
+            default:
+                break;
+                
+        }
+    }
+    
+}
+
+@end

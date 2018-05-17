@@ -1,0 +1,95 @@
+//
+//  SecondString_Const.m
+//  XTWL_IOS_USER
+//
+//  Created by Cinna on 2017/10/23.
+//  Copyright © 2017年 XTWL. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+
+#pragma mark - 导航条文案
+NSString *const NaviTitle_OperateState = @"营业状态";
+NSString *const NaviTitle_HistoryOrders = @"历史订单";
+NSString *const NaviTitle_Setting = @"设置";
+NSString *const NaviTitle_SetCategory = @"设置分类";
+NSString *const NaviTitle_GoodsShuxing = @"商品属性";
+NSString *const NaviTitle_GoodsShuxingCategory = @"商品属性分类";
+NSString *const NaviTitle_GoodsGuige = @"商品规格";
+NSString *const NaviTitle_GoodsGuigeCategory = @"商品规格分类";
+NSString *const NaviTitle_SelectGoodsCategory = @"选择商品分类";
+NSString *const NaviTitle_SelectPictureCategory = @"选择图片分类";
+#pragma mark - 文本文案
+NSString *const StopBusiness = @"暂停营业";
+NSString *const InBusiness = @"营业中";
+NSString *const NotInBusinessTime = @"非营业时间";
+NSString *const BusinessTime = @"营业时间";
+NSString *const ChangeBusinessTime = @"修改营业时间";
+NSString *const ShopIsNotInBusinessTime = @"当前餐厅不在营业时间内";
+NSString *const ChangeTimeToStartBusiness = @"如需正常营业请修改营业时间";
+NSString *const SetTimeToBusiness = @"友情提醒：设置营业时间后才能营业";
+NSString *const ClickBtnToBusiness = @"友情提醒：可点击上方按钮暂停营业";
+NSString *const ShopCannotAcceptOrder = @"当前餐厅已停止提供服务，无法接受订单";
+NSString *const StartBusinessToAcceptOrder = @"需恢复营业后才能接单";
+NSString *const ContinueBusiness = @"继续营业";
+NSString *const ShopCanAcceptOrder = @"当前餐厅正在营业中，可正常接受新订单";
+
+NSString *const ShopLOGO = @"店铺LOGO";
+NSString *const Account = @"账号";
+NSString *const Password = @"密码";
+NSString *const ShopReviewInfo = @"店铺审核信息";
+NSString *const Printer = @"打印机";
+NSString *const CurrentVersion = @"当前版本号";
+NSString *const Logout = @"退出登录";
+NSString *const Submit = @"提交";
+NSString *const Complete = @"完成";
+NSString *const Edit = @"编辑";
+
+NSString *const ShopTypeWaiMai = @"外卖商家";
+NSString *const ShopTypeTuanGou = @"团购商家";
+NSString *const ShopType = @"商城商家";
+NSString *const AddCategory = @"+添加";
+
+// 商品管理
+NSString *const ShopGoodsManage = @"商品管理";
+NSString *const StockOfGoods = @"库存";
+NSString *const SaleNum = @"销量";
+NSString *const RecommandGoods = @"店长推荐";
+NSString *const DeleteRecommand = @"取消推荐";
+NSString *const GoodsOnSale = @"已上架";
+NSString *const GoodsOffSale = @"已下架";
+NSString *const PutGoodsOnSale = @"上架商品";
+NSString *const TakeGoodsOffSale = @"下架商品";
+NSString *const SetCategory = @"设置分类";
+NSString *const AddGoods = @"添加商品";
+NSString *const UpLoadGoods = @"上传商品";
+NSString *const EditGoods = @"编辑商品";
+NSString *const ChooseCategory = @"选择商品分类";
+NSString *const GoodsName = @"商品名称";
+NSString *const Delete = @"删除";
+NSString *const GoodsGuiGe = @"商品规格";
+NSString *const Price = @"价格";
+NSString *const ManyGuiGe = @"多规格(设置多种规格)";
+NSString *const Property = @"属性";
+NSString *const BoxPrice = @"打包盒价格";
+NSString *const GoodsDescription = @"商品说明";
+NSString *const EnterGoodsName = @"请填写商品名称";
+NSString *const EnterGoodsPrice = @"请填写商品价格";
+NSString *const EnterBoxPrice = @"请填写打包盒价格";
+NSString *const StockSet = @"库存设定";
+NSString *const GoodsPrice = @"商品价格";
+NSString *const AddProperty = @"添加属性";
+NSString *const BaseInfo = @"基本信息";
+NSString *const ClickToChangePic = @"点击更换图片";
+NSString *const Search = @"搜索";
+NSString *const EnterSearchContent = @"请输入搜索内容";
+
+
+
+
+
+
+
+
+
+

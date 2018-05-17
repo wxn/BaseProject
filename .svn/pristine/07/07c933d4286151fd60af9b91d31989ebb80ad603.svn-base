@@ -1,0 +1,266 @@
+//
+//  LaunchViewController.m
+//  XTWL_IOS_SHOP
+//
+//  Created by Cinna on 2017/9/5.
+//  Copyright © 2017年 XTWL. All rights reserved.
+//
+
+#import "LaunchViewController.h"
+#import "CheckVersionUpdateModel.h"
+#import "TabBarController.h"
+#import "AppDelegate.h"
+#import "SDWebImageManager.h"
+#import "SDWebImagePrefetcher.h"
+#import "UserInfo.h"
+
+@interface LaunchViewController () <UIScrollViewDelegate,SDWebImageManagerDelegate>
+
+@end
+
+@implementation LaunchViewController {
+    UIButton *skipButton;
+    CheckVersionUpdateModel *versionModel;
+    UIButton *closeAdviceBtn;
+}
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    
+    // Do any additional setup after loading the view, typically from a nib.
+    
+    [self showLaunchImageView];
+    [self sendRequestToGetVersion];
+}
+
+- (void)showLaunchImageView {
+    
+    CGRect frame = [UIScreen mainScreen].bounds;
+    
+    UIImageView *imageView = [[UIImageView alloc] initWithFrame:frame];
+    imageView.image = BundleImageNamed(@"Default.png");
+    if (Screen_Height == 480) {
+        imageView.image = BundleImageNamed(@"Default.png");
+    }else if (Screen_Height == 568) {
+        imageView.image = BundleImageNamed(@"Default-568h.png");
+    }else if (Screen_Height == 667) {
+        imageView.image = BundleImageNamed(@"Default-i6.png");
+    }else if (Screen_Height == 1104) {
+        imageView.image = BundleImageNamed(@"Default-plus.png");
+    }else {
+        imageView.image = BundleImageNamed(@"Default-X.png");
+    }
+    [self.view addSubview:imageView];
+}
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+- (void)isShowWelcomeView {
+    
+    NSString *str = [[NSUserDefaults standardUserDefaults] stringForKey:UserDefaults_FirstComeIn];
+    NSString *versionStr = [[NSUserDefaults standardUserDefaults] stringForKey:UserDefaults_WelcomeVersion];
+    if (!str || ![versionStr isEqualToString:AppWelcomeVersion]) {
+        //第一次打开app，或者需要显示引导页
+        [[NSUserDefaults standardUserDefaults] setValue:UserDefaults_FirstComeIn forKey:UserDefaults_FirstComeIn];
+        [[NSUserDefaults standardUserDefaults] setValue:AppWelcomeVersion forKey:UserDefaults_WelcomeVersion];
+        [self showWelcomeView];
+    }else {
+        
+//        [self showAdvertisementView];
+        [self welcomeViewFinish];
+    }
+}
+
+- (void)showWelcomeView {
+    
+    UIScrollView *scrollView = [[UIScrollView alloc]initWithFrame:self.view.bounds];
+    scrollView.contentSize = CGSizeMake(self.view.bounds.size.width*4, self.view.bounds.size.height);
+    scrollView.delegate = self;
+    scrollView.showsHorizontalScrollIndicator = NO;
+    scrollView.showsVerticalScrollIndicator = NO;
+    scrollView.bounces = NO;
+    scrollView.pagingEnabled = YES;
+    scrollView.alwaysBounceVertical = NO;
+    scrollView.backgroundColor = WHITE_COLOR;
+    [self.view addSubview:scrollView];
+    
+    NSArray *imgArray = [[NSArray alloc]initWithObjects:@"welcome1",@"welcome2",@"welcome3",@"welcome4", nil];
+    for (int i=0; i<[imgArray count]; i++)
+    {
+        UIImageView *imgView = [[UIImageView alloc]initWithFrame:CGRectMake(i*self.view.bounds.size.width, 0, scrollView.bounds.size.width, scrollView.bounds.size.height)];
+        imgView.image = ImageWithContentFile(imgArray[i]);
+        [scrollView addSubview:imgView];
+    }
+    
+    skipButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    skipButton.frame = CGRectMake(Screen_Width/2.0 - 50 + (3 * Screen_Width), Screen_Height - 120, 100, 40);
+//    skipButton.hidden = YES;
+    [skipButton setBackgroundColor:WHITE_COLOR];
+    [skipButton setImage:ImageWithContentFile(@"") forState:UIControlStateNormal];
+    [skipButton addTarget:self action:@selector(welcomeViewFinish) forControlEvents:UIControlEventTouchUpInside];
+    [scrollView addSubview:skipButton];
+}
+
+- (void)showAdvertisementView {
+    
+    UIImageView *imageView = [CreateView createImageViewWithFrame:CGRectMake(SpaceLeftRight * 2, SpaceLeftRight * 2, Screen_Width - SpaceLeftRight * 4, Screen_Height - SpaceLeftRight * 4) image:nil superView:self.view];
+    [imageView sd_setImageWithURLStr:versionModel.info.advertisingPicAddress placeholderImage:DefaultImage1 imageWidth:imageView.frame.size.width imageHeight:imageView.frame.size.height];
+    imageView.userInteractionEnabled = YES;
+    [imageView addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(showAdvertisementWap)]];
+    
+    closeAdviceBtn = [UIButton buttonWithType:UIButtonTypeCustom];
+    closeAdviceBtn.frame = CGRectMake(imageView.frame.size.width - 60, -10, 70, 25);
+    SetViewCorner(closeAdviceBtn, CornerRadius_5);
+    closeAdviceBtn.layer.borderColor = [ColorWithHexString(ColorText_333333) CGColor];
+    closeAdviceBtn.layer.borderWidth = 0.5;
+    closeAdviceBtn.backgroundColor = WHITE_COLOR;
+    closeAdviceBtn.titleLabel.font = Font14;
+    [closeAdviceBtn setTitle:@"3s跳过" forState:UIControlStateNormal];
+    [closeAdviceBtn setTitleColor:ColorWithHexString(ColorText_333333) forState:UIControlStateNormal];
+    [closeAdviceBtn addTarget:self action:@selector(welcomeViewFinish) forControlEvents:UIControlEventTouchUpInside];
+    [imageView addSubview:closeAdviceBtn];
+    
+    __weak LaunchViewController *launchVC = self;
+    __block int timeout = 5;
+    dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
+    dispatch_source_t _timer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0,queue);
+    dispatch_source_set_timer(_timer,dispatch_walltime(NULL, 0),1.0*NSEC_PER_SEC, 0);
+    dispatch_source_set_event_handler(_timer, ^{
+        if(timeout > 1) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [closeAdviceBtn setTitle:[NSString stringWithFormat:@"%ds%@",timeout - 1,Skip] forState:UIControlStateNormal];
+            });
+            timeout --;
+        }else {
+            dispatch_source_cancel(_timer);
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [launchVC welcomeViewFinish];
+            });
+        }
+    });
+    dispatch_resume(_timer);
+}
+
+#pragma mark 是否获取tabbar图片
+- (void)getTabbarImage {
+    
+    if (versionModel.list.count == 4) {
+        
+        for (NSInteger i = 0;i < 4;i++) {
+            TabbarModel *model = versionModel.list[i];
+            SDImageCache* cache = [SDImageCache sharedImageCache];
+            UIImage *image = [cache imageFromDiskCacheForKey:[NSString stringWithFormat:@"%@?p=0",model.checkedPicture]];
+            if(!image) {
+                [self loadTabbarImages];
+                return;
+                
+            }
+        }
+    }
+}
+//预下载
+- (void)loadTabbarImages {
+    
+    [[SDWebImagePrefetcher sharedImagePrefetcher] prefetchURLs:@[[NSURL URLWithString:[NSString stringWithFormat:@"%@?p=0",versionModel.list[0].picture]],[NSURL URLWithString:[NSString stringWithFormat:@"%@?p=0",versionModel.list[0].checkedPicture]],[NSURL URLWithString:[NSString stringWithFormat:@"%@?p=0",versionModel.list[1].picture]],[NSURL URLWithString:[NSString stringWithFormat:@"%@?p=0",versionModel.list[1].checkedPicture]],[NSURL URLWithString:[NSString stringWithFormat:@"%@?p=0",versionModel.list[2].picture]],[NSURL URLWithString:[NSString stringWithFormat:@"%@?p=0",versionModel.list[2].checkedPicture]],[NSURL URLWithString:[NSString stringWithFormat:@"%@?p=0",versionModel.list[3].picture]],[NSURL URLWithString:[NSString stringWithFormat:@"%@?p=0",versionModel.list[3].checkedPicture]]]];
+}
+
+#pragma mark - UIScrollViewDelegate
+- (void)scrollViewDidScroll:(UIScrollView *)scrollView {
+    if (scrollView.contentOffset.x > Screen_Width * 2.7) {
+//        [skipButton setHidden:NO];
+    }else{
+//        [skipButton setHidden:YES];
+    }
+}
+
+#pragma mark - 接口请求
+//获取版本更新
+- (void)sendRequestToGetVersion {
+    
+    WeakSelf;
+    [RequestManager sendPostRequestWithURLString:ServerUrl_Read modular:Modular_version requestName:RequestName_checkVersionUpdate parameters:@{@"custId":CustID,@"code":@"0.5",@"port":@"4",@"appType":@"1"} completeBlock:^(NSString *resultCode, NSString *resultDesc, NSDictionary *dataDic) {
+        if ([resultCode isEqualToString:@"0"]) {
+            versionModel = [CheckVersionUpdateModel mj_objectWithKeyValues:dataDic];
+            [weakSelf getTabbarImage];
+            //1不更新，2强制更新，3非强制更新
+            if ([versionModel.info.isForced isEqualToString:@"1"]) {
+                
+                [self isShowWelcomeView];
+            }else if ([versionModel.info.isForced isEqualToString:@"2"]) {
+                
+                UIAlertController *alert = [UIAlertController alertControllerWithTitle:AlertMsg_ImportantUpdate message:versionModel.info.description preferredStyle:UIAlertControllerStyleAlert];
+                UIAlertAction *action = [UIAlertAction actionWithTitle:AlertBtn_UpdateNow style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+                    
+                    [weakSelf updateNow:versionModel.info.url];
+                }];
+                [alert addAction:action];
+                [weakSelf presentViewController:alert animated:YES completion:nil];
+                
+            }else if ([versionModel.info.isForced isEqualToString:@"3"]) {
+                
+                UIAlertController *alert = [UIAlertController alertControllerWithTitle:AlertMsg_Update message:versionModel.info.description preferredStyle:UIAlertControllerStyleAlert];
+                UIAlertAction *cancleAction = [UIAlertAction actionWithTitle:AlertBtn_Cancle style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+                    
+                    [weakSelf isShowWelcomeView];
+                }];
+                UIAlertAction *action = [UIAlertAction actionWithTitle:AlertBtn_UpdateNow style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+                    
+                    [weakSelf updateNow:versionModel.info.url];
+                }];
+                [alert addAction:cancleAction];
+                [alert addAction:action];
+                [weakSelf presentViewController:alert animated:YES completion:nil];
+            }else {
+                [weakSelf getVersionFailed];
+            }
+        }else {
+            [weakSelf getVersionFailed];
+        }
+    } failedBlock:^(NSError *error) {
+        
+        [weakSelf getVersionFailed];
+    }];
+}
+
+- (void)getVersionFailed {
+    
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"" message:AlertMsg_NoUpdateInformation preferredStyle:UIAlertControllerStyleAlert];
+    UIAlertAction *action = [UIAlertAction actionWithTitle:AlertMsg_ChongXinHuoQu style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+        [self sendRequestToGetVersion];
+        
+    }];
+    [alert addAction:action];
+    [self presentViewController:alert animated:YES completion:nil];
+}
+
+#pragma mark - BtnAction
+- (void)updateNow:(NSString *)urlStr {
+    
+    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:urlStr]];
+}
+
+- (void)welcomeViewFinish {
+    
+    
+    
+    TabBarController *vc = [TabBarController shareInstance];
+    AppDelegate *delegate = App_Delegate;
+    [vc setTabbarData:versionModel.list];
+    delegate.window.rootViewController = vc;
+}
+
+- (void)showAdvertisementWap {
+//    UserInfo *info = [UserInfo shareInstance];
+//    if (info.isAutoLogin) {
+//        <#statements#>
+//    }else {
+        [self welcomeViewFinish];
+//    }
+    
+    
+}
+
+@end

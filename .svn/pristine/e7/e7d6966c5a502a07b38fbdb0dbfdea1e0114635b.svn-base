@@ -1,0 +1,80 @@
+//
+//  GoodsSkuCell.m
+//  XTWL_IOS_SHOP
+//
+//  Created by 开发003 on 2017/10/25.
+//  Copyright © 2017年 XTWL. All rights reserved.
+//
+
+#import "GoodsSkuCell.h"
+
+
+// 36 38 38
+@implementation GoodsSkuCell
+
+- (instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier {
+    
+    if ([super initWithStyle:style reuseIdentifier:reuseIdentifier]) {
+        [self createSubViews];
+    }
+    return self;
+}
+
+
+- (void)createSubViews {
+    
+    self.skuNameLabel = [CreateView createLabelWithFrame:CGRectMake(10, 15, 65, 21) text:@"大小份" fontSize:FontSize_11 textColorStr:@"#34aeff" superView:self.contentView];
+    _skuNameLabel.textAlignment = NSTextAlignmentCenter;
+    _skuNameLabel.layer.borderWidth = 0.5;
+    _skuNameLabel.layer.borderColor = ColorWithHexString(@"#34aeff").CGColor;
+    _skuNameLabel.layer.cornerRadius = 2;
+    _skuNameLabel.layer.masksToBounds = YES;
+    [self.contentView addSubview:_skuNameLabel];
+    
+    // 删除
+    self.deleteButton = [[UIButton alloc] initWithFrame:CGRectMake(Screen_Width - 55, _skuNameLabel.frame.origin.y, 40, 21)];
+    [_deleteButton setTitleColor:ColorWithHexString(Color_PriceFF2622) forState:(UIControlStateNormal)];
+    _deleteButton.titleLabel.font = Font14;
+    [_deleteButton setTitle:@"删除" forState:(UIControlStateNormal)];
+    [self.contentView addSubview:_deleteButton];
+    
+    // 价格
+    UILabel *priceLabel = [CreateView createLabelWithFrame:CGRectMake(20, 38, 40, 38) text:@"价格" fontSize:FontSize_11 textColorStr:ColorText_333333 superView:self.contentView];
+    self.priceTextField = [[UITextField alloc] initWithFrame:CGRectMake(85, priceLabel.frame.origin.y, Screen_Width - 100, priceLabel.frame.size.height)];
+    _priceTextField.textColor = ColorWithHexString(ColorText_606060);
+    _priceTextField.font = Font14;
+    _priceTextField.textAlignment = NSTextAlignmentRight;
+    _priceTextField.placeholder = @"请填写商品价格";
+    [self.contentView addSubview:_priceTextField];
+    
+    // 线
+    UIView *line1 = [[UIView alloc] initWithFrame:CGRectMake(SpaceLeftRight, 73.5, Screen_Width - SpaceLeftRight, 0.5)];
+    line1.backgroundColor = ColorWithHexString(ColorLine_ededed);
+    
+    // 库存
+    UILabel *stockLabel = [CreateView createLabelWithFrame:CGRectMake(priceLabel.frame.origin.x, 74, priceLabel.frame.size.width, priceLabel.frame.size.height) text:@"库存" fontSize:FontSize_11 textColorStr:ColorText_333333 superView:self.contentView];
+    self.stockTextField = [[UITextField alloc] initWithFrame:CGRectMake(_priceTextField.frame.origin.x, stockLabel.frame.origin.y, _priceTextField.frame.size.width, _priceTextField.frame.size.height)];
+    _stockTextField.textColor = ColorWithHexString(ColorText_606060);
+    _stockTextField.font = Font14;
+    _stockTextField.textAlignment = NSTextAlignmentRight;
+    _stockTextField.placeholder = @"99999";
+    [self.contentView addSubview:_stockTextField];
+    
+    // 线
+    UIView *line2 = [[UIView alloc] initWithFrame:CGRectMake(SpaceLeftRight, 111.5, Screen_Width - SpaceLeftRight, 0.5)];
+    line2.backgroundColor = ColorWithHexString(ColorLine_ededed);
+    [self.contentView addSubview:line2];
+}
+
+- (void)awakeFromNib {
+    [super awakeFromNib];
+    // Initialization code
+}
+
+- (void)setSelected:(BOOL)selected animated:(BOOL)animated {
+    [super setSelected:selected animated:animated];
+
+    // Configure the view for the selected state
+}
+
+@end

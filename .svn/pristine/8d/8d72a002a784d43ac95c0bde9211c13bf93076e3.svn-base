@@ -1,0 +1,506 @@
+//
+//  BankInfoViewController.m
+//  XTWL_IOS_SHOP
+//
+//  Created by Zhaoyang on 2017/10/17.
+//  Copyright © 2017年 XTWL. All rights reserved.
+//
+
+#import "BankInfoViewController.h"
+#import "OpenShopInfo.h"
+#import "DecideString.h"
+#import "ChooseBankViewController.h"
+#import "ChooseSecBankInfoViewController.h"
+#import "OpenInfoRecordViewController.h"
+#import "ZLPhoto.h"
+#import "ZLPhotoPickerBrowserPhoto.h"
+@interface BankInfoViewController ()<UITableViewDelegate,UITableViewDataSource,UITextFieldDelegate>{
+    NSArray *titlearr;
+    NSString *provinceStr;
+    NSString *cityStr;
+    NSString *areaStr;
+    int count;
+    NSMutableArray *sfzArr;//存放身份证的图
+    NSMutableArray *infoarr;//存放营业类证件的图
+    NSMutableArray *sfzUrlArr;//存放身份证云端地址
+    NSMutableArray *infoUrlArr;//存放营业类证件云端地址
+}
+PropertyStrong UITableView *bankTableView;
+@end
+
+@implementation BankInfoViewController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    self.navigationItem.title = MoneyInfo;
+    titlearr = @[BankUser,BankCardNum,BankInfo,BankSecInfo];
+    [self initBankTableView];
+}
+
+- (void)initBankTableView {
+    
+    
+    //左上角返回
+    
+    UIButton *leftBackBtn = [UIButton buttonWithType:UIButtonTypeCustom];
+    leftBackBtn.titleLabel.font = Font16;
+    leftBackBtn.frame = CGRectMake(0, 0, 60, 40);
+    [leftBackBtn setImage:ImageNamed(@"navi_back") forState:UIControlStateNormal];
+    [leftBackBtn addTarget:self action:@selector(leftback) forControlEvents:UIControlEventTouchUpInside];
+    UIBarButtonItem *leftItem = [[UIBarButtonItem alloc] initWithCustomView:leftBackBtn];
+    self.navigationItem.leftBarButtonItem = leftItem;
+    
+    UIBarButtonItem *nagetiveSpacer = [[UIBarButtonItem alloc]initWithBarButtonSystemItem:UIBarButtonSystemItemFixedSpace
+                                                                                   target:nil action:nil];
+    nagetiveSpacer.width = -30;//这个值可以根据自己需要自己调整
+    self.navigationItem.leftBarButtonItems = @[nagetiveSpacer, leftItem];
+    
+    
+    
+    
+    self.bankTableView = [[UITableView alloc]initWithFrame:CGRectMake(0, Start_Height, Screen_Width, 180) style:UITableViewStylePlain];
+    self.bankTableView.scrollEnabled = NO;
+    self.bankTableView.delegate = self;
+    self.bankTableView.dataSource = self;
+    self.bankTableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+    [self.view addSubview:self.bankTableView];
+    
+    
+    UIButton *sureBtn = [[UIButton alloc]initWithFrame:CGRectMake(SpaceLeftRight, Screen_Height - 60, (Screen_Width-2*SpaceLeftRight), 43)];
+    SetViewCorner(sureBtn, 5);
+    
+    [sureBtn setBackgroundColor:ColorWithHexString(Color_MainFFDA44)];
+    sureBtn.titleLabel.font = Font16;
+    [sureBtn setTitle:SubmitRequest forState:UIControlStateNormal];
+    [sureBtn setTitleColor:ColorWithHexString(ColorText_333333) forState:UIControlStateNormal];
+    [sureBtn addTarget:self action:@selector(submitbankinfo) forControlEvents:UIControlEventTouchUpInside];
+    [self.view addSubview:sureBtn];
+    
+}
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+    return titlearr.count;
+}
+
+
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"cell"];
+    if (!cell) {
+        cell = [[UITableViewCell alloc]initWithStyle:UITableViewCellStyleValue1 reuseIdentifier:@"cell"];
+        cell.selectionStyle = UITableViewCellSelectionStyleNone;
+        UITextField *text = [[UITextField alloc]initWithFrame:CGRectMake(90, 0, Screen_Width-90-10, 43)];
+        [text addTarget:self action:@selector(textFieldChanged:) forControlEvents:UIControlEventEditingChanged];
+        text.textAlignment = NSTextAlignmentRight;
+        text.tag = 100+indexPath.row;
+        text.delegate = self;
+        text.textColor = ColorWithHexString(ColorText_333333);
+        text.font = Font14;
+        [text setValue:Font14 forKeyPath:@"_placeholderLabel.font"];
+        [text setValue:ColorWithHexString(ColorText_dadada) forKeyPath:@"_placeholderLabel.textColor"];
+        [cell.contentView addSubview:text];
+        
+        UIView *linewview = [[UIView alloc]initWithFrame:CGRectMake(SpaceLeftRight, 43.5, Screen_Width-SpaceLeftRight, 0.5)];
+        linewview.tag = 200;
+        linewview.backgroundColor = ColorWithHexString(ColorLine_ededed);
+        [cell.contentView addSubview:linewview];
+        
+    }
+    UITextField *infotext = (UITextField *)[cell.contentView viewWithTag:100+indexPath.row];
+    UIView *linewview = (UIView *)[cell.contentView viewWithTag:200];
+    cell.textLabel.text = titlearr[indexPath.row];
+    cell.textLabel.font = Font14;
+    cell.textLabel.textColor = ColorWithHexString(ColorText_333333);
+    cell.detailTextLabel.font = Font14;
+    cell.detailTextLabel.textColor = ColorWithHexString(ColorText_606060);
+    if (indexPath.row == 0) {
+        
+        infotext.placeholder = InputBankUserName;
+        infotext.text = AvailableString([OpenShopInfo shareInstance].bankUser);
+    }else if (indexPath.row == 1) {
+        infotext.placeholder = @"0000 0000 0000 0000";
+        infotext.keyboardType = UIKeyboardTypeNumberPad;
+        infotext.text = AvailableString([OpenShopInfo shareInstance].bankCardNum);
+    }else if (indexPath.row == 2) {
+        infotext.hidden = YES;
+        
+        cell.detailTextLabel.text = [AvailableString([OpenShopInfo shareInstance].bankName) isEqualToString:@""]?ChooseBankInfo:AvailableString([OpenShopInfo shareInstance].bankName);
+        cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+    }else {
+        infotext.hidden = YES;
+        linewview.hidden = YES;
+        cell.detailTextLabel.text = [AvailableString([OpenShopInfo shareInstance].BankSecName) isEqualToString:@""]?ChooseSecBankInfo:AvailableString([OpenShopInfo shareInstance].BankSecName);
+        cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+    }
+    return cell;
+}
+
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    HideKeyBoard;
+    if (indexPath.row == 2) {
+        ChooseBankViewController *choose = [[ChooseBankViewController alloc]init];
+        choose.selectBank = ^(NSString *bankName, NSString *province, NSString *city, NSString *area) {
+            [OpenShopInfo shareInstance].bankName = bankName;
+            provinceStr = province;
+            cityStr = city;
+            areaStr = area;
+            NSIndexPath *indexPath=[NSIndexPath indexPathForRow:2 inSection:0];
+            
+            [self.bankTableView reloadRowsAtIndexPaths:[NSArray arrayWithObjects:indexPath,nil] withRowAnimation:UITableViewRowAnimationNone];
+        };
+
+        [self.navigationController pushViewController:choose animated:YES];
+    }else if (indexPath.row == 3) {
+        
+        if ([AvailableString([OpenShopInfo shareInstance].bankName) isEqualToString:@""]) {
+            [self showToast:ChooseBankInfo];
+            return;
+        }
+        ChooseSecBankInfoViewController *choosesec = [[ChooseSecBankInfoViewController alloc]initWithCity:cityStr Province:provinceStr Area:areaStr BankName:[OpenShopInfo shareInstance].bankName ];
+        choosesec.selectsecBank = ^(NSString *secbankName) {
+            [OpenShopInfo shareInstance].BankSecName = secbankName;
+            NSIndexPath *indexPath=[NSIndexPath indexPathForRow:3 inSection:0];
+            
+            [self.bankTableView reloadRowsAtIndexPaths:[NSArray arrayWithObjects:indexPath,nil] withRowAnimation:UITableViewRowAnimationNone];
+        };
+        [self.navigationController pushViewController:choosesec animated:YES];
+        
+    }
+}
+
+
+#pragma mark - UITextFieldDelegate
+- (void)textFieldDidEndEditing:(UITextField *)textField {
+    switch (textField.tag) {
+        case 100:
+            [OpenShopInfo shareInstance].bankUser = textField.text;
+            break;
+        case 101:
+            [OpenShopInfo shareInstance].bankCardNum = textField.text;
+            break;
+        
+            
+        default:
+            break;
+    }
+}
+- (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string
+{
+    //判断 限制长度
+    NSString *allText = StringFromIdToId(textField.text, string);
+    
+    switch (textField.tag) {
+            
+        case 101:
+        {//卡号
+            if ([allText length]>16) {
+                return NO;
+            }
+        }
+            break;
+            
+        default:
+            break;
+    }
+    
+    return YES;
+}
+
+
+
+//检测联系人和店铺地址，店铺名称的输入情况
+- (void)textFieldChanged:(UITextField *)textField
+{
+    
+    NSString *toBeString = textField.text;
+    
+    //获取高亮部分
+    UITextRange *selectedRange = [textField markedTextRange];
+    UITextPosition *position = [textField positionFromPosition:selectedRange.start offset:0];
+    if (textField.tag == 100) {
+        // 没有高亮选择的字，则对已输入的文字进行字数统计和限制
+        if (!position)
+        {
+            if (toBeString.length > MAX_ShopUser_LENGTH)
+            {
+                NSRange rangeIndex = [toBeString rangeOfComposedCharacterSequenceAtIndex:MAX_ShopUser_LENGTH];
+                if (rangeIndex.length == 1)
+                {
+                    textField.text = [toBeString substringToIndex:MAX_ShopUser_LENGTH];
+                }
+                else
+                {
+                    NSRange rangeRange = [toBeString rangeOfComposedCharacterSequencesForRange:NSMakeRange(0, MAX_ShopUser_LENGTH)];
+                    textField.text = [toBeString substringWithRange:rangeRange];
+                }
+            }
+        }
+    }
+    
+    
+    
+}
+
+
+
+- (BOOL)textFieldShouldReturn:(UITextField *)theTextField {
+    [theTextField resignFirstResponder];
+    return YES;
+}
+
+
+
+- (BOOL)checkinfo {
+    
+    if (![[OpenShopInfo shareInstance].bankUser isEqualToString:@""]) {
+        return YES;
+    }
+    
+    if (![[OpenShopInfo shareInstance].bankCardNum isEqualToString:@""]) {
+        return YES;
+    }
+ 
+    if (![[OpenShopInfo shareInstance].bankName isEqualToString:@""]) {
+        return YES;
+    }
+    
+    if (![[OpenShopInfo shareInstance].BankSecName isEqualToString:@""]) {
+        return YES;
+    }
+    
+
+    
+    return NO;
+}
+//检测返回按钮
+- (void)leftback {
+    HideKeyBoard;
+    if ([self checkinfo]) {
+        //有信息填写了弹窗提示保存
+        UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"" message:AlertMsg_IsSaveInfo preferredStyle:UIAlertControllerStyleAlert];
+        
+        UIAlertAction *saveaction = [UIAlertAction actionWithTitle:AlertBtn_Save style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+            [[OpenShopInfo shareInstance] writeToDefaults];
+            [self showToast:SaveSuccess];
+            [self performSelector:@selector(returnback) withObject:nil afterDelay:1.5];
+        }];
+        
+        
+        UIAlertAction *action = [UIAlertAction actionWithTitle:AlertBtn_NoSave style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+            [self.navigationController popViewControllerAnimated:YES];
+        }];
+        [alert addAction:action];
+        [alert addAction:saveaction];
+        [self presentViewController:alert animated:YES completion:nil];
+    }else {
+        [self returnback];
+    }
+    
+}
+//提交审核时先把信息保存
+- (void)save {
+    HideKeyBoard;
+    //保存填写的信息
+    if (![AvailableString([OpenShopInfo shareInstance].bankUser) isEqualToString:@""]&&![AvailableString([OpenShopInfo shareInstance].bankCardNum) isEqualToString:@""]&&![AvailableString([OpenShopInfo shareInstance].bankName) isEqualToString:@""]&&![AvailableString([OpenShopInfo shareInstance].BankSecName) isEqualToString:@""]) {
+        [OpenShopInfo shareInstance].bankinfoProgress = 2;
+    }else if ([AvailableString([OpenShopInfo shareInstance].bankUser) isEqualToString:@""]&&[AvailableString([OpenShopInfo shareInstance].bankCardNum) isEqualToString:@""]&&[AvailableString([OpenShopInfo shareInstance].bankName) isEqualToString:@""]&&[AvailableString([OpenShopInfo shareInstance].BankSecName) isEqualToString:@""]){
+        [OpenShopInfo shareInstance].bankinfoProgress = 0;
+    }else {
+        [OpenShopInfo shareInstance].bankinfoProgress = 1;
+    }
+    
+    [[OpenShopInfo shareInstance] writeToDefaults];
+    
+}
+
+- (void)submitbankinfo {
+    HideKeyBoard;
+    [self save];
+//    [self submitinfo];
+    sfzArr = [[NSMutableArray alloc]init];
+    if ([CommonUtil LocalHaveImage:@"100"]) {
+        [sfzArr addObject:[CommonUtil GetImageFromLocal:@"100"]];
+    }
+    if ([CommonUtil LocalHaveImage:@"101"]) {
+        [sfzArr addObject:[CommonUtil GetImageFromLocal:@"101"]];
+    }
+    
+    infoarr = [[NSMutableArray alloc]init];
+    
+    ZLPhotoAssets *assets;
+    for (int i = 0; i<[OpenShopInfo shareInstance].count; i++) {
+        if ([CommonUtil LocalHaveImage:[NSString stringWithFormat:@"%d",i]]) {
+            UIImage *image = [CommonUtil GetImageFromLocal:[NSString stringWithFormat:@"%d",i]];
+            assets = [ZLPhotoAssets assetWithImage:image];
+            ZLPhotoPickerBrowserPhoto *photo = [ZLPhotoPickerBrowserPhoto photoAnyImageObjWith:assets];
+            photo.asset = assets;
+            [infoarr addObject:photo];
+        }
+        
+        
+    }
+    
+    
+    dispatch_group_t group = dispatch_group_create();
+     dispatch_queue_t serialQueue=dispatch_queue_create("myThreadQueue1", DISPATCH_QUEUE_SERIAL);
+     if (sfzArr.count >0) {
+            // 某个任务放进 group
+            dispatch_group_async(group, serialQueue, ^{
+                // 任务代码1
+                    //创建多个线程用于上传
+                    for (int i=0; i<sfzArr.count; ++i) {
+                        //异步执行队列任务
+                         dispatch_group_enter(group);
+
+                        [RequestManager sendRequestToUploadImageWithURLString:ServerUrl_Upload image:sfzArr[i] completeBlock:^(NSString *resultCode, NSString *resultDesc, NSDictionary *dataDic) {
+                            if ([resultCode isEqualToString:@"0"]) {
+                                [sfzUrlArr addObject:resultDesc];
+                                dispatch_group_leave(group);
+
+                            }else {
+                                HideProcessHud;
+        //                        [weakSelf showToast:ToastMsg_NetworkFailed];
+                                dispatch_group_leave(group);
+                            }
+                            
+                        } failedBlock:^(NSError *error) {
+                            HideProcessHud;
+        //                    [weakSelf showToast:ToastMsg_NetworkFailed];
+                            dispatch_group_leave(group);
+                        }];
+
+                    }
+           
+            });
+     }
+
+     if (infoarr.count >0) {
+        dispatch_group_async(group, serialQueue, ^{
+            sleep(3);
+            // 任务代码2
+            
+                    for (int i=0; i<infoarr.count; ++i) {
+
+                        ZLPhotoPickerBrowserPhoto *photo = [infoarr objectAtIndex:i];
+                        dispatch_group_enter(group);
+
+                        [RequestManager sendRequestToUploadImageWithURLString:ServerUrl_Upload image:[photo.asset thumbImage] completeBlock:^(NSString *resultCode, NSString *resultDesc, NSDictionary *dataDic) {
+                            
+                            if ([resultCode isEqualToString:@"0"]) {
+                                MYLog(@"任务2  dizhi %@",resultDesc);
+                                [sfzUrlArr addObject:resultDesc];
+                                dispatch_group_leave(group);
+                            }else {
+                                HideProcessHud;
+                               dispatch_group_leave(group);
+                            }
+                            
+                        } failedBlock:^(NSError *error) {
+                            HideProcessHud;
+                            dispatch_group_leave(group);
+
+                        }];
+                        
+
+            
+                    }
+            
+        });
+         
+     }
+
+    dispatch_group_notify(group, dispatch_get_main_queue(), ^{
+        // 任务全部完成处理
+        NSLog(@"isover");
+         [self submitinfo];
+    });
+
+
+//
+    
+    //提交银行信息
+}
+- (void)returnback {
+    [self.navigationController popViewControllerAnimated:YES];
+}
+
+
+
+
+
+- (void)submitinfo {
+    WeakSelf;
+
+    NSMutableArray *goodsCopyArr = [[OpenShopInfo shareInstance].SecsupTypeIDArr mutableCopy];
+    NSString *string = [goodsCopyArr componentsJoinedByString:@","];
+    
+//    AvailableString([OpenShopInfo shareInstance].shopLong)
+//    AvailableString([OpenShopInfo shareInstance].shopLat)
+    NSMutableDictionary *dic = [[NSMutableDictionary alloc]init];
+    [dic setValue:@"1"  forKey:@"custId"];
+    [dic setValue:AvailableString([OpenShopInfo shareInstance].shopType)  forKey:@"type"];
+    [dic setValue:AvailableString([OpenShopInfo shareInstance].shopName)  forKey:@"shopName"];
+    [dic setValue:AvailableString([OpenShopInfo shareInstance].shopAddress)  forKey:@"address"];
+    [dic setValue:@"120.123456"  forKey:@"longitude"];
+    [dic setValue:@"37.123456"  forKey:@"latitude"];
+    [dic setValue:AvailableString([OpenShopInfo shareInstance].shopUserName)  forKey:@"linkmanName"];
+    [dic setValue:AvailableString([OpenShopInfo shareInstance].shopUserTel)  forKey:@"linkmanTel"];
+    NSString *devstr;
+    if ([AvailableString([OpenShopInfo shareInstance].shopType) isEqualToString:@"1"]) {
+        NSLog(@"AvailableString([OpenShopInfo shareInstance].shopDeliveryType)  %@",AvailableString([OpenShopInfo shareInstance].shopDeliveryType));
+        if ([AvailableString([OpenShopInfo shareInstance].shopDeliveryType) isEqualToString:DevtypeStr]) {
+            devstr = @"1";
+        }else {
+            devstr = @"2";
+        }
+        [dic setValue:AvailableString(devstr)  forKey:@"deliveryType"];
+    }
+    
+    [dic setValue:AvailableString(string)  forKey:@"typeId"];
+    [dic setValue:AvailableString([OpenShopInfo shareInstance].CompanyUser)  forKey:@"legalPersonName"];
+    [dic setValue:AvailableString([OpenShopInfo shareInstance].CompanyUserNum)  forKey:@"legalPersonId"];
+    NSString *sfzString;
+    if (sfzArr.count >0) {
+        sfzString = [sfzArr componentsJoinedByString:@","];
+    }else {
+        sfzString = @"";
+    }
+
+    [dic setValue:AvailableString(sfzString)  forKey:@"idPics"];
+    [dic setValue:AvailableString([OpenShopInfo shareInstance].bankName)  forKey:@"openingBank"];
+    [dic setValue:AvailableString([OpenShopInfo shareInstance].bankUser)  forKey:@"accountHolder"];
+    [dic setValue:AvailableString([OpenShopInfo shareInstance].bankCardNum)  forKey:@"bankCard"];
+    NSString *cardString;
+    if (infoarr.count >0) {
+        cardString = [infoarr componentsJoinedByString:@","];
+    }else {
+        cardString = @"";
+    }
+    [dic setValue:AvailableString(cardString)  forKey:@"cPics"];
+    [dic setValue:AvailableString([OpenShopInfo shareInstance].BankSecName)  forKey:@"branch"];
+    [dic setValue:AvailableString([OpenShopInfo shareInstance].SaleNum)  forKey:@"bLicNo"];
+    [dic setValue:AvailableString([OpenShopInfo shareInstance].SaleAddress)  forKey:@"bLicLocation"];
+    [dic setValue:AvailableString([OpenShopInfo shareInstance].FoodNum)  forKey:@"oLicNo"];
+    [dic setValue:AvailableString([OpenShopInfo shareInstance].FoodAddress)  forKey:@"oLicLocation"];
+
+    [RequestManager sendPostRequestWithURLString:ServerUrl_Write modular:Modular_writeShop requestName:RequestName_addShopInfo parameters:dic completeBlock:^(NSString *resultCode, NSString *resultDesc, NSDictionary *dataDic)
+     {
+         
+         if ([resultCode isEqualToString:@"0"])
+         {
+             
+             
+             NSLog(@"成功");
+             
+             
+             
+         }else {
+             [weakSelf showToast:resultDesc];
+         }
+     } failedBlock:^(NSError *error) {
+         [weakSelf showToast:ToastMsg_NetworkFailed];
+     }];
+}
+
+@end

@@ -1,0 +1,52 @@
+//
+//  ForthString_Const.h
+//  XTWL_IOS_SHOP
+//
+//  Created by Cinna on 2017/9/18.
+//  Copyright © 2017年 XTWL. All rights reserved.
+//
+
+#ifndef ForthString_Const_h
+#define ForthString_Const_h
+
+#pragma mark - 导航条文案
+static NSString *const NaviTitle_UserCenter = @"我的";
+static NSString *const NaviTitle_UserLogin = @"登录";
+static NSString *const NaviTitle_UserRegist = @"免费注册";
+static NSString *const NaviTitle_CodeChecking = @"手机验证";
+static NSString *const NaviTitle_PswSetting = @"设置密码";
+static NSString *const NaviTitle_FindPsw = @"找回密码";
+static NSString *const NaviTitle_ResettingPsw = @"重置密码";
+
+static NSString *const NaviTitle_ChooseUserAddress = @"选择收货地址";
+static NSString *const NaviTitle_ChangeUserAddress = @"修改收货地址";
+static NSString *const NaviTitle_AddUserAddress = @"新增收货地址";
+static NSString *const NaviTitle_SureUserAddress = @"确认收货地址";
+
+#pragma mark - 文本文案
+static NSString *const UserResgit = @"免费注册";
+static NSString *const UserForgetPsw = @"忘记密码？";
+static NSString *const SubmitStr= @"提交";
+static NSString *const GetCodeStr= @"获取验证码";
+static NSString *const InputPsw = @"请输入密码";
+static NSString *const ThirdLogin = @"使用合作账号登录";
+static NSString *const QQLogin = @"QQ登录";
+static NSString *const WeChatLogin = @"微信登录";
+static NSString *const RegistPhonePlaceholder = @"请输入手机号";
+static NSString *const Nocode = @"收不到验证码？";
+static NSString *const ResendCode = @"重新发送验证码";
+static NSString *const ExplainStr = @"我们需要验证你的手机号码,确保配送过程中能及时联系到你";
+static NSString *const ChangePhone = @"修改手机号";
+static NSString *const PhoneErrorToast = @"请输入正确的手机号";
+static NSString *const RegistCodePlaceholder = @"请输入验证码";
+static NSString *const UserRegistXieyi = @"同意《用户协议》";
+static NSString *const PswLengthError = @"请输入6-16位密码";
+static NSString *const CodeLengthError = @"请输入4位验证码";
+static NSString *const SendAgainAfterSecond = @"重新发送验证码";
+static NSString *const NewAddAddress = @"新增地址";
+static NSString *const OutUserAddress = @"以下地址超出配送范围";
+static NSString *const SureBtnStr = @"确定";
+
+
+
+#endif /* ForthString_Const_h */
